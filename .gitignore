@@ -1,0 +1,10 @@
+# ENV
+*.env
+!example.env
+
+# Typescript
+dist/
+
+# NodeJS
+node_modules/
+package-lock.json
