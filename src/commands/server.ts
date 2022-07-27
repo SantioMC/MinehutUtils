@@ -11,18 +11,18 @@ export class ServerCommand {
 		server: string,
 		interaction: CommandInteraction
 	) {
-		await interaction.reply({
-			embeds: [createEmbed(`<a:typing:664898517738717199> Fetching server data...`)]
-		});
+		await interaction.deferReply();
 
 		getServerData(server).then((data: ServerData | null) => {
 			if (data == null) {
-				return interaction.editReply({
-					embeds: [createEmbed(`<:no:659939343875702859> The server \`${server}\` could not be found.`)]
+				return interaction.followUp({
+					embeds: [
+						createEmbed(`<:no:659939343875702859> The server \`${server}\` could not be found.`)
+					]
 				});
 			}
 
-			interaction.editReply({ embeds: [toEmbed(data)] });
+			interaction.followUp({ embeds: [toEmbed(data)] });
 		});
 	}
 }

@@ -7,18 +7,16 @@ import { getNetworkStats, NetworkStats } from '../utils/minehut';
 export class StatsCommand {
 	@Slash('network', { description: 'View statistics about Minehut' })
 	private async stats(interaction: CommandInteraction) {
-		await interaction.reply({
-			embeds: [createEmbed(`<a:typing:664898517738717199> Loading...`)]
-		});
+		await interaction.deferReply();
 
 		getNetworkStats().then((data: NetworkStats | null) => {
 			if (data == null) {
-				return interaction.editReply({
+				return interaction.followUp({
 					embeds: [createEmbed("<:no:659939343875702859> I wasn't able to fetch network stats!")]
 				});
 			}
 
-			interaction.editReply({
+			interaction.followUp({
 				embeds: [
 					createEmbed(
 						`**Players**: ${formatNumber(data.player_count)}` +
