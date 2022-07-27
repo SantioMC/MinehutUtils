@@ -3,19 +3,40 @@ import {
 	SelectMenuInteraction,
 	ActionRowBuilder,
 	SelectMenuBuilder,
-	TextChannel
+	TextChannel,
+	ApplicationCommandOptionType,
+	AutocompleteInteraction
 } from 'discord.js';
 import { Discord, SelectMenuComponent, Slash, SlashOption } from 'discordx';
 import { client } from '..';
 import { createEmbed } from '../utils/embed';
-import { fromHTML } from '../utils/markdown';
 import { Addon, encodeBody, getAddons } from '../utils/market';
 
 @Discord()
 export class AddonCommand {
 	@Slash('addon', { description: 'Search and view addons on Minehut' })
 	private async addon(
-		@SlashOption('query', { description: 'The query to search for', required: true })
+		@SlashOption('query', {
+			description: 'The query to search for',
+			required: true,
+			type: ApplicationCommandOptionType.String,
+			autocomplete: async (interaction: AutocompleteInteraction) => {
+				const query: string = interaction.options.getFocused();
+				if (!query) return interaction.respond([]);
+
+				getAddons(query, 4).then((data: Addon[] | null) => {
+					if (data == null) return interaction.respond([]);
+					interaction.respond(
+						data.map((addon) => {
+							return {
+								name: addon.title,
+								value: addon.title
+							};
+						})
+					);
+				});
+			}
+		})
 		query: string,
 		interaction: CommandInteraction
 	) {
