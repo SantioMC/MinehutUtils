@@ -21,7 +21,7 @@ export class StatusCommand {
 							`\n**Minehut API**: ${data.api} ${this.getIcon(data.api)}` +
 							`\n` +
 							`\n *This information is automatic, please refer to <#240269653358805003> for status updates*`
-					)
+					).setTitle('📈 Minehut Status')
 				]
 			});
 		});
