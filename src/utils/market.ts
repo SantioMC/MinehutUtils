@@ -4,9 +4,12 @@ const BASE_URL = 'https://shop.minehut.com';
 const SEARCH_URL = `${BASE_URL}/search/suggest.json?q={QUERY}&resources[type]=product&resources[limit]={LIMIT}`;
 
 export async function getAddons(query: string, limit?: number): Promise<Addon[] | null> {
-	const req = SEARCH_URL.replace('{QUERY}', query).replace('{LIMIT}', (limit || 6).toString());
+	const uri = SEARCH_URL.replace('{QUERY}', query).replace('{LIMIT}', (limit || 6).toString());
 
-	const data = await timedFetch(req).then((res) => res.json());
+	const req = await timedFetch(uri);
+	if (req == null) return null;
+
+	const data = await req.json();
 	if (data.ok == false) return null;
 
 	const addons: Addon[] = data.resources.results.products.map((res: any) => res as Addon);

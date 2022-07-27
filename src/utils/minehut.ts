@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import { timedFetch } from './fetch';
 
 const BASE_URL = `https://api.minehut.com`;
@@ -18,20 +17,23 @@ export function getBanner(server: ServerData) {
 }
 
 export async function getServerData(server: string): Promise<ServerData | null> {
-	const data = await timedFetch(`${BASE_URL}/server/${server}?byName=true`).then((res) =>
-		res.json()
+	const data = await timedFetch(`${BASE_URL}/server/${server}?byName=true`).then(
+		(res) => res?.json() || { ok: false }
 	);
 	if (data.ok == false) return null;
 	return data.server as ServerData;
 }
 
 export async function getNetworkStats(): Promise<NetworkStats | null> {
-	const networkData = await timedFetch(`${BASE_URL}/network/simple_stats`).then((res) =>
-		res.json()
+	const networkData = await timedFetch(`${BASE_URL}/network/simple_stats`).then(
+		(res) => res?.json() || { ok: false }
 	);
-	const playerData = await timedFetch(`${BASE_URL}/network/players/distribution`).then((res) =>
-		res.json()
+	if (networkData.ok == false) return null;
+
+	const playerData = await timedFetch(`${BASE_URL}/network/players/distribution`).then(
+		(res) => res?.json() || { ok: false }
 	);
+	if (playerData.ok == false) return null;
 
 	return { ...networkData, ...playerData } as NetworkStats;
 }
@@ -60,7 +62,42 @@ export function getPlan(server: ServerData): ServerPlan {
 	}
 }
 
+export async function getMinehutStatus(): Promise<MinehutStatus> {
+	let data: MinehutStatus = {
+		minecraft_java: 'Working',
+		minecraft_bedrock: 'Working',
+		minecraft_proxy: 'Working',
+		api: 'Working'
+	};
+
+	getNetworkStats().then((stats: NetworkStats | null) => {
+		if (stats == null) return (data.api = 'Offline');
+
+		if (stats.bedrockTotal < 50) data.minecraft_bedrock = 'Degraded';
+		if (stats.bedrockTotal == 0) data.minecraft_bedrock = 'Offline';
+
+		if (stats.javaTotal < 1000) data.minecraft_java = 'Degraded';
+		if (stats.javaTotal == 0) data.minecraft_java = 'Offline';
+	});
+
+	const proxy = await timedFetch(`https://mcapi.us/server/status?ip=minehut.com`).then(
+		(res) => res?.json() || { ok: false }
+	);
+	if (proxy.ok == false || !proxy.online) data.minecraft_proxy = 'Offline';
+
+	return data;
+}
+
 // Interfaces
+export type Status = 'Working' | 'Degraded' | 'Offline';
+
+export interface MinehutStatus {
+	minecraft_java: Status;
+	minecraft_bedrock: Status;
+	minecraft_proxy: Status;
+	api: Status;
+}
+
 export interface NetworkStats {
 	player_count: number;
 	server_count: number;
