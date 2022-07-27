@@ -24,8 +24,9 @@ export class AddonCommand {
 				const query: string = interaction.options.getFocused();
 				if (!query) return interaction.respond([]);
 
-				getAddons(query, 4).then((data: Addon[] | null) => {
+				getAddons(query, 10).then((data: Addon[] | null) => {
 					if (data == null) return interaction.respond([]);
+
 					interaction.respond(
 						data.map((addon) => {
 							return {
