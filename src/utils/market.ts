@@ -3,6 +3,7 @@ import { fromHTML } from './markdown';
 
 const BASE_URL = 'https://shop.minehut.com';
 const SEARCH_URL = `${BASE_URL}/search/suggest.json?q={QUERY}&resources[type]=product&resources[limit]={LIMIT}`;
+const CREDIT_URL = `https://shop.minehut.com/products/{ADDON}?view=detailed`;
 
 export async function getAddons(query: string, limit?: number): Promise<Addon[] | null> {
 	const uri = SEARCH_URL.replace('{QUERY}', query).replace('{LIMIT}', (limit || 6).toString());
@@ -16,7 +17,14 @@ export async function getAddons(query: string, limit?: number): Promise<Addon[] 
 	const addons: Addon[] = data.resources.results.products.map((res: any) => res as Addon);
 	const specific = addons.filter((addon) => addon.title.toLowerCase() == query.toLowerCase())[0];
 
-	if (specific) return [specific];
+	if (specific) {
+		const specificReq = await timedFetch(CREDIT_URL.replace('{ADDON}', specific.handle));
+		const specificData =
+			specificReq == null ? { credit_price: 0, credit_price_sale: 0 } : await specificReq.json();
+
+		return [{ ...specific, ...specificData }];
+	}
+
 	return addons;
 }
 
@@ -57,4 +65,8 @@ export interface Addon {
 		url: string;
 		width: number;
 	};
+
+	// Addon-Specific
+	credit_price?: number;
+	credit_price_sale?: number;
 }

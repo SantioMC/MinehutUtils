@@ -124,7 +124,14 @@ export class AddonCommand {
 		embed.setImage(addon.featured_image.url);
 		embed.setURL(`https://shop.minehut.com${addon.url}`);
 		embed.setFields([
-			{ name: 'Price', value: `$${addon.price}`, inline: true },
+			{
+				name: 'Price',
+				value:
+					(addon.credit_price_sale!! != 0 ? `~~${addon.credit_price_sale!!}~~ ` : '') +
+					addon.credit_price!! +
+					` Credits *(Approx. $${addon.price})*`,
+				inline: true
+			},
 			{ name: 'Vendor', value: addon.vendor, inline: true },
 			{ name: 'Category', value: addon.type, inline: true }
 		]);
