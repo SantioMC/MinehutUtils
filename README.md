@@ -18,9 +18,9 @@ Running the bot is very simple, just pull the docker image and run it with your 
 docker pull ghcr.io/santiomc/minehututils:master
 
 docker run \
-	 --name minehututils \
-	 -e TOKEN=<YOUR_TOKEN> \
-	 -d \
-	 --restart always \
-	 ghcr.io/santiomc/minehututils:master
+   --name minehututils \
+   -e TOKEN=<YOUR_TOKEN> \
+   -d \
+   --restart always \
+   ghcr.io/santiomc/minehututils:master
 ```
