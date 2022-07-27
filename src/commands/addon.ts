@@ -98,8 +98,8 @@ export class AddonCommand {
 	}
 
 	private createAddonEmbed(addon: Addon) {
-		const embed = createEmbed(addon.title);
-		embed.setDescription(addon.body);
+		const embed = createEmbed(addon.body);
+		embed.setTitle(addon.title);
 		embed.setThumbnail(addon.featured_image.url);
 		embed.setURL(`https://shop.minehut.com${addon.url}`);
 		embed.setFields([
