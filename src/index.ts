@@ -5,7 +5,7 @@ import { Client } from 'discordx';
 
 require('dotenv').config();
 
-const client = new Client({
+export const client = new Client({
 	intents: [],
 	silent: false
 });
