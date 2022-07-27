@@ -30,7 +30,9 @@ export class StatsCommand {
 							)}, Servers: ${formatNumber(data.bedrockPlayerServer)})*` +
 							`\n` +
 							`\n**Servers**: ${data.server_count}/${data.server_max}` +
-							`\n**RAM**: ${Math.round(data.ram_count / 1000)}GB / ${data.ram_max}GB`
+							`\n**RAM**: ${Math.round(data.ram_count / 1000)}GB / ${data.ram_max}GB` +
+							`\n` +
+							`\n *View player statistics at [Minehut Track](https://track.minehut.com/)*`
 					).setTitle('📊 Network Stats')
 				]
 			});
