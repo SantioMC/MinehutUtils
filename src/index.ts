@@ -1,24 +1,29 @@
-import * as discordx from 'discordx';
+import 'reflect-metadata';
+
+import { importx } from '@discordx/importer';
+import { Client } from 'discordx';
 
 require('dotenv').config();
 
-const client = new discordx.Client({
+const client = new Client({
 	intents: [],
 	silent: false
 });
 
 client.on('ready', async () => {
-	console.log('> Bot online, logged in as: ' + client.user!!.tag);
-
-	await importx(__dirname + '/commands/**/*.{js,ts}');
+	await client.clearApplicationCommands();
 	await client.initApplicationCommands();
+
+	console.log('> Bot online, logged in as: ' + client.user!!.tag);
 });
 
 client.on('interactionCreate', (interaction) => {
 	client.executeInteraction(interaction);
 });
 
-client.login(process.env.TOKEN!!);
-function importx(arg0: string) {
-	throw new Error('Function not implemented.');
+async function start() {
+	await importx(__dirname + '/commands/*.{js,ts}');
+	client.login(process.env.TOKEN!!);
 }
+
+start();

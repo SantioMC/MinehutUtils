@@ -4,4 +4,4 @@ jsxSingleQuote =  true
 jsxBracketSameLine =  true
 trailingComma =  "none"
 semi =  true
-printWidth =  100000
+printWidth =  100
