@@ -40,3 +40,7 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 			}
 		);
 }
+
+export function formatNumber(number: number): string {
+	return number.toLocaleString('en-US', { maximumFractionDigits: 2 });
+}

@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { timedFetch } from './fetch';
 
 const BASE_URL = `https://api.minehut.com`;
 const BANNER_URL = `https://image-service-prd.superleague.com/v1/images/server-banner-images/{BANNER}?size=482x62`;
@@ -17,14 +18,22 @@ export function getBanner(server: ServerData) {
 }
 
 export async function getServerData(server: string): Promise<ServerData | null> {
-	const data = await fetch(`${BASE_URL}/server/${server}?byName=true`).then((res) => res.json());
+	const data = await timedFetch(`${BASE_URL}/server/${server}?byName=true`).then((res) =>
+		res.json()
+	);
 	if (data.ok == false) return null;
 	return data.server as ServerData;
 }
 
 export async function getNetworkStats(): Promise<NetworkStats | null> {
-	const data = await fetch(`${BASE_URL}/network/simple_stats`).then((res) => res.json());
-	return data as NetworkStats;
+	const networkData = await timedFetch(`${BASE_URL}/network/simple_stats`).then((res) =>
+		res.json()
+	);
+	const playerData = await timedFetch(`${BASE_URL}/network/players/distribution`).then((res) =>
+		res.json()
+	);
+
+	return { ...networkData, ...playerData } as NetworkStats;
 }
 
 export type ServerPlan = 'FREE' | 'DAILY' | 'MH20' | 'MH35' | 'MH75' | 'MHUnlimited';
@@ -58,6 +67,12 @@ export interface NetworkStats {
 	server_max: number;
 	ram_count: number;
 	ram_max: number;
+	bedrockTotal: number;
+	javaTotal: number;
+	bedrockLobby: number;
+	bedrockPlayerServer: number;
+	javaLobby: number;
+	javaPlayerServer: number;
 }
 
 export interface ServerData {
