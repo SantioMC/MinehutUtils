@@ -1,16 +1,19 @@
-import { EmbedBuilder } from 'discord.js';
 import fetch from 'node-fetch';
-import { describe } from 'node:test';
-import { createEmbed } from './embed';
 
 const BASE_URL = `https://api.minehut.com`;
+const BANNER_URL = `https://image-service-prd.superleague.com/v1/images/server-banner-images/{BANNER}?size=482x62`;
 
 export function cleanMOTD(motd: string): string {
 	return motd
 		.replace(/[&§][A-F0-9rklmno]/gi, ' ') // Clean off color codes
 		.replace(/```/g, '') // Clean off code blocks
 		.replace(/\n /g, '\n') // Fix newline spacing
-		.replace(/^\s+/g, ''); // Get rid of first two spaces
+		.replace(/^\s+/g, ''); // Get rid of leading whitespace
+}
+
+export function getBanner(server: ServerData) {
+	// FEAT: Use canvas to generate a banner image similar to the ones in https://minehut.com/servers
+	return null;
 }
 
 export async function getServerData(server: string): Promise<ServerData | null> {

@@ -1,5 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
-import { cleanMOTD, getPlan, ServerData } from './minehut';
+import { cleanMOTD, getBanner, getPlan, ServerData } from './minehut';
 
 export function createEmbed(description: string): EmbedBuilder {
 	return new EmbedBuilder().setColor('#19f4b9').setTitle(' ').setDescription(description);
@@ -13,12 +13,14 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 	const description =
 		`\`\`\`${cleanMOTD(server.motd)}\`\`\`` +
 		`\n📈 **Players:** ${server.playerCount}/${maxPlayers}` +
-		`\n📆 **Created:** <t:${creationDate}:R>`;
+		`\n📆 **Created:** <t:${creationDate}:R>` +
+		`\n📁 **Categories:** ${server.categories.length == 0 ? 'None' : server.categories.join(', ')}`;
 
 	return createEmbed(
 		(server.suspended ? `:warning: This server is currently suspended!\n` : '') + description
 	)
 		.setTitle(`${server.name} ${server.proxy ? '(Server Network)' : ''}`)
+		.setImage(getBanner(server))
 		.addFields(
 			{
 				name: 'Server Status',
