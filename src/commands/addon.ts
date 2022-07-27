@@ -1,4 +1,3 @@
-import { channel } from 'diagnostics_channel';
 import {
 	CommandInteraction,
 	SelectMenuInteraction,
@@ -9,7 +8,8 @@ import {
 import { Discord, SelectMenuComponent, Slash, SlashOption } from 'discordx';
 import { client } from '..';
 import { createEmbed } from '../utils/embed';
-import { Addon, getAddons } from '../utils/market';
+import { fromHTML } from '../utils/markdown';
+import { Addon, encodeBody, getAddons } from '../utils/market';
 
 @Discord()
 export class AddonCommand {
@@ -98,18 +98,14 @@ export class AddonCommand {
 	}
 
 	private createAddonEmbed(addon: Addon) {
-		const embed = createEmbed(addon.body);
+		const embed = createEmbed(encodeBody(addon));
 		embed.setTitle(addon.title);
-		embed.setThumbnail(addon.featured_image.url);
+		embed.setImage(addon.featured_image.url);
 		embed.setURL(`https://shop.minehut.com${addon.url}`);
 		embed.setFields([
-			{ name: 'Price', value: `$${addon.price}` },
-			{
-				name: 'Compare at',
-				value: `$${addon.compare_at_price_min} - $${addon.compare_at_price_max}`
-			},
-			{ name: 'Vendor', value: addon.vendor },
-			{ name: 'Tags', value: addon.tags.join(', ') }
+			{ name: 'Price', value: `$${addon.price}`, inline: true },
+			{ name: 'Vendor', value: addon.vendor, inline: true },
+			{ name: 'Category', value: addon.type, inline: true }
 		]);
 		return embed;
 	}

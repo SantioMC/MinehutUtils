@@ -1,4 +1,5 @@
 import { timedFetch } from './fetch';
+import { fromHTML } from './markdown';
 
 const BASE_URL = 'https://shop.minehut.com';
 const SEARCH_URL = `${BASE_URL}/search/suggest.json?q={QUERY}&resources[type]=product&resources[limit]={LIMIT}`;
@@ -17,6 +18,18 @@ export async function getAddons(query: string, limit?: number): Promise<Addon[] 
 
 	if (specific) return [specific];
 	return addons;
+}
+
+export function encodeBody(addon: Addon): string {
+	var original = fromHTML(addon.body);
+	var body = original.split('\n').slice(0, 15).join('\n');
+	body = body.length < 2000 ? body : body.slice(0, 2000) + '...';
+
+	if (body.trim() == '') body = 'No description available.';
+	if (body != original)
+		body += `\n*Click [here](${BASE_URL}${addon.url}) to learn more about this product!*`;
+
+	return body;
 }
 
 // Interfaces
