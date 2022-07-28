@@ -2,13 +2,13 @@ import 'reflect-metadata';
 
 import { importx } from '@discordx/importer';
 import { Client } from 'discordx';
-import NodeCache from "node-cache";
-import {CommandInteraction} from "discord.js";
-import {createEmbed} from "./utils/embed";
+import NodeCache from 'node-cache';
+import { CommandInteraction } from 'discord.js';
+import { createEmbed } from './utils/embed';
 
 require('dotenv').config();
 
-const commandCache = new NodeCache({stdTTL: 2.5});
+const commandCache = new NodeCache({ stdTTL: 2.5 });
 
 export const client = new Client({
 	intents: [],
@@ -26,9 +26,10 @@ client.on('interactionCreate', (interaction) => {
 	if (interaction instanceof CommandInteraction) {
 		let name = interaction.commandName;
 		if (commandCache.has(name)) {
-			interaction.reply({ephemeral: true, embeds: [
-				createEmbed("⏱ This command was used recently, please wait")
-				]});
+			interaction.reply({
+				ephemeral: true,
+				embeds: [createEmbed('⏱ This command was used recently, please wait')]
+			});
 			return;
 		}
 		commandCache.set(name, true);
