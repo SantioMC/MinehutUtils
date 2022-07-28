@@ -115,7 +115,6 @@ export class AddonCommand {
 				embeds: [this.createAddonEmbed(addon)]
 			});
 		});
-
 		return;
 	}
 
