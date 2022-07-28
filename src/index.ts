@@ -33,6 +33,7 @@ client.on('interactionCreate', (interaction) => {
 		}
 		commandCache.set(name, true);
 	}
+
 	client.executeInteraction(interaction);
 });
 
