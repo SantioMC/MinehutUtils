@@ -1,6 +1,8 @@
 import { EmbedBuilder } from 'discord.js';
 import { cleanMOTD, getBanner, getPlan, ServerData } from './minehut';
 
+const DISCORD_REGEX = /(https?:\/\/)?discord\.gg\/([\d\w]+)/gi;
+
 export function createEmbed(description: string): EmbedBuilder {
 	return new EmbedBuilder().setColor('#19f4b9').setTitle(' ').setDescription(description);
 }
@@ -43,4 +45,8 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 
 export function formatNumber(number: number): string {
 	return number.toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+
+export function hideDiscord(body: string, replacement: string): string {
+	return body.replace(DISCORD_REGEX, replacement);
 }
