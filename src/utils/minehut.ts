@@ -1,4 +1,5 @@
 import { timedFetch } from './fetch';
+import { getBedrockVersion } from './minecraft';
 
 const BASE_URL = `https://api.minehut.com`;
 const BANNER_URL = `https://image-service-prd.superleague.com/v1/images/server-banner-images/{BANNER}?size=482x62`;
@@ -63,39 +64,64 @@ export function getPlan(server: ServerData): ServerPlan {
 }
 
 export async function getMinehutStatus(): Promise<MinehutStatus> {
+	// Default status
 	let data: MinehutStatus = {
 		minecraft_java: 'Working',
 		minecraft_bedrock: 'Working',
 		minecraft_proxy: 'Working',
-		api: 'Working'
+		api: 'Working',
+		bedrock_version: '?',
+		latest_bedrock_version: '?'
 	};
 
+	// Check general network information
 	getNetworkStats().then((stats: NetworkStats | null) => {
 		if (stats == null) return (data.api = 'Offline');
 
+		// Bedrock handling
 		if (stats.bedrockTotal < 50) data.minecraft_bedrock = 'Degraded';
 		if (stats.bedrockTotal == 0) data.minecraft_bedrock = 'Offline';
 
+		// Java handling
 		if (stats.javaTotal < 1000) data.minecraft_java = 'Degraded';
 		if (stats.javaTotal == 0) data.minecraft_java = 'Offline';
 	});
 
+	// Check to see if proxy is pingable
 	const proxy = await timedFetch(`https://mcapi.us/server/status?ip=minehut.com`).then(
 		(res) => res?.json() || { ok: false }
 	);
 	if (proxy.ok == false || !proxy.online) data.minecraft_proxy = 'Offline';
 
+	// Check to see if bedrock proxy is pingable
+	const bedrock = await timedFetch(`https://api.mcsrvstat.us/bedrock/2/bedrock.minehut.com`).then(
+		(res) => res?.json() || { ok: false }
+	);
+	if (bedrock.ok == false || !bedrock.online) data.minecraft_bedrock = 'Offline';
+
+	// Compare bedrock proxy to latest bedrock version
+	const latestVersion = await getBedrockVersion();
+	if (latestVersion == null) return data;
+
+	if (bedrock.version != latestVersion) {
+		data.minecraft_bedrock = 'Outdated';
+		data.latest_bedrock_version = latestVersion;
+		data.bedrock_version = bedrock.version || '?';
+	}
+
 	return data;
 }
 
 // Interfaces
-export type Status = 'Working' | 'Degraded' | 'Offline';
+export type Status = 'Working' | 'Degraded' | 'Outdated' | 'Offline';
 
 export interface MinehutStatus {
 	minecraft_java: Status;
 	minecraft_bedrock: Status;
 	minecraft_proxy: Status;
 	api: Status;
+	bedrock_version: string;
+	latest_bedrock_version: string;
 }
 
 export interface NetworkStats {

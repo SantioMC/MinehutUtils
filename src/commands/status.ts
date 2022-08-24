@@ -17,7 +17,11 @@ export class StatusCommand {
 							`\n**Minehut Java**: ${data.minecraft_java} ${this.getIcon(data.minecraft_java)}` +
 							`\n**Minehut Bedrock**: ${data.minecraft_bedrock} ${this.getIcon(
 								data.minecraft_bedrock
-							)}` +
+							)} ${
+								data.latest_bedrock_version.startsWith(data.bedrock_version)
+									? ''
+									: `*(${data.bedrock_version} -> ${data.latest_bedrock_version})*`
+							}` +
 							`\n**Minehut API**: ${data.api} ${this.getIcon(data.api)}` +
 							`\n` +
 							`\n *This information is automatic, please refer to <#240269653358805003> for status updates*`
@@ -32,6 +36,7 @@ export class StatusCommand {
 			case 'working':
 				return '🟢';
 			case 'degraded':
+			case 'outdated':
 				return '🟡';
 			case 'offline':
 				return '🔴';
