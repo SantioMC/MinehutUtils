@@ -9,4 +9,4 @@ COPY . .
 
 # Install dependencies, then run the program
 RUN npm install --production
-CMD [ "npm", "start" ]
+ENTRYPOINT [ "npm", "start" ]
