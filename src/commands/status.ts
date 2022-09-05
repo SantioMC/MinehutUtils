@@ -5,7 +5,7 @@ import { getMinehutStatus, MinehutStatus, Status } from '../utils/minehut';
 
 @Discord()
 export class StatusCommand {
-	@Slash('status', { description: 'View the status of Minehut Services' })
+	@Slash({ name: 'status', description: 'View the status of Minehut Services' })
 	private async status(interaction: CommandInteraction) {
 		await interaction.deferReply();
 

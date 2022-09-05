@@ -5,7 +5,7 @@ import { getNetworkStats, NetworkStats } from '../utils/minehut';
 
 @Discord()
 export class StatsCommand {
-	@Slash('network', { description: 'View statistics about Minehut' })
+	@Slash({ name: 'network', description: 'View statistics about Minehut' })
 	private async stats(interaction: CommandInteraction) {
 		await interaction.deferReply();
 

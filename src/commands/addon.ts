@@ -14,9 +14,10 @@ import { Addon, encodeBody, getAddons } from '../utils/market';
 
 @Discord()
 export class AddonCommand {
-	@Slash('addon', { description: 'Search and view addons on Minehut' })
+	@Slash({ name: 'addon', description: 'Search and view addons on Minehut' })
 	private async addon(
-		@SlashOption('query', {
+		@SlashOption({
+			name: 'query',
 			description: 'The query to search for',
 			required: true,
 			type: ApplicationCommandOptionType.String,
@@ -86,7 +87,7 @@ export class AddonCommand {
 		});
 	}
 
-	@SelectMenuComponent('addons-menu')
+	@SelectMenuComponent({ id: 'addons-menu' })
 	async handle(interaction: SelectMenuInteraction) {
 		await interaction.deferReply();
 

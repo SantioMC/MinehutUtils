@@ -11,9 +11,10 @@ import { getHeroImage, getPublisher, Publisher } from '../utils/market';
 
 @Discord()
 export class PublisherCommand {
-	@Slash('publisher', { description: 'Search publishers on Minehut Market' })
+	@Slash({ name: 'publisher', description: 'Search publishers on Minehut Market' })
 	private async publisher(
-		@SlashOption('slug', {
+		@SlashOption({
+			name: 'slug',
 			description: "The publisher's URL slug (ex. minehut)",
 			required: true,
 			type: ApplicationCommandOptionType.String

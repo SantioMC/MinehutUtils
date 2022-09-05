@@ -5,9 +5,9 @@ import { getServerData, ServerData } from '../utils/minehut';
 
 @Discord()
 export class ServerCommand {
-	@Slash('server', { description: 'View information about a Minehut Server' })
+	@Slash({ name: 'server', description: 'View information about a Minehut Server' })
 	private async server(
-		@SlashOption('server', { description: 'The name of the server', required: true })
+		@SlashOption({ name: 'server', description: 'The name of the server', required: true })
 		server: string,
 		interaction: CommandInteraction
 	) {
