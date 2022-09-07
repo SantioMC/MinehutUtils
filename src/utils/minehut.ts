@@ -18,21 +18,18 @@ export function getBanner(server: ServerData) {
 }
 
 export async function getServerData(server: string): Promise<ServerData | null> {
-	var data;
+	var uri;
 
 	if (server.length == 24) {
 		// We were provided a server ID
-		var data = await timedFetch(`${BASE_URL}/server/${server}`).then(
-			(res) => res?.json() || { ok: false }
-		);
-		if (data.ok == false) return null;
+		uri = `${BASE_URL}/server/${server}`;
 	} else {
 		// We were provided a server name
-		data = await timedFetch(`${BASE_URL}/server/${server}?byName=true`).then(
-			(res) => res?.json() || { ok: false }
-		);
-		if (data.ok == false) return null;
+		uri = `${BASE_URL}/server/${server}?byName=true`;
 	}
+
+	var data = await timedFetch(uri).then((res) => res?.json() || { ok: false });
+	if (data.ok == false) return null;
 
 	return data.server as ServerData;
 }
