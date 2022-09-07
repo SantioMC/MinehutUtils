@@ -1,13 +1,33 @@
-import { CommandInteraction } from 'discord.js';
+import {
+	ApplicationCommandOptionType,
+	AutocompleteInteraction,
+	CommandInteraction
+} from 'discord.js';
 import { Discord, Slash, SlashOption } from 'discordx';
 import { createEmbed, toEmbed } from '../utils/embed';
-import { getServerData, ServerData } from '../utils/minehut';
+import { getServerData, getServerNames, ServerData } from '../utils/minehut';
 
 @Discord()
 export class ServerCommand {
 	@Slash({ name: 'server', description: 'View information about a Minehut Server' })
 	private async server(
-		@SlashOption({ name: 'server', description: 'The name of the server', required: true })
+		@SlashOption({
+			name: 'server',
+			description: 'The name of the server',
+			required: true,
+			type: ApplicationCommandOptionType.String,
+			autocomplete: async (interaction: AutocompleteInteraction) => {
+				const names = await getServerNames(interaction.options.getFocused());
+				interaction.respond(
+					names.slice(0, 25).map((name) => {
+						return {
+							name,
+							value: name
+						};
+					})
+				);
+			}
+		})
 		server: string,
 		interaction: CommandInteraction
 	) {

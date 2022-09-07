@@ -17,6 +17,21 @@ export function getBanner(server: ServerData) {
 	return null;
 }
 
+// Used for the server command to autocomplete names
+export async function getServerNames(filter: String | null = null): Promise<string[]> {
+	const req = await timedFetch(`${BASE_URL}/servers`);
+	if (req == null) return [];
+
+	const data = await req.json();
+	if (data == null) return [];
+
+	var servers = (data.servers as ServerData[]).sort((a, b) => a.playerCount - b.maxPlayers);
+	if (filter != null)
+		servers = servers.filter((server) => server.name.toLowerCase().includes(filter.toLowerCase()));
+
+	return servers.map((server) => server.name);
+}
+
 export async function getServerData(server: string): Promise<ServerData | null> {
 	var uri;
 
