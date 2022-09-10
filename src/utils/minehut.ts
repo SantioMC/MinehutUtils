@@ -63,28 +63,11 @@ export async function getNetworkStats(): Promise<NetworkStats | null> {
 	return { ...networkData, ...playerData } as NetworkStats;
 }
 
-export type ServerPlan = 'FREE' | 'DAILY' | 'MH20' | 'MH35' | 'MH75' | 'MHUnlimited';
+export type ServerPlan = 'FREE' | 'DAILY' | 'MH20' | 'MH35' | 'MH75' | 'MHUnlimited'; // not sure how exports work so someone fix
 
 export function getPlan(server: ServerData): ServerPlan {
-	const data = server.server_plan.split('_');
-	const plan = data.length == 2 ? data[1].toUpperCase() : 'FREE';
-
-	switch (plan) {
-		case 'FREE':
-			return 'FREE';
-		case 'DAILY':
-			return 'DAILY';
-		case '2GB':
-			return 'MH20';
-		case '3GB':
-			return 'MH35';
-		case '6GB':
-			return 'MH75';
-		case '10GB':
-			return 'MHUnlimited';
-		default:
-			return 'FREE';
-	}
+	const data = server.activeServerPlan;
+	return data;
 }
 
 export async function getMinehutStatus(): Promise<MinehutStatus> {
