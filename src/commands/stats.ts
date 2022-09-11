@@ -1,6 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import { Discord, Slash } from 'discordx';
-import { createEmbed, formatNumber } from '../utils/embed';
+import { createEmbed, formatNumber, embedJoinList } from '../utils/embed';
 import { getNetworkStats, NetworkStats } from '../utils/minehut';
 
 @Discord()
@@ -19,18 +19,23 @@ export class StatsCommand {
 			interaction.followUp({
 				embeds: [
 					createEmbed(
-						`**Players**: ${formatNumber(data.player_count)}` +
-							`\n → Java: ${formatNumber(data.javaTotal)} *(Lobby: ${formatNumber(
+						embedJoinList(
+							`**Players**: ${formatNumber(data.player_count)}`,
+
+							`→ Java: ${formatNumber(data.javaTotal)} *(Lobby: ${formatNumber(
 								data.javaLobby
-							)}, Servers: ${formatNumber(data.javaPlayerServer)})*` +
-							`\n → Bedrock: ${formatNumber(data.bedrockTotal)} *(Lobby: ${formatNumber(
+							)}, Servers: ${formatNumber(data.javaPlayerServer)})*`,
+
+							`→ Bedrock: ${formatNumber(data.bedrockTotal)} *(Lobby: ${formatNumber(
 								data.bedrockLobby
-							)}, Servers: ${formatNumber(data.bedrockPlayerServer)})*` +
-							`\n` +
-							`\n**Servers**: ${data.server_count}/${data.server_max}` +
-							`\n**RAM**: ${Math.round(data.ram_count / 1000)}GB / ${data.ram_max}GB` +
-							`\n` +
-							`\n *View player statistics at [Minehut Track](https://track.minehut.com/)*`
+							)}, Servers: ${formatNumber(data.bedrockPlayerServer)})*`,
+
+							'',
+							`**Servers**: ${data.server_count}/${data.server_max}`,
+							`**RAM**: ${Math.round(data.ram_count / 1000)}GB / ${data.ram_max}GB`,
+							'',
+							`*View player statistics at [Minehut Track](https://track.minehut.com/)*`
+						)
 					).setTitle('📊 Network Stats')
 				]
 			});

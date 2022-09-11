@@ -11,12 +11,15 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 	var startTime: number | null = Math.floor(server.last_online / 1000);
 	const creationDate = Math.floor(server.creation / 1000);
 
-	const maxPlayers = server.proxy ? '∞' : server.maxPlayers || 10;
-	const description =
-		`\`\`\`${cleanMOTD(server.motd)}\`\`\`` +
-		`\n📈 **Players:** ${server.playerCount}/${maxPlayers}` +
-		`\n📆 **Created:** <t:${creationDate}:R>` +
-		`\n📁 **Categories:** ${server.categories.length == 0 ? 'None' : server.categories.join(', ')}`;
+	// Don't display the max players if it's a proxy server.
+	const maxPlayers = server.proxy ? undefined : server.maxPlayers || 10;
+
+	const description = embedJoinList(
+		`\`\`\`${cleanMOTD(server.motd)}\`\`\``,
+		`📈 **Players:** ${server.playerCount}${maxPlayers !== undefined ? `/${maxPlayers}` : ''}`,
+		`📆 **Created:** <t:${creationDate}:R>`,
+		`📁 **Categories:** ${server.categories.length == 0 ? 'None' : server.categories.join(', ')}`
+	);
 
 	if (!startTime || isNaN(startTime) || new Date(startTime).getTime() == -1)
 		startTime = creationDate;
@@ -29,24 +32,28 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 		.addFields(
 			{
 				name: 'Server Status',
-				value:
+				value: embedJoinList(
 					`Server is \`${server.online ? 'online' : 'offline'}\` ${
 						server.online ? '<:yes:659939181056753665>' : '<:no:659939343875702859>'
-					}` +
-					`\n${server.online ? `Started` : `Last Online`} <t:${startTime}:R>` +
-					`\nCreated <t:${creationDate}:R>`,
+					}`,
+					`${server.online ? `Started` : `Last Online`} <t:${startTime}:R>`,
+					`Created <t:${creationDate}:R>`
+				),
 				inline: true
 			},
 			{
 				name: 'Server Plan',
-				value:
-					`The server is using the \`${getPlan(server)} plan\`` +
-					`\nPrice: ${Math.round(server.credits_per_day)} credits/day` +
-					`\nIcons Unlocked: ${server.purchased_icons.length}`,
+				value: embedJoinList(
+					`The server is using the \`${getPlan(server)} plan\``,
+					`Price: ${Math.round(server.credits_per_day)} credits/day`,
+					`Icons Unlocked: ${server.purchased_icons.length}`
+				),
 				inline: true
 			}
 		);
 }
+
+export const embedJoinList = (...strs: string[]): string => strs.join('\n');
 
 export function formatNumber(number: number): string {
 	return number.toLocaleString('en-US', { maximumFractionDigits: 2 });
