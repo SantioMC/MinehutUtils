@@ -33,8 +33,8 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 					`Server is \`${server.online ? 'online' : 'offline'}\` ${
 						server.online ? '<:yes:659939181056753665>' : '<:no:659939343875702859>'
 					}` +
-					`\n${server.online ? `Started On:` : `Last Online:`} <t:${startTime}:R>` +
-					`\nCreated At: <t:${creationDate}:R>`,
+					`\n${server.online ? `Started` : `Last Online`} <t:${startTime}:R>` +
+					`\nCreated <t:${creationDate}:R>`,
 				inline: true
 			},
 			{
