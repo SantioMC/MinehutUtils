@@ -4,7 +4,7 @@ import { fromHTML } from './markdown';
 const BASE_URL = 'https://shop.minehut.com';
 
 const SEARCH_URL = `${BASE_URL}/search/suggest.json?q={QUERY}&resources[type]=product&resources[limit]={LIMIT}`;
-const CREDIT_URL = `https://shop.minehut.com/products/{ADDON}?view=detailed`;
+const CREDIT_URL = `${BASE_URL}/products/{ADDON}?view=detailed`;
 
 const PUNLISHER_URL = `https://publisher-registry-prod.superleague.com/publisher/v1/publisher/slug/{SLUG}`;
 const PUBLISHER_HERO_URL = `https://image-service-prd.superleague.com/v1/images/{HERO}?size=1024`;
@@ -18,7 +18,7 @@ export async function getAddons(query: string, limit?: number): Promise<Addon[] 
 	const data = await req.json();
 	if (data.ok == false) return null;
 
-	const addons: Addon[] = data.resources.results.products.map((res: any) => res as Addon);
+	const addons: Addon[] = data.resources.results.products.map((res: Addon) => res);
 	const specific = addons.filter((addon) => addon.title.toLowerCase() == query.toLowerCase())[0];
 
 	if (specific) {
