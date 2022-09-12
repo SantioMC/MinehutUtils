@@ -1,6 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import { Discord, Slash } from 'discordx';
-import { createEmbed } from '../utils/embed';
+import { createEmbed, embedJoinList } from '../utils/embed';
 import { getMinehutStatus, MinehutStatus, Status } from '../utils/minehut';
 
 @Discord()
@@ -10,21 +10,25 @@ export class StatusCommand {
 		await interaction.deferReply();
 
 		getMinehutStatus().then((data: MinehutStatus) => {
+			let bedrockOutdatedStr = data.latest_bedrock_version.startsWith(data.bedrock_version)
+				? ''
+				: `*(${data.bedrock_version} -> ${data.latest_bedrock_version})*`;
+
 			interaction.followUp({
 				embeds: [
 					createEmbed(
-						`**Minehut Proxy**: ${data.minecraft_proxy} ${this.getIcon(data.minecraft_proxy)}` +
-							`\n**Minehut Java**: ${data.minecraft_java} ${this.getIcon(data.minecraft_java)}` +
-							`\n**Minehut Bedrock**: ${data.minecraft_bedrock} ${this.getIcon(
+						embedJoinList(
+							`**Minehut Proxy**: ${data.minecraft_proxy} ${this.getIcon(data.minecraft_proxy)}`,
+							`**Minehut Java**: ${data.minecraft_java} ${this.getIcon(data.minecraft_java)}`,
+
+							`**Minehut Bedrock**: ${data.minecraft_bedrock} ${this.getIcon(
 								data.minecraft_bedrock
-							)} ${
-								data.latest_bedrock_version.startsWith(data.bedrock_version)
-									? ''
-									: `*(${data.bedrock_version} -> ${data.latest_bedrock_version})*`
-							}` +
-							`\n**Minehut API**: ${data.api} ${this.getIcon(data.api)}` +
-							`\n` +
-							`\n *This information is automatic, please refer to <#240269653358805003> for status updates*`
+							)} ${bedrockOutdatedStr}`,
+
+							`**Minehut API**: ${data.api} ${this.getIcon(data.api)}`,
+							``,
+							` *This information is automatic, please refer to <#240269653358805003> for status updates*`
+						)
 					).setTitle('📈 Minehut Status')
 				]
 			});

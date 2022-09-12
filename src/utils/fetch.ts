@@ -1,5 +1,5 @@
 import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch';
-import { Attachment, AttachmentBuilder } from 'discord.js';
+import { AttachmentBuilder } from 'discord.js';
 
 export async function timedFetch(
 	uri: RequestInfo,
