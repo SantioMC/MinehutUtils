@@ -6,7 +6,7 @@ const BASE_URL = 'https://shop.minehut.com';
 const SEARCH_URL = `${BASE_URL}/search/suggest.json?q={QUERY}&resources[type]=product&resources[limit]={LIMIT}`;
 const CREDIT_URL = `https://shop.minehut.com/products/{ADDON}?view=detailed`;
 
-const PUNLISHER_URL = `https://publisher-registry-prod.superleague.com/publisher/v1/publisher/slug/{SLUG}`;
+const PUBLISHER_URL = `https://publisher-registry-prod.superleague.com/publisher/v1/publisher/slug/{SLUG}`;
 const PUBLISHER_HERO_URL = `https://image-service-prd.superleague.com/v1/images/{HERO}?size=1024`;
 
 export async function getAddons(query: string, limit?: number): Promise<Addon[] | null> {
@@ -34,7 +34,7 @@ export async function getAddons(query: string, limit?: number): Promise<Addon[] 
 
 export async function getPublisher(slug: string): Promise<Publisher | null> {
 	const req = await timedFetch(
-		PUNLISHER_URL.replace('{SLUG}', slug.toLowerCase().replaceAll(' ', '-'))
+		PUBLISHER_URL.replace('{SLUG}', slug.toLowerCase().replaceAll(' ', '-'))
 	);
 
 	if (req == null) return null;
