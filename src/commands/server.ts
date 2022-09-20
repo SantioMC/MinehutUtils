@@ -7,8 +7,18 @@ import { Discord, Slash, SlashOption } from 'discordx';
 import { createEmbed, toEmbed } from '../utils/embed';
 import { getServerData, getServerNames, ServerData } from '../utils/minehut';
 
+// Decorators cannot access `this`
+let serverCache: {
+	lastUpdate: number;
+	names: string[];
+} = { lastUpdate: 0, names: [] };
+
 @Discord()
 export class ServerCommand {
+	constructor() {
+		this.updateCache();
+	}
+
 	@Slash({ name: 'server', description: 'View information about a Minehut Server' })
 	private async server(
 		@SlashOption({
@@ -17,14 +27,16 @@ export class ServerCommand {
 			required: true,
 			type: ApplicationCommandOptionType.String,
 			autocomplete: async (interaction: AutocompleteInteraction) => {
-				const names = await getServerNames(interaction.options.getFocused());
 				interaction.respond(
-					names.slice(0, 25).map((name) => {
-						return {
-							name,
-							value: name
-						};
-					})
+					serverCache.names
+						.filter((name) => name.startsWith(interaction.options.getFocused()))
+						.slice(0, 25)
+						.map((name) => {
+							return {
+								name,
+								value: name
+							};
+						})
 				);
 			}
 		})
@@ -32,6 +44,8 @@ export class ServerCommand {
 		interaction: CommandInteraction
 	) {
 		await interaction.deferReply();
+
+		this.updateCache();
 
 		getServerData(server).then((data: ServerData | null) => {
 			if (data == null) {
@@ -44,5 +58,19 @@ export class ServerCommand {
 
 			interaction.followUp({ embeds: [toEmbed(data)] });
 		});
+	}
+
+	private updateCache() {
+		if (Date.now() - serverCache.lastUpdate < 30_000) {
+			return;
+		}
+
+		getServerNames().then(
+			(names) =>
+				(serverCache = {
+					lastUpdate: Date.now(),
+					names
+				})
+		);
 	}
 }
