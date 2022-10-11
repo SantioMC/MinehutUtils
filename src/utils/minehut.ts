@@ -1,5 +1,5 @@
 import { timedFetch } from './fetch';
-import { getBedrockVersion } from './minecraft';
+import { compareSemanticVersions, getBedrockVersion } from './minecraft';
 
 const BASE_URL = `https://api.minehut.com`;
 const BANNER_URL = `https://image-service-prd.superleague.com/v1/images/server-banner-images/{BANNER}?size=482x62`;
@@ -127,7 +127,10 @@ export async function getMinehutStatus(): Promise<MinehutStatus> {
 	const latestVersion = await getBedrockVersion();
 	if (latestVersion == null) return data;
 
-	if (bedrock.version != latestVersion) {
+	if (!bedrock.version) {
+		data.bedrock_version = 'Unknown';
+		data.minecraft_bedrock = 'Working';
+	} else if (compareSemanticVersions(bedrock.version, latestVersion) == -1) {
 		data.minecraft_bedrock = 'Outdated';
 		data.latest_bedrock_version = latestVersion;
 		data.bedrock_version = bedrock.version || '?';

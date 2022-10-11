@@ -14,6 +14,8 @@ export class StatusCommand {
 				? ''
 				: `*(${data.bedrock_version} -> ${data.latest_bedrock_version})*`;
 
+			if (data.bedrock_version == 'Unknown') bedrockOutdatedStr = '*(Failed to fetch)*';
+
 			interaction.followUp({
 				embeds: [
 					createEmbed(
