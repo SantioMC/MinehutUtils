@@ -24,6 +24,8 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 	if (!startTime || isNaN(startTime) || new Date(startTime).getTime() == -1)
 		startTime = creationDate;
 
+	const startTimeTimestamp = `<t:${startTime}:R>`;
+
 	return createEmbed(
 		(server.suspended ? `:warning: This server is currently suspended!\n` : '') + description
 	)
@@ -36,7 +38,9 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 					`Server is \`${server.online ? 'online' : 'offline'}\` ${
 						server.online ? '<:yes:659939181056753665>' : '<:no:659939343875702859>'
 					}`,
-					`${server.online ? `Started` : `Last Online`} <t:${startTime}:R>`,
+					`${server.online ? `Started` : `Last Online`} ${
+						isNaN(startTime) ? 'Never' : startTimeTimestamp
+					}`,
 					`Created <t:${creationDate}:R>`
 				),
 				inline: true
