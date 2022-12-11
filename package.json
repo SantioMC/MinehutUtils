@@ -6,7 +6,7 @@
 	"type": "commonjs",
 	"scripts": {
 		"start": "node .",
-		"prestart": "tsc --p tsconfig.production.json",
+		"prestart": "tsc --p tsconfig.json",
 		"format": "prettier --write ./",
 		"dev": "npm run format && ts-node src/index.ts"
 	},
