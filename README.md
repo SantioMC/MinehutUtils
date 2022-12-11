@@ -9,7 +9,6 @@ Commands that are included are listed below:
 |server|Gets information about a server|
 |network|Shows you network information|
 |status|Checks status of different services in Minehut|
-|publisher|Gets information about a market publisher|
 
 ## Running the bot
 
