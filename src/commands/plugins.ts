@@ -124,7 +124,9 @@ export class PluginCommand {
 		const embed = createEmbed(plugin.tag);
 		embed.setTitle(plugin.name + (plugin.premium ? ' (Paid)' : ''));
 		embed.setThumbnail(`https://www.spigotmc.org/${plugin.icon.url}`);
-		embed.setURL(`https://www.spigotmc.org/resources/${encodeURIComponent(plugin.name)}.${plugin.id}`);
+		embed.setURL(
+			`https://www.spigotmc.org/resources/${encodeURIComponent(plugin.name)}.${plugin.id}`
+		);
 		embed.setFields([
 			{
 				name: 'Rating',
@@ -148,7 +150,9 @@ export class PluginCommand {
 					).toLocaleDateString()}, it has since then been downloaded a total of \`${
 						plugin.downloads
 					}\` times.` +
-					`\n\n[*Learn More*](https://www.spigotmc.org/resources/${plugin.name}.${plugin.id})`,
+					`\n\n[*Learn More*](https://www.spigotmc.org/resources/${encodeURIComponent(
+						plugin.name
+					)}.${plugin.id})`,
 				inline: false
 			}
 		]);
