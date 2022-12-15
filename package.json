@@ -14,7 +14,8 @@
 	"author": "Santio71",
 	"license": "ISC",
 	"devDependencies": {
-		"prettier": "^2.7.1"
+		"prettier": "^2.7.1",
+		"ts-node": "^10.9.1"
 	},
 	"dependencies": {
 		"@discordx/importer": "^1.1.10",
