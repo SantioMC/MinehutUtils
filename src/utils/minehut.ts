@@ -83,7 +83,7 @@ export function getPlan(server: ServerData): ServerPlan {
 		case '10GB':
 			return 'MHUnlimited';
 		default:
-			return server.activeServerPlan.startsWith('Custom plan for') ? 'CUSTOM' : 'FREE';
+			return 'CUSTOM';
 	}
 }
 
