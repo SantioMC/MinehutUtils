@@ -25,7 +25,6 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 		startTime = creationDate;
 
 	const serverPlan = getPlan(server);
-
 	return createEmbed(
 		(server.suspended ? `:warning: This server is currently suspended!\n` : '') + description
 	)
@@ -37,8 +36,8 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 				value: embedJoinList(
 					`Server is ${
 						server.suspended
-							? '`suspended` <:no:659939343875702859>'
-							: `${server.online ? '`online`' : '`offline`'} ${
+							? `suspended <:no:659939343875702859>`
+							: `${server.online ? 'online' : 'offline'} ${
 									server.online ? '<:yes:659939181056753665>' : '<:no:659939343875702859>'
 							  }`
 					}`,
