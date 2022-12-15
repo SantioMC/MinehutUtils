@@ -63,11 +63,11 @@ export async function getNetworkStats(): Promise<NetworkStats | null> {
 	return { ...networkData, ...playerData } as NetworkStats;
 }
 
-export type ServerPlan = 'FREE' | 'DAILY' | 'MH20' | 'MH35' | 'MH75' | 'MHUnlimited';
+export type ServerPlan = 'FREE' | 'DAILY' | 'MH20' | 'MH35' | 'MH75' | 'MHUnlimited' | 'CUSTOM';
 
 export function getPlan(server: ServerData): ServerPlan {
 	const data = server.server_plan.split('_');
-	const plan = data.length == 2 ? data[1].toUpperCase() : 'FREE';
+	const plan = data.length == 2 ? data[1].toUpperCase() : data[0];
 
 	switch (plan) {
 		case 'FREE':
@@ -83,7 +83,9 @@ export function getPlan(server: ServerData): ServerPlan {
 		case '10GB':
 			return 'MHUnlimited';
 		default:
-			return 'FREE';
+			return (server.activeServerPlan.startsWith('Custom plan for')
+				? 'CUSTOM'
+				: (server.activeServerPlan as ServerPlan)) || 'FREE';
 	}
 }
 

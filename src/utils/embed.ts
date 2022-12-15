@@ -24,6 +24,7 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 	if (!startTime || isNaN(startTime) || new Date(startTime).getTime() == -1)
 		startTime = creationDate;
 
+	const serverPlan = getPlan(server);
 	return createEmbed(
 		(server.suspended ? `:warning: This server is currently suspended!\n` : '') + description
 	)
@@ -33,8 +34,12 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 			{
 				name: 'Server Status',
 				value: embedJoinList(
-					`Server is \`${server.online ? 'online' : 'offline'}\` ${
-						server.online ? '<:yes:659939181056753665>' : '<:no:659939343875702859>'
+					`Server is ${
+						server.suspended
+							? `\`suspended\` <:no:659939343875702859>`
+							: `${server.online ? 'online' : 'offline'} ${
+									server.online ? '<:yes:659939181056753665>' : '<:no:659939343875702859>'
+							  }`
 					}`,
 					`${server.online ? `Started` : `Last Online`} <t:${startTime}:R>`,
 					`Created <t:${creationDate}:R>`
@@ -44,7 +49,7 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 			{
 				name: 'Server Plan',
 				value: embedJoinList(
-					`The server is using the \`${getPlan(server)} plan\``,
+					`The server is using ${serverPlan === 'CUSTOM' ? 'a' : 'the'} \`${serverPlan}\` plan`,
 					`Price: ${Math.round(server.credits_per_day)} credits/day`,
 					`Icons Unlocked: ${server.purchased_icons.length}`
 				),
