@@ -8,11 +8,12 @@ export function createEmbed(description: string): EmbedBuilder {
 }
 
 export function toEmbed(server: ServerData): EmbedBuilder {
-	var startTime: number | null = Math.floor(server.last_online / 1000);
+	let startTime: number | null = Math.floor(server.last_online / 1000);
 	const creationDate = Math.floor(server.creation / 1000);
 
 	// Don't display the max players if it's a proxy server.
 	const maxPlayers = server.proxy ? undefined : server.maxPlayers || 10;
+	const status = server.suspended ? `Suspended` : server.online ? 'Online' : 'Offline';
 
 	const description = embedJoinList(
 		`\`\`\`${cleanMOTD(server.motd)}\`\`\``,
@@ -24,6 +25,7 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 	if (!startTime || isNaN(startTime) || new Date(startTime).getTime() == -1)
 		startTime = creationDate;
 
+	const serverPlan = getPlan(server);
 	return createEmbed(
 		(server.suspended ? `:warning: This server is currently suspended!\n` : '') + description
 	)
@@ -33,7 +35,7 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 			{
 				name: 'Server Status',
 				value: embedJoinList(
-					`Server is \`${server.online ? 'online' : 'offline'}\` ${
+					`Server is \`${status}\` ${
 						server.online ? '<:yes:659939181056753665>' : '<:no:659939343875702859>'
 					}`,
 					`${server.online ? `Started` : `Last Online`} <t:${startTime}:R>`,
@@ -44,7 +46,7 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 			{
 				name: 'Server Plan',
 				value: embedJoinList(
-					`The server is using the \`${getPlan(server)} plan\``,
+					`The server is using ${serverPlan === 'CUSTOM' ? 'a' : 'the'} \`${serverPlan} plan\``,
 					`Price: ${Math.round(server.credits_per_day)} credits/day`,
 					`Icons Unlocked: ${server.purchased_icons.length}`
 				),
