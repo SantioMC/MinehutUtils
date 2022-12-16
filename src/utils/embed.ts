@@ -13,6 +13,7 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 
 	// Don't display the max players if it's a proxy server.
 	const maxPlayers = server.proxy ? undefined : server.maxPlayers || 10;
+	const status = server.suspended ? `Suspended` : server.online ? 'Online' : 'Offline';
 
 	const description = embedJoinList(
 		`\`\`\`${cleanMOTD(server.motd)}\`\`\``,
@@ -34,12 +35,8 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 			{
 				name: 'Server Status',
 				value: embedJoinList(
-					`Server is ${
-						server.suspended
-							? `suspended <:no:659939343875702859>`
-							: `${server.online ? 'online' : 'offline'} ${
-									server.online ? '<:yes:659939181056753665>' : '<:no:659939343875702859>'
-							  }`
+					`Server is \`${status}\` ${
+						server.online ? '<:yes:659939181056753665>' : '<:no:659939343875702859>'
 					}`,
 					`${server.online ? `Started` : `Last Online`} <t:${startTime}:R>`,
 					`Created <t:${creationDate}:R>`
@@ -49,7 +46,7 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 			{
 				name: 'Server Plan',
 				value: embedJoinList(
-					`The server is using ${serverPlan === 'CUSTOM' ? 'a' : 'the'} \`${serverPlan}\` plan`,
+					`The server is using ${serverPlan === 'CUSTOM' ? 'a' : 'the'} \`${serverPlan} plan\``,
 					`Price: ${Math.round(server.credits_per_day)} credits/day`,
 					`Icons Unlocked: ${server.purchased_icons.length}`
 				),

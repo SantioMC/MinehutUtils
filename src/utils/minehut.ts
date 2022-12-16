@@ -2,7 +2,6 @@ import { timedFetch } from './fetch';
 import { compareSemanticVersions, getBedrockVersion } from './minecraft';
 
 const BASE_URL = `https://api.minehut.com`;
-const BANNER_URL = `https://image-service-prd.superleague.com/v1/images/server-banner-images/{BANNER}?size=482x62`;
 
 export function cleanMOTD(motd: string): string {
 	return motd
@@ -63,11 +62,11 @@ export async function getNetworkStats(): Promise<NetworkStats | null> {
 	return { ...networkData, ...playerData } as NetworkStats;
 }
 
-export type ServerPlan = 'FREE' | 'DAILY' | 'MH20' | 'MH35' | 'MH75' | 'MHUnlimited' | 'CUSTOM';
+export type ServerPlan = 'FREE' | 'CUSTOM' | 'DAILY' | 'MH20' | 'MH35' | 'MH75' | 'MHUnlimited';
 
 export function getPlan(server: ServerData): ServerPlan {
 	const data = server.server_plan.split('_');
-	const plan = data.length == 2 ? data[1].toUpperCase() : data[0];
+	const plan = data[0] == 'CUSTOM' ? 'CUSTOM' : data[data.length - 1].toUpperCase();
 
 	switch (plan) {
 		case 'FREE':
@@ -82,8 +81,10 @@ export function getPlan(server: ServerData): ServerPlan {
 			return 'MH75';
 		case '10GB':
 			return 'MHUnlimited';
-		default:
+		case 'CUSTOM':
 			return 'CUSTOM';
+		default:
+			return 'FREE';
 	}
 }
 
