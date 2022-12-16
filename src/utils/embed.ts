@@ -13,7 +13,7 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 
 	// Don't display the max players if it's a proxy server.
 	const maxPlayers = server.proxy ? undefined : server.maxPlayers || 10;
-	const status = server.suspended ? `Suspended` : server.online ? 'Online' : 'Offline';
+	const status = server.suspended ? `suspended` : server.online ? 'online' : 'offline';
 
 	const description = embedJoinList(
 		`\`\`\`${cleanMOTD(server.motd)}\`\`\``,
