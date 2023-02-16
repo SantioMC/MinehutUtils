@@ -5,10 +5,16 @@ const BASE_URL = `https://api.minehut.com`;
 
 export function cleanMOTD(motd: string): string {
 	return motd
-		.replace(/[&§][A-F0-9rklmno]/gi, ' ') // Clean off color codes
 		.replace(/```/g, '') // Clean off code blocks
 		.replace(/\n /g, '\n') // Fix newline spacing
-		.replace(/^\s+/g, ''); // Get rid of leading whitespace
+		.replace(/^\s+/g, '') // Get rid of leading whitespace
+		.replace(
+			/<\/?(black|dark_blue|dark_green|dark_aqua|dark_red|dark_purple|gold|gray|dark_gray|blue|green|aqua|red|light_purple|yellow|white)>/gi,
+			''
+		) // Remove all color tags
+		.replace(/<\/?(color:#[0-9A-F]{6})>/gi, '') // Remove all hex color tags
+		.replace(/<\/?(gradient:#[0-9A-F]{6}:#[0-9A-F]{6})>/gi, '') // Remove all gradient tags
+		.replace(/<\/?(bold|b|reset|color|transition|rainbow)>/gi, ''); // Remove all other tags // Remove all other tags
 }
 
 export function getBanner(server: ServerData) {
