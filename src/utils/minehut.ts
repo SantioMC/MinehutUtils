@@ -68,7 +68,7 @@ export async function getNetworkStats(): Promise<NetworkStats | null> {
 	return { ...networkData, ...playerData } as NetworkStats;
 }
 
-export type ServerPlan = 'FREE' | 'CUSTOM' | 'DAILY' | 'MH20' | 'MH35' | 'MH75' | 'MHUnlimited';
+export type ServerPlan = 'FREE' | 'CUSTOM' | 'DAILY' | 'MH20' | 'MH35' | 'MH75' | 'MHUnlimited' | 'EXTERNAL';
 
 export function getPlan(server: ServerData): ServerPlan {
 	const data = server.server_plan.split('_');
@@ -89,6 +89,8 @@ export function getPlan(server: ServerData): ServerPlan {
 			return 'MHUnlimited';
 		case 'CUSTOM':
 			return 'CUSTOM';
+		case 'EXTERNAL':
+			return 'EXTERNAL';
 		default:
 			return 'FREE';
 	}
