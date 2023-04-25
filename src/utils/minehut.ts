@@ -1,7 +1,23 @@
-import { timedFetch } from './fetch';
+import Axios from 'axios';
 import { compareSemanticVersions, getBedrockVersion } from './minecraft';
 
-const BASE_URL = `https://api.minehut.com`;
+const axios = Axios.create({
+	baseURL: `https://api.minehut.com`,
+	timeout: 5000,
+	headers: {
+		accept: 'application/json',
+		'User-Agent': 'MinehutUtils'
+	}
+});
+
+const minecraft = Axios.create({
+	baseURL: `https://mcapi.us`,
+	timeout: 5000,
+	headers: {
+		accept: 'application/json',
+		'User-Agent': 'MinehutUtils'
+	}
+});
 
 export function cleanMOTD(motd: string): string {
 	return motd
@@ -28,11 +44,12 @@ export function getBanner(server: ServerData) {
 
 // Used for the server command to autocomplete names
 export async function getServerNames(filter: String | null = null): Promise<string[]> {
-	const req = await timedFetch(`${BASE_URL}/servers`);
-	if (req == null) return [];
+	const data = await axios
+		.get('/servers')
+		.then((res) => res.data)
+		.catch(() => null);
 
-	const data = await req.json();
-	if (data == null) return [];
+	if (!data) return [];
 
 	var servers = (data.servers as ServerData[]).sort((a, b) => a.playerCount - b.maxPlayers);
 	if (filter != null)
@@ -42,33 +59,40 @@ export async function getServerNames(filter: String | null = null): Promise<stri
 }
 
 export async function getServerData(server: string): Promise<ServerData | null> {
-	var uri;
+	let data;
 
 	if (server.length == 24) {
 		// We were provided a server ID
-		uri = `${BASE_URL}/server/${server}`;
+		data = await axios
+			.get(`/server/${server}`)
+			.then((res) => res.data)
+			.catch(() => null);
 	} else {
 		// We were provided a server name
-		uri = `${BASE_URL}/server/${server}?byName=true`;
+		data = await axios
+			.get(`/server/${server}?byName=true`)
+			.then((res) => res.data)
+			.catch(() => null);
 	}
 
-	var data = await timedFetch(uri).then((res) => res?.json() || { ok: false });
-	if (data.ok == false) return null;
-
+	if (data == null) return null;
 	return data.server as ServerData;
 }
 
 export async function getNetworkStats(): Promise<NetworkStats | null> {
-	const networkData = await timedFetch(`${BASE_URL}/network/simple_stats`).then(
-		(res) => res?.json() || { ok: false }
-	);
-	if (networkData.ok == false) return null;
+	const networkData = await axios
+		.get('/network/simple_stats')
+		.then((res) => res.data)
+		.catch(() => null);
 
-	const playerData = await timedFetch(`${BASE_URL}/network/players/distribution`).then(
-		(res) => res?.json() || { ok: false }
-	);
-	if (playerData.ok == false) return null;
+	if (!networkData) return null;
 
+	const playerData = await axios
+		.get('/network/players/distribution')
+		.then((res) => res.data)
+		.catch(() => null);
+
+	if (!playerData) return null;
 	return { ...networkData, ...playerData } as NetworkStats;
 }
 
@@ -133,22 +157,32 @@ export async function getMinehutStatus(): Promise<MinehutStatus> {
 	});
 
 	// Check to see if proxy is pingable
-	const proxy = await timedFetch(`https://mcapi.us/server/status?ip=minehut.com`).then(
-		(res) => res?.json() || { ok: false }
-	);
-	if (proxy.ok == false || !proxy.online) data.minecraft_proxy = 'Offline';
+	const proxy = await minecraft
+		.get(`/server/status?ip=minehut.com`)
+		.then((res) => res.data)
+		.catch(() => null);
+
+	if (!proxy || !proxy.online) data.minecraft_proxy = 'Offline';
 
 	// Check to see if bedrock proxy is pingable
-	const bedrock = await timedFetch(`https://api.mcsrvstat.us/bedrock/2/bedrock.minehut.com`).then(
-		(res) => res?.json() || { ok: false }
-	);
-	if (bedrock.ok == false || !bedrock.online) data.minecraft_bedrock = 'Offline';
+	const bedrock = await minecraft
+		.get(`/bedrock/2/bedrock.minehut.com`)
+		.then((res) => res.data)
+		.catch(() => null);
+
+	if (!bedrock || !bedrock.online) {
+		data.minecraft_bedrock = 'Offline';
+		return data;
+	}
 
 	// Compare bedrock proxy to latest bedrock version
 	const latestVersion = await getBedrockVersion();
 	if (latestVersion == null) return data;
 
-	if (!bedrock.version) {
+	if (!bedrock.debug.ping) {
+		data.bedrock_version = 'Unknown';
+		data.minecraft_bedrock = 'Offline';
+	} else if (!bedrock.version) {
 		data.bedrock_version = 'Unknown';
 		data.minecraft_bedrock = 'Working';
 	} else if (compareSemanticVersions(bedrock.version, latestVersion) == -1) {

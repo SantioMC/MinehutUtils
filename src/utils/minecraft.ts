@@ -1,4 +1,4 @@
-import { timedFetch } from './fetch';
+import axios from 'axios';
 
 const MINECRAFT_BEDROCK_VERSION_LIST = 'https://wiki.vg/Bedrock_Protocol_version_numbers';
 const VERSION_REGEX =
@@ -6,10 +6,13 @@ const VERSION_REGEX =
 
 // If anyone knows a better way for fetching the latest bedrock version, please let me know.
 export async function getBedrockVersion(): Promise<string | null> {
-	const req = await timedFetch(MINECRAFT_BEDROCK_VERSION_LIST);
-	if (req == null) return null;
+	const page = await axios
+		.get(MINECRAFT_BEDROCK_VERSION_LIST, {
+			responseType: 'document'
+		})
+		.then((res) => res.data)
+		.catch(() => null);
 
-	const page = await req.text();
 	if (page == null) return null;
 
 	const search = page.match(VERSION_REGEX);
