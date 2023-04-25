@@ -18,7 +18,7 @@ export function cleanMOTD(motd: string): string {
 		.replace(
 			/<\/?(bold|b|italic|em|i|underlined|u|strikethrough|st|obfuscated|obf|reset|color|transition|rainbow|newline)>/gi,
 			''
-		); // Remove all other tags // Remove all other tags
+		); // Remove all other tags
 }
 
 export function getBanner(server: ServerData) {
