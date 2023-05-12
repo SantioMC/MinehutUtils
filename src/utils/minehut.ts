@@ -11,7 +11,7 @@ const axios = Axios.create({
 });
 
 const minecraft = Axios.create({
-	baseURL: `https://mcapi.us`,
+	baseURL: `https://api.mcsrvstat.us`,
 	timeout: 5000,
 	headers: {
 		accept: 'application/json',
@@ -158,7 +158,7 @@ export async function getMinehutStatus(): Promise<MinehutStatus> {
 
 	// Check to see if proxy is pingable
 	const proxy = await minecraft
-		.get(`/server/status?ip=minehut.com`)
+		.get(`/2/minehut.com`)
 		.then((res) => res.data)
 		.catch(() => null);
 
@@ -179,7 +179,7 @@ export async function getMinehutStatus(): Promise<MinehutStatus> {
 	const latestVersion = await getBedrockVersion();
 	if (latestVersion == null) return data;
 
-	if (!bedrock.debug.ping) {
+	if (!bedrock.debug.query) {
 		data.bedrock_version = 'Unknown';
 		data.minecraft_bedrock = 'Offline';
 	} else if (!bedrock.version) {
