@@ -64,3 +64,7 @@ export function formatNumber(number: number): string {
 export function hideDiscord(body: string, replacement: string): string {
 	return body.replace(DISCORD_REGEX, replacement);
 }
+
+export function clean(text: string): string {
+	return text.replace(/`/g, '‛');
+}

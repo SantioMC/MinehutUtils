@@ -9,7 +9,7 @@ import {
 } from 'discord.js';
 import { Discord, SelectMenuComponent, Slash, SlashOption } from 'discordx';
 import { client } from '..';
-import { createEmbed } from '../utils/embed';
+import { clean, createEmbed } from '../utils/embed';
 import { Plugin, searchPlugins } from '../utils/spigot';
 
 @Discord()
@@ -54,7 +54,7 @@ export class PluginCommand {
 
 			if (data.length == 0) {
 				return interaction.followUp({
-					embeds: [createEmbed(`<:no:659939343875702859> No plugins found for \`${query}\``)]
+					embeds: [createEmbed(`<:no:659939343875702859> No plugins found for \`${clean(query)}\``)]
 				});
 			}
 

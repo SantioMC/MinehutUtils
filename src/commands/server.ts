@@ -4,7 +4,7 @@ import {
 	CommandInteraction
 } from 'discord.js';
 import { Discord, Slash, SlashOption } from 'discordx';
-import { createEmbed, toEmbed } from '../utils/embed';
+import { clean, createEmbed, toEmbed } from '../utils/embed';
 import { getServerData, getServerNames, ServerData } from '../utils/minehut';
 
 // Decorators cannot access `this`
@@ -51,7 +51,9 @@ export class ServerCommand {
 			if (data == null) {
 				return interaction.followUp({
 					embeds: [
-						createEmbed(`<:no:659939343875702859> The server \`${server}\` could not be found.`)
+						createEmbed(
+							`<:no:659939343875702859> The server \`${clean(server)}\` could not be found.`
+						)
 					]
 				});
 			}
