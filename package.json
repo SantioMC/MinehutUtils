@@ -14,6 +14,7 @@
 	"author": "Santio71",
 	"license": "ISC",
 	"devDependencies": {
+		"@types/ms": "^0.7.31",
 		"prettier": "^2.7.1"
 	},
 	"dependencies": {

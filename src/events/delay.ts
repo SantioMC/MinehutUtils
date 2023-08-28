@@ -17,7 +17,7 @@ class DelayListener {
 		const channelData = await prisma.channels.findFirst({
 			where: { channel: message.channelId }
 		});
-		if (!channelData) return;
+		if (!channelData || channelData.delay == 0) return;
 
 		// Get the user's data
 		const channelDelay = BigInt(channelData.delay);
