@@ -1,0 +1,25 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+model channels {
+    id      Int    @id @default(autoincrement())
+    guild   String
+    channel String @unique
+    delay   Int
+}
+
+model users {
+    id      Int    @id @default(autoincrement())
+    channel String
+    user    String
+    time    BigInt
+}

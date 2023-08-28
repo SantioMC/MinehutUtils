@@ -12,3 +12,6 @@ pnpm-lock.yaml
 
 #IntelliJ
 .idea/
+
+# Databases
+*.db

@@ -3,15 +3,17 @@ import 'reflect-metadata';
 import { importx } from '@discordx/importer';
 import { Client } from 'discordx';
 import NodeCache from 'node-cache';
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, IntentsBitField } from 'discord.js';
 import { createEmbed } from './utils/embed';
+import { PrismaClient } from '@prisma/client';
 
 require('dotenv').config();
 
 const commandCache = new NodeCache({ stdTTL: 2.5 });
+export const prisma = new PrismaClient();
 
 export const client = new Client({
-	intents: [],
+	intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages],
 	silent: false
 });
 
@@ -40,6 +42,8 @@ client.on('interactionCreate', (interaction) => {
 
 async function start() {
 	await importx(__dirname + '/commands/*.{js,ts}');
+	await importx(__dirname + '/events/*.{js,ts}');
+
 	await client.login(process.env.TOKEN!!);
 }
 
