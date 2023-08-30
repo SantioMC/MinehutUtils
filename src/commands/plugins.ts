@@ -72,7 +72,7 @@ export class PluginCommand {
 				};
 			});
 
-			const menu: SelectMenuBuilder = new StringSelectMenuBuilder()
+			const menu: StringSelectMenuBuilder = new StringSelectMenuBuilder()
 				.addOptions(pluginOptions)
 				.setMaxValues(1)
 				.setMinValues(1)
