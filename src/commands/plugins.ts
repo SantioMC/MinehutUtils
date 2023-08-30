@@ -5,7 +5,8 @@ import {
 	SelectMenuBuilder,
 	TextChannel,
 	ApplicationCommandOptionType,
-	AutocompleteInteraction
+	AutocompleteInteraction,
+	StringSelectMenuBuilder
 } from 'discord.js';
 import { Discord, SelectMenuComponent, Slash, SlashOption } from 'discordx';
 import { client } from '..';
@@ -71,7 +72,7 @@ export class PluginCommand {
 				};
 			});
 
-			const menu: SelectMenuBuilder = new SelectMenuBuilder()
+			const menu: SelectMenuBuilder = new StringSelectMenuBuilder()
 				.addOptions(pluginOptions)
 				.setMaxValues(1)
 				.setMinValues(1)
