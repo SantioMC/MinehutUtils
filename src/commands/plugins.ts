@@ -1,12 +1,11 @@
 import {
 	CommandInteraction,
-	SelectMenuInteraction,
 	ActionRowBuilder,
-	SelectMenuBuilder,
 	TextChannel,
 	ApplicationCommandOptionType,
 	AutocompleteInteraction,
-	StringSelectMenuBuilder
+	StringSelectMenuBuilder,
+	StringSelectMenuInteraction
 } from 'discord.js';
 import { Discord, SelectMenuComponent, Slash, SlashOption } from 'discordx';
 import { client } from '..';
@@ -90,7 +89,7 @@ export class PluginCommand {
 	}
 
 	@SelectMenuComponent({ id: 'plugins-menu' })
-	async handle(interaction: SelectMenuInteraction) {
+	async handle(interaction: StringSelectMenuInteraction) {
 		await interaction.deferReply();
 
 		// Remove select menu from previous interaction
