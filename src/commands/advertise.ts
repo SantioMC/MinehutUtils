@@ -11,6 +11,7 @@ import {
 import { Discord, ModalComponent, Slash } from 'discordx';
 import { clean, createEmbed, embedJoinList } from '../utils/embed';
 import { getServerData } from '../utils/minehut';
+import * as modbot from '../services/modbot';
 const config = require('../../config.json');
 
 @Discord()
@@ -55,13 +56,40 @@ export class AdvertiseCommand {
 				]
 			});
 
+		// Verify description length
+		const lines = description.split('\n').length;
+		if (lines > 25)
+			return interaction.reply({
+				ephemeral: true,
+				embeds: [
+					createEmbed(
+						`<:no:659939343875702859> Description is too long, please keep it to 25 lines or under.`
+					).setColor('#ff0000')
+				]
+			});
+
+		// Run description through modbot
+		const filtered = await modbot.isFiltered(interaction.guild, description);
+		if (filtered) {
+			return interaction.reply({
+				ephemeral: true,
+				embeds: [
+					createEmbed(
+						`<:no:659939343875702859> Description contains blocked words. Please try again.`
+					).setColor('#ff0000')
+				]
+			});
+		}
+
 		const body = embedJoinList(
 			`<:minehut:583099471320055819> **${data.name}**`,
 			``,
 			description,
 			``,
-			`👤 **${data.playerCount}** players currently online`,
-			`Play at \`${data.name_lower}.minehut.gg\``
+			`Play at \`${data.name_lower}.minehut.gg\``,
+			`<:bedrock:1101261334684901456> Bedrock: \`${data.name_lower}.bedrock.minehut.gg\``,
+			``,
+			`*Server advertised by <@${interaction.user.id}>*`
 		);
 
 		const serverChannelId = config.channels.servers;
@@ -81,15 +109,11 @@ export class AdvertiseCommand {
 			embeds: [createEmbed(body)]
 		});
 
-		interaction.reply({
+		await interaction.reply({
 			ephemeral: true,
 			embeds: [
 				createEmbed(
-					`<:yes:659939181056753665> You advertised \`${clean(
-						serverName
-					)}\`! Check it out :point_right: https://discord.com/channels/${
-						interaction.guildId
-					}/${serverChannelId}/${message.id}`
+					`<:yes:659939344192868109> Successfully posted your server advertisement! Check it out :point_right: ${message.url}`
 				)
 			]
 		});
