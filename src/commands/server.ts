@@ -6,6 +6,7 @@ import {
 import { Discord, Slash, SlashOption } from 'discordx';
 import { clean, createEmbed, toEmbed } from '../utils/embed';
 import { getServerData, getServerNames, ServerData } from '../utils/minehut';
+import { config } from '..';
 
 // Decorators cannot access `this`
 let serverCache: {
@@ -51,9 +52,7 @@ export class ServerCommand {
 			if (data == null) {
 				return interaction.followUp({
 					embeds: [
-						createEmbed(
-							`<:no:659939343875702859> The server \`${clean(server)}\` could not be found.`
-						)
+						createEmbed(`${config.emotes.fail} The server \`${clean(server)}\` could not be found.`)
 					]
 				});
 			}

@@ -2,6 +2,7 @@ import { CommandInteraction } from 'discord.js';
 import { Discord, Slash } from 'discordx';
 import { createEmbed, formatNumber, embedJoinList } from '../utils/embed';
 import { getNetworkStats, NetworkStats } from '../utils/minehut';
+import { config } from '..';
 
 @Discord()
 export class StatsCommand {
@@ -12,7 +13,7 @@ export class StatsCommand {
 		getNetworkStats().then((data: NetworkStats | null) => {
 			if (data == null) {
 				return interaction.followUp({
-					embeds: [createEmbed("<:no:659939343875702859> I wasn't able to fetch network stats!")]
+					embeds: [createEmbed(`${config.emotes.fail} I wasn't able to fetch network stats!`)]
 				});
 			}
 

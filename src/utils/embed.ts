@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { cleanMOTD, getBanner, getPlan, ServerData } from './minehut';
+import { config } from '..';
 
 const DISCORD_REGEX = /(https?:\/\/)?discord\.gg\/([\d\w]+)/gi;
 
@@ -35,9 +36,7 @@ export function toEmbed(server: ServerData): EmbedBuilder {
 			{
 				name: 'Server Status',
 				value: embedJoinList(
-					`Server is \`${status}\` ${
-						server.online ? '<:yes:659939181056753665>' : '<:no:659939343875702859>'
-					}`,
+					`Server is \`${status}\` ${server.online ? config.emotes.success : config.emotes.fail}`,
 					`${server.online ? `Started` : `Last Online`} <t:${startTime}:R>`,
 					`Created <t:${creationDate}:R>`
 				),

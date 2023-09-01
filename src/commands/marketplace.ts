@@ -97,7 +97,7 @@ export class MarketplaceCommand {
 				content: '',
 				embeds: [
 					createEmbed(
-						`<:no:659939343875702859> You have already posted a listing in the last ${textDuration}.`
+						`${config.emotes.fail} You have already posted a listing in the last ${textDuration}.`
 					)
 				],
 				components: []
@@ -118,7 +118,7 @@ export class MarketplaceCommand {
 					content: '',
 					embeds: [
 						createEmbed(
-							`<:no:659939343875702859> You have already posted a listing for a \`${interaction.values[0]}\` in the last ${textDuration}.`
+							`${config.emotes.fail} You have already posted a listing for a \`${interaction.values[0]}\` in the last ${textDuration}.`
 						)
 					],
 					components: []
@@ -193,7 +193,7 @@ const send = async (
 			ephemeral: true,
 			embeds: [
 				createEmbed(
-					`<:no:659939343875702859> Description is too long, please keep it to 25 lines or under.`
+					`${config.emotes.fail} Description is too long, please keep it to 25 lines or under.`
 				).setColor('#ff0000')
 			]
 		});
@@ -205,7 +205,7 @@ const send = async (
 			ephemeral: true,
 			embeds: [
 				createEmbed(
-					`<:no:659939343875702859> Description contains blocked words. Please try again.`
+					`${config.emotes.fail} Description contains blocked words. Please try again.`
 				).setColor('#ff0000')
 			]
 		});
@@ -227,7 +227,7 @@ const send = async (
 			ephemeral: true,
 			embeds: [
 				createEmbed(
-					`<:no:659939343875702859> Marketplace channel is not a text channel. Please contact a moderator.`
+					`${config.emotes.fail} Marketplace channel is not a text channel. Please contact a moderator.`
 				)
 			]
 		});
@@ -252,7 +252,7 @@ const send = async (
 		content: '',
 		embeds: [
 			createEmbed(
-				`<:yes:659939344192868109> Successfully posted your listing! Check it out :point_right: ${message.url}`
+				`${config.emotes.success} Successfully posted your listing! Check it out :point_right: ${message.url}`
 			)
 		],
 		components: []

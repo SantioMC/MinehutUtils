@@ -17,5 +17,9 @@
 			"cooldown": "24h",
 			"seperateCooldown": true
 		}
+	},
+	"emotes": {
+		"success": "<:yes:659939344192868109>",
+		"fail": "<:no:659939343875702859>"
 	}
 }

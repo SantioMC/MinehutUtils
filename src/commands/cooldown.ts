@@ -68,7 +68,7 @@ export class CooldownCommand {
 				return interaction.reply({
 					ephemeral: true,
 					embeds: [
-						createEmbed(`<:no:659939343875702859> The server \`${server}\` could not be found.`)
+						createEmbed(`${config.emotes.fail} The server \`${server}\` could not be found.`)
 					]
 				});
 
@@ -82,7 +82,7 @@ export class CooldownCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`<:no:659939343875702859> You must specify either a user and/or a server to reset the cooldown of`
+						`${config.emotes.fail} You must specify either a user and/or a server to reset the cooldown of`
 					)
 				]
 			});
@@ -91,7 +91,7 @@ export class CooldownCommand {
 		interaction.reply({
 			embeds: [
 				createEmbed(
-					`<:yes:659939344192868109> Reset the server ad cooldown for ${reset.join(' and ')}`
+					`${config.emotes.success} Reset the server ad cooldown for ${reset.join(' and ')}`
 				)
 			]
 		});
@@ -119,7 +119,7 @@ export class CooldownCommand {
 
 		interaction.reply({
 			embeds: [
-				createEmbed(`<:yes:659939344192868109> Reset the marketplace cooldown for <@${user.id}>`)
+				createEmbed(`${config.emotes.success} Reset the marketplace cooldown for <@${user.id}>`)
 			]
 		});
 	}
@@ -164,7 +164,7 @@ export class CooldownCommand {
 		if (!time)
 			return interaction.reply({
 				ephemeral: true,
-				embeds: [createEmbed(`<:no:659939343875702859> Invalid duration \`${duration}\``)]
+				embeds: [createEmbed(`${config.emotes.fail} Invalid duration \`${duration}\``)]
 			});
 
 		const key = cooldown.generateKey(interaction.guild, 'marketplace', user.id);
@@ -173,7 +173,7 @@ export class CooldownCommand {
 		interaction.reply({
 			embeds: [
 				createEmbed(
-					`<:yes:659939344192868109> Set the marketplace cooldown for <@${user.id}> to ${ms(time, {
+					`${config.emotes.success} Set the marketplace cooldown for <@${user.id}> to ${ms(time, {
 						long: true
 					})}`
 				)
@@ -221,16 +221,14 @@ export class CooldownCommand {
 		if (!time)
 			return interaction.reply({
 				ephemeral: true,
-				embeds: [createEmbed(`<:no:659939343875702859> Invalid duration \`${duration}\``)]
+				embeds: [createEmbed(`${config.emotes.fail} Invalid duration \`${duration}\``)]
 			});
 
 		const serverData = await getServerData(server);
 		if (!serverData)
 			return interaction.reply({
 				ephemeral: true,
-				embeds: [
-					createEmbed(`<:no:659939343875702859> The server \`${server}\` could not be found.`)
-				]
+				embeds: [createEmbed(`${config.emotes.fail} The server \`${server}\` could not be found.`)]
 			});
 
 		const key = cooldown.generateKey(interaction.guild, 'advertise', 'server', serverData._id);
@@ -239,7 +237,7 @@ export class CooldownCommand {
 		interaction.reply({
 			embeds: [
 				createEmbed(
-					`<:yes:659939344192868109> Set the advertisement cooldown for \`${
+					`${config.emotes.success} Set the advertisement cooldown for \`${
 						serverData.name
 					}\` to ${ms(time, {
 						long: true
@@ -289,7 +287,7 @@ export class CooldownCommand {
 		if (!time)
 			return interaction.reply({
 				ephemeral: true,
-				embeds: [createEmbed(`<:no:659939343875702859> Invalid duration \`${duration}\``)]
+				embeds: [createEmbed(`${config.emotes.fail} Invalid duration \`${duration}\``)]
 			});
 
 		const key = cooldown.generateKey(interaction.guild, 'advertise', 'user', user.id);
@@ -298,12 +296,9 @@ export class CooldownCommand {
 		interaction.reply({
 			embeds: [
 				createEmbed(
-					`<:yes:659939344192868109> Set the advertisement cooldown for <@${user.id}> to ${ms(
-						time,
-						{
-							long: true
-						}
-					)}`
+					`${config.emotes.success} Set the advertisement cooldown for <@${user.id}> to ${ms(time, {
+						long: true
+					})}`
 				)
 			]
 		});

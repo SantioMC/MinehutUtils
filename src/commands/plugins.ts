@@ -8,7 +8,7 @@ import {
 	StringSelectMenuInteraction
 } from 'discord.js';
 import { Discord, SelectMenuComponent, Slash, SlashOption } from 'discordx';
-import { client } from '..';
+import { client, config } from '..';
 import { clean, createEmbed } from '../utils/embed';
 import { Plugin, searchPlugins } from '../utils/spigot';
 
@@ -46,15 +46,13 @@ export class PluginCommand {
 		searchPlugins(query).then(async (data: Plugin[] | null) => {
 			if (data == null) {
 				return interaction.followUp({
-					embeds: [
-						createEmbed(`<:no:659939343875702859> Failed to query plugins. Please try again.`)
-					]
+					embeds: [createEmbed(`${config.emotes.fail} Failed to query plugins. Please try again.`)]
 				});
 			}
 
 			if (data.length == 0) {
 				return interaction.followUp({
-					embeds: [createEmbed(`<:no:659939343875702859> No plugins found for \`${clean(query)}\``)]
+					embeds: [createEmbed(`${config.emotes.fail} No plugins found for \`${clean(query)}\``)]
 				});
 			}
 
@@ -105,7 +103,7 @@ export class PluginCommand {
 		searchPlugins(title).then((data: Plugin[] | null) => {
 			if (data == null || data.length == 0) {
 				return interaction.followUp({
-					embeds: [createEmbed(`<:no:659939343875702859> Failed to fetch plugin data`)]
+					embeds: [createEmbed(`${config.emotes.fail} Failed to fetch plugin data`)]
 				});
 			}
 

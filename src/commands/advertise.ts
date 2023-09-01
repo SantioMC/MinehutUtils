@@ -58,7 +58,7 @@ export class AdvertiseCommand {
 			return interaction.reply({
 				ephemeral: true,
 				embeds: [
-					createEmbed(`<:no:659939343875702859> Server \`${clean(serverName)}\` could not be found`)
+					createEmbed(`${config.emotes.fail} Server \`${clean(serverName)}\` could not be found`)
 				]
 			});
 		const serverKey = cooldown.generateKey(interaction.guild, `advertise`, `server`, data._id);
@@ -70,7 +70,7 @@ export class AdvertiseCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`<:no:659939343875702859> Description is too long, please keep it to 25 lines or under.`
+						`${config.emotes.fail} Description is too long, please keep it to 25 lines or under.`
 					).setColor('#ff0000')
 				]
 			});
@@ -82,7 +82,7 @@ export class AdvertiseCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`<:no:659939343875702859> Description contains blocked words. Please try again.`
+						`${config.emotes.fail} Description contains blocked words. Please try again.`
 					).setColor('#ff0000')
 				]
 			});
@@ -107,7 +107,7 @@ export class AdvertiseCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`<:no:659939343875702859> You have already advertised a server in the last ${textDuration}.`
+						`${config.emotes.fail} You have already advertised a server in the last ${textDuration}.`
 					)
 				]
 			});
@@ -118,7 +118,7 @@ export class AdvertiseCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`<:no:659939343875702859> The server \`${data.name}\` has already been advertised in the last ${textDuration}.`
+						`${config.emotes.fail} The server \`${data.name}\` has already been advertised in the last ${textDuration}.`
 					)
 				]
 			});
@@ -142,7 +142,7 @@ export class AdvertiseCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`<:no:659939343875702859> Server channel is not a text channel. Please contact a moderator.`
+						`${config.emotes.fail} Server channel is not a text channel. Please contact a moderator.`
 					)
 				]
 			});
@@ -172,7 +172,7 @@ export class AdvertiseCommand {
 			embeds: [
 				createEmbed(
 					embedJoinList(
-						`<:yes:659939344192868109> Successfully posted your server advertisement!`,
+						` Successfully posted your server advertisement!`,
 						`Check it out :point_right: ${message.url}`
 					)
 				)
