@@ -8,6 +8,7 @@ import { createEmbed } from './utils/embed';
 import { PrismaClient } from '@prisma/client';
 import configFile from '../config.json';
 import * as cooldown from './services/cooldown';
+import ms from 'ms';
 
 require('dotenv').config();
 
@@ -29,7 +30,7 @@ client.on('ready', async () => {
 	// Start an hourly cleanup job
 	setInterval(() => {
 		cooldown.cleanup();
-	}, 1000 * 60 * 60);
+	}, ms('1 hour'));
 });
 
 client.on('interactionCreate', (interaction) => {

@@ -5,6 +5,7 @@ import { createEmbed, embedJoinList } from '../utils/embed';
 import { config } from '..';
 import { getGuildConfig } from '../utils/config';
 import ms from 'ms';
+import { getServerData } from '../utils/minehut';
 
 @Discord()
 @SlashGroup({
@@ -52,7 +53,16 @@ export class CooldownCommand {
 		}
 
 		if (server) {
-			const key = cooldown.generateKey(interaction.guild, 'advertise', 'server', server);
+			const serverData = await getServerData(server);
+			if (!serverData)
+				return interaction.reply({
+					ephemeral: true,
+					embeds: [
+						createEmbed(`<:no:659939343875702859> The server \`${server}\` could not be found.`)
+					]
+				});
+
+			const key = cooldown.generateKey(interaction.guild, 'advertise', 'server', serverData._id);
 			await cooldown.clearCooldown(key);
 			reset.push(`the server \`${server}\``);
 		}

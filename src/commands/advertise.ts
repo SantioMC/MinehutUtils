@@ -17,6 +17,9 @@ import * as cooldown from '../services/cooldown';
 import { config } from '..';
 import { getGuildConfig } from '../utils/config';
 
+// We'll keep a cache of advertisements within the last hour, if any server reaches an x amount, we'll block it for the same cooldown as the user
+const advertisements: Map<string, number> = new Map();
+
 @Discord()
 export class AdvertiseCommand {
 	@Slash({ name: 'advertise', description: 'Advertise a server on discord' })
@@ -58,6 +61,7 @@ export class AdvertiseCommand {
 					createEmbed(`<:no:659939343875702859> Server \`${clean(serverName)}\` could not be found`)
 				]
 			});
+		const serverKey = cooldown.generateKey(interaction.guild, `advertise`, `server`, data._id);
 
 		// Verify description length
 		const lines = description.split('\n').length;
@@ -108,6 +112,17 @@ export class AdvertiseCommand {
 				]
 			});
 
+		const serverCooldown = await cooldown.isOnCooldown(serverKey);
+		if (serverCooldown)
+			return interaction.reply({
+				ephemeral: true,
+				embeds: [
+					createEmbed(
+						`<:no:659939343875702859> The server \`${data.name}\` has already been advertised in the last ${textDuration}.`
+					)
+				]
+			});
+
 		const body = embedJoinList(
 			`<:minehut:583099471320055819> **${data.name}**`,
 			``,
@@ -133,6 +148,20 @@ export class AdvertiseCommand {
 			});
 
 		await cooldown.setPersistentCooldown(userKey, duration);
+		advertisements.set(data._id, (advertisements.get(data._id) ?? 0) + 1);
+
+		if (advertisements.get(data._id) == config.settings.servers.limit) {
+			await cooldown.setPersistentCooldown(serverKey, ms('24 hours'));
+			advertisements.delete(data._id);
+		}
+
+		setTimeout(() => {
+			const current = advertisements.get(data._id) ?? 0;
+			if (current == 0) return;
+
+			if (current == 1) advertisements.delete(data._id);
+			else advertisements.set(data._id, (advertisements.get(data._id) ?? 0) - 1);
+		}, ms('1 hour'));
 
 		const message = await (channel as TextChannel).send({
 			embeds: [createEmbed(body)]
