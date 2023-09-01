@@ -7,6 +7,7 @@ import { CommandInteraction, IntentsBitField } from 'discord.js';
 import { createEmbed } from './utils/embed';
 import { PrismaClient } from '@prisma/client';
 import configFile from '../config.json';
+import * as cooldown from './services/cooldown';
 
 require('dotenv').config();
 
@@ -24,6 +25,11 @@ client.on('ready', async () => {
 	// await client.initApplicationCommands();
 
 	console.log('> Bot online, logged in as: ' + client.user!!.tag);
+
+	// Start an hourly cleanup job
+	setInterval(() => {
+		cooldown.cleanup();
+	}, 1000 * 60 * 60);
 });
 
 client.on('interactionCreate', (interaction) => {

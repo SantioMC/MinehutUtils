@@ -49,3 +49,14 @@ export const isOnCooldown = async (key: string): Promise<boolean> => {
 	const cooldown = await getCooldown(key);
 	return cooldown != null;
 };
+
+export const cleanup = async () => {
+	// Delete any cooldowns that are older than 7 days, we shouldn't ever need them
+	await prisma.cooldowns.deleteMany({
+		where: {
+			started: {
+				lte: Date.now() - 7 * 24 * 60 * 60 * 1000
+			}
+		}
+	});
+};
