@@ -6,11 +6,13 @@ import NodeCache from 'node-cache';
 import { CommandInteraction, IntentsBitField } from 'discord.js';
 import { createEmbed } from './utils/embed';
 import { PrismaClient } from '@prisma/client';
+import configFile from '../config.json';
 
 require('dotenv').config();
 
 const commandCache = new NodeCache({ stdTTL: 2.5 });
 export const prisma = new PrismaClient();
+export const config = configFile;
 
 export const client = new Client({
 	intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages],
@@ -18,8 +20,8 @@ export const client = new Client({
 });
 
 client.on('ready', async () => {
-	await client.clearApplicationCommands();
-	await client.initApplicationCommands();
+	// await client.clearApplicationCommands();
+	// await client.initApplicationCommands();
 
 	console.log('> Bot online, logged in as: ' + client.user!!.tag);
 });

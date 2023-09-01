@@ -11,8 +11,11 @@ import {
 import { Discord, ModalComponent, Slash } from 'discordx';
 import { clean, createEmbed, embedJoinList } from '../utils/embed';
 import { getServerData } from '../utils/minehut';
+import ms from 'ms';
 import * as modbot from '../services/modbot';
-const config = require('../../config.json');
+import * as cooldown from '../services/cooldown';
+import { config } from '..';
+import { getGuildConfig } from '../utils/config';
 
 @Discord()
 export class AdvertiseCommand {
@@ -81,6 +84,30 @@ export class AdvertiseCommand {
 			});
 		}
 
+		// Check if we're on cooldown
+		const userKey = cooldown.generateKey(
+			interaction.guild,
+			`advertise`,
+			`user`,
+			interaction.user.id
+		);
+
+		const duration = ms(config.settings.servers.cooldown);
+
+		let textDuration = duration < 1000 ? `1 second` : ms(duration, { long: true });
+		if (textDuration == '1 day') textDuration = '24 hours';
+
+		const userCooldown = await cooldown.isOnCooldown(userKey);
+		if (userCooldown)
+			return interaction.reply({
+				ephemeral: true,
+				embeds: [
+					createEmbed(
+						`<:no:659939343875702859> You have already advertised a server in the last ${textDuration}.`
+					)
+				]
+			});
+
 		const body = embedJoinList(
 			`<:minehut:583099471320055819> **${data.name}**`,
 			``,
@@ -92,7 +119,7 @@ export class AdvertiseCommand {
 			`*Server advertised by <@${interaction.user.id}>*`
 		);
 
-		const serverChannelId = config.channels.servers;
+		const serverChannelId = getGuildConfig(interaction.guildId).channels.servers;
 		const channel = (await interaction.guild.channels.fetch(serverChannelId)) as Channel;
 
 		if (!channel.isTextBased)
@@ -105,6 +132,8 @@ export class AdvertiseCommand {
 				]
 			});
 
+		await cooldown.setPersistentCooldown(userKey, duration);
+
 		const message = await (channel as TextChannel).send({
 			embeds: [createEmbed(body)]
 		});
@@ -113,7 +142,10 @@ export class AdvertiseCommand {
 			ephemeral: true,
 			embeds: [
 				createEmbed(
-					`<:yes:659939344192868109> Successfully posted your server advertisement! Check it out :point_right: ${message.url}`
+					embedJoinList(
+						`<:yes:659939344192868109> Successfully posted your server advertisement!`,
+						`Check it out :point_right: ${message.url}`
+					)
 				)
 			]
 		});

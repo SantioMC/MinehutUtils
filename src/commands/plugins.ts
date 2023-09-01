@@ -78,12 +78,9 @@ export class PluginCommand {
 				.setPlaceholder('Select an plugin')
 				.setCustomId('plugins-menu');
 
-			const buttonRow: ActionRowBuilder = new ActionRowBuilder().addComponents(menu);
-
 			await interaction.followUp({
 				content: 'Please select which plugin to view',
-				// @ts-ignore
-				components: [buttonRow]
+				components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu)]
 			});
 		});
 	}

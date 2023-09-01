@@ -1,6 +1,20 @@
 {
-	"channels": {
-		"servers": "765563613196845066",
-		"marketplace": "765563613196845066"
+	"guilds": [
+		{
+			"guild": "765558158390984705",
+			"channels": {
+				"servers": "765563613196845066",
+				"marketplace": "765563613196845066"
+			}
+		}
+	],
+	"settings": {
+		"servers": {
+			"cooldown": "24h",
+			"limit": 3
+		},
+		"marketplace": {
+			"cooldown": "24h"
+		}
 	}
 }

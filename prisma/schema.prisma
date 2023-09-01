@@ -10,16 +10,9 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model channels {
+model cooldowns {
     id      Int    @id @default(autoincrement())
-    guild   String
-    channel String @unique
+    key     String @unique
     delay   Int
-}
-
-model users {
-    id      Int    @id @default(autoincrement())
-    channel String
-    user    String
-    time    BigInt
+    started BigInt
 }

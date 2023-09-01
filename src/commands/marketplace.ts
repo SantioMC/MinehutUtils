@@ -8,12 +8,16 @@ import {
 	Channel,
 	TextChannel,
 	StringSelectMenuBuilder,
-	StringSelectMenuInteraction
+	StringSelectMenuInteraction,
+	StringSelectMenuComponent
 } from 'discord.js';
 import { Discord, SelectMenuComponent, ModalComponent, Slash } from 'discordx';
 import { createEmbed, embedJoinList } from '../utils/embed';
 import * as modbot from '../services/modbot';
-const config = require('../../config.json');
+import * as cooldown from '../services/cooldown';
+import ms from 'ms';
+import { config } from '..';
+import { getGuildConfig } from '../utils/config';
 
 const ongoingInteractions: Map<string, CommandInteraction> = new Map();
 
@@ -51,8 +55,7 @@ export class MarketplaceCommand {
 		ongoingInteractions.set(interaction.user.id, interaction);
 		await interaction.reply({
 			content: 'Are you looking to offer or request?',
-			// @ts-ignore
-			components: [new ActionRowBuilder().addComponents(menu)],
+			components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu)],
 			ephemeral: true
 		});
 
@@ -76,6 +79,29 @@ export class MarketplaceCommand {
 	async handleSelectMenu(interaction: StringSelectMenuInteraction) {
 		const commandInteraction = ongoingInteractions.get(interaction.user.id);
 		if (!commandInteraction) return;
+
+		// Check if we're on cooldown
+		const delay = ms(config.settings.servers.cooldown);
+		let textDuration = delay < 1000 ? `1 second` : ms(delay, { long: true });
+		if (textDuration == '1 day') textDuration = '24 hours';
+
+		const userKey = cooldown.generateKey(
+			commandInteraction.guild,
+			`marketplace`,
+			interaction.user.id
+		);
+		const userCooldown = await cooldown.isOnCooldown(userKey);
+
+		if (userCooldown)
+			return commandInteraction.editReply({
+				content: '',
+				embeds: [
+					createEmbed(
+						`<:no:659939343875702859> You have already posted a listing in the last ${textDuration}.`
+					)
+				],
+				components: []
+			});
 
 		const service = interaction.values[0];
 		const modal = new ModalBuilder()
@@ -132,6 +158,8 @@ const send = async (
 	title: string,
 	description: string
 ) => {
+	const userKey = cooldown.generateKey(interaction.guild, `marketplace`, interaction.user.id);
+
 	const commandInteraction = ongoingInteractions.get(interaction.user.id);
 	if (!commandInteraction) return;
 
@@ -169,7 +197,7 @@ const send = async (
 		`*Listing posted by <@${interaction.user.id}>*`
 	);
 
-	const marketplaceChannelid = config.channels.marketplace;
+	const marketplaceChannelid = getGuildConfig(interaction.guildId).channels.marketplace;
 	const channel = (await interaction.guild.channels.fetch(marketplaceChannelid)) as Channel;
 
 	if (!channel.isTextBased)
@@ -181,6 +209,9 @@ const send = async (
 				)
 			]
 		});
+
+	const delay = ms(config.settings.marketplace.cooldown);
+	await cooldown.setPersistentCooldown(userKey, delay);
 
 	const message = await (channel as TextChannel).send({
 		embeds: [createEmbed(body)]
