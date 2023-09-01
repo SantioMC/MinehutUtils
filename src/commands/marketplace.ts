@@ -103,6 +103,28 @@ export class MarketplaceCommand {
 				components: []
 			});
 
+		// Check if the specific service is on cooldown
+		if (config.settings.marketplace.seperateCooldown) {
+			const serviceKey = cooldown.generateKey(
+				commandInteraction.guild,
+				`marketplace`,
+				interaction.values[0].toLowerCase(),
+				interaction.user.id
+			);
+			const serviceCooldown = await cooldown.isOnCooldown(serviceKey);
+
+			if (serviceCooldown)
+				return commandInteraction.editReply({
+					content: '',
+					embeds: [
+						createEmbed(
+							`<:no:659939343875702859> You have already posted a listing for a \`${interaction.values[0]}\` in the last ${textDuration}.`
+						)
+					],
+					components: []
+				});
+		}
+
 		const service = interaction.values[0];
 		const modal = new ModalBuilder()
 			.setTitle('Create a marketplace listing!')
@@ -211,7 +233,16 @@ const send = async (
 		});
 
 	const delay = ms(config.settings.marketplace.cooldown);
-	await cooldown.setPersistentCooldown(userKey, delay);
+
+	if (config.settings.marketplace.seperateCooldown) {
+		const serviceKey = cooldown.generateKey(
+			interaction.guild,
+			`marketplace`,
+			service,
+			interaction.user.id
+		);
+		await cooldown.setPersistentCooldown(serviceKey, delay);
+	} else await cooldown.setPersistentCooldown(userKey, delay);
 
 	const message = await (channel as TextChannel).send({
 		embeds: [createEmbed(body)]

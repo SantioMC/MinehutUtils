@@ -14,7 +14,8 @@
 			"limit": 3
 		},
 		"marketplace": {
-			"cooldown": "24h"
+			"cooldown": "24h",
+			"seperateCooldown": true
 		}
 	}
 }

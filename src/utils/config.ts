@@ -1,4 +1,4 @@
-import configFile from 'src/../../config.json';
+import configFile from '../../config.json';
 
 export const config = configFile;
 
