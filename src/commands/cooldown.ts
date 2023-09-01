@@ -18,27 +18,61 @@ import ms from 'ms';
 	root: 'cooldown'
 })
 export class CooldownCommand {
-	@Slash({ name: 'server', description: 'Reset the server ad cooldown for a specific user' })
+	@Slash({
+		name: 'server',
+		description: 'Reset the server ad cooldown for a specific user or server'
+	})
 	@SlashGroup('reset', 'cooldown')
 	private async resetServer(
 		@SlashOption({
 			description: 'The user to reset the cooldown of',
 			name: 'user',
 			type: ApplicationCommandOptionType.User,
-			required: true
+			required: false
 		})
-		user: User,
+		user: User | null,
+
+		@SlashOption({
+			description: 'The server to reset the cooldown of',
+			name: 'server',
+			type: ApplicationCommandOptionType.String,
+			required: false
+		})
+		server: string | null,
 
 		interaction: CommandInteraction
 	) {
 		if (!interaction.guild) return;
+		const reset: string[] = [];
 
-		const key = cooldown.generateKey(interaction.guild, 'advertise', 'user', user.id);
-		await cooldown.clearCooldown(key);
+		if (user) {
+			const key = cooldown.generateKey(interaction.guild, 'advertise', 'user', user.id);
+			await cooldown.clearCooldown(key);
+			reset.push(`<@${user.id}>`);
+		}
+
+		if (server) {
+			const key = cooldown.generateKey(interaction.guild, 'advertise', 'server', server);
+			await cooldown.clearCooldown(key);
+			reset.push(`the server \`${server}\``);
+		}
+
+		if (!server && !user) {
+			return interaction.reply({
+				ephemeral: true,
+				embeds: [
+					createEmbed(
+						`<:no:659939343875702859> You must specify either a user and/or a server to reset the cooldown of`
+					)
+				]
+			});
+		}
 
 		interaction.reply({
 			embeds: [
-				createEmbed(`<:yes:659939344192868109> Reset the server ad cooldown for <@${user.id}>`)
+				createEmbed(
+					`<:yes:659939344192868109> Reset the server ad cooldown for ${reset.join(' and ')}`
+				)
 			]
 		});
 	}

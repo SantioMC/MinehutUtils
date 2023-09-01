@@ -38,11 +38,13 @@ export const getCooldown = async (key: key): Promise<number | null> => {
 };
 
 export const clearCooldown = async (key: key) => {
-	await prisma.cooldowns.delete({
-		where: {
-			key
-		}
-	});
+	await prisma.cooldowns
+		.delete({
+			where: {
+				key
+			}
+		})
+		.catch(() => {});
 };
 
 export const isOnCooldown = async (key: string): Promise<boolean> => {
