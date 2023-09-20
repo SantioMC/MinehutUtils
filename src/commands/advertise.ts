@@ -129,9 +129,7 @@ export class AdvertiseCommand {
 			description,
 			``,
 			`Play at \`${data.name_lower}.minehut.gg\``,
-			`<:bedrock:1101261334684901456> Bedrock: \`${data.name_lower}.bedrock.minehut.gg\``,
-			``,
-			`*Server advertised by <@${interaction.user.id}>*`
+			`<:bedrock:1101261334684901456> Bedrock: \`${data.name_lower}.bedrock.minehut.gg\``
 		);
 
 		const serverChannelId = getGuildConfig(interaction.guildId).channels.servers;
@@ -164,7 +162,13 @@ export class AdvertiseCommand {
 		}, ms('1 hour'));
 
 		const message = await (channel as TextChannel).send({
-			embeds: [createEmbed(body)]
+			content: `Advertisement made by <@${interaction.user.id}>`,
+			embeds: [
+				createEmbed(body).setFooter({
+					text: `Advertisement posted by ${interaction.user.username} (${interaction.user.id})`,
+					iconURL: interaction.user.displayAvatarURL()
+				})
+			]
 		});
 
 		await interaction.reply({
@@ -172,7 +176,7 @@ export class AdvertiseCommand {
 			embeds: [
 				createEmbed(
 					embedJoinList(
-						` Successfully posted your server advertisement!`,
+						`Successfully posted your server advertisement!`,
 						`Check it out :point_right: ${message.url}`
 					)
 				)

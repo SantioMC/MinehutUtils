@@ -22,8 +22,8 @@ export const client = new Client({
 });
 
 client.on('ready', async () => {
-	await client.clearApplicationCommands();
-	await client.initApplicationCommands();
+	// await client.clearApplicationCommands();
+	// await client.initApplicationCommands();
 
 	console.log('> Bot online, logged in as: ' + client.user!!.tag);
 

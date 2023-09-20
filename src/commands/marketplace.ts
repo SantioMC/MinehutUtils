@@ -214,9 +214,7 @@ const send = async (
 	const body = embedJoinList(
 		`<:minehut:583099471320055819> **${serviceType}** | ${title}`,
 		``,
-		description,
-		``,
-		`*Listing posted by <@${interaction.user.id}>*`
+		description
 	);
 
 	const marketplaceChannelid = getGuildConfig(interaction.guildId).channels.marketplace;
@@ -245,14 +243,23 @@ const send = async (
 	} else await cooldown.setPersistentCooldown(userKey, delay);
 
 	const message = await (channel as TextChannel).send({
-		embeds: [createEmbed(body)]
+		content: `Marketplace listing by <@${interaction.user.id}>`,
+		embeds: [
+			createEmbed(body).setFooter({
+				text: `Listing posted by ${interaction.user.username} (${interaction.user.id})`,
+				iconURL: interaction.user.displayAvatarURL()
+			})
+		]
 	});
 
 	commandInteraction.editReply({
 		content: '',
 		embeds: [
 			createEmbed(
-				`${config.emotes.success} Successfully posted your listing! Check it out :point_right: ${message.url}`
+				embedJoinList(
+					`Successfully posted your server advertisement!`,
+					`Check it out :point_right: ${message.url}`
+				)
 			)
 		],
 		components: []
