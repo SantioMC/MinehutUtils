@@ -13,7 +13,11 @@ export const log = async (guild: Guild, message: EmbedBuilder[]) => {
 	const channel = await guild.channels.fetch(getGuildConfig(guild.id).channels.logs);
 	if (!channel.isTextBased) return;
 
-	await (channel as TextChannel).send({
-		embeds: message
-	});
+	try {
+		await (channel as TextChannel).send({
+			embeds: message
+		});
+	} catch (e) {
+		console.warn('Failed to post a message to the logs channel: ' + e.message);
+	}
 };
