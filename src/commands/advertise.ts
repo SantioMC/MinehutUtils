@@ -176,8 +176,12 @@ export class AdvertiseCommand {
 			embeds: [
 				createEmbed(
 					embedJoinList(
-						`Successfully posted your server advertisement!`,
-						`Check it out :point_right: ${message.url}`
+						`**Success** ${config.emotes.success}`,
+						``,
+						`You successfully posted your server advertisment!`,
+						`:pickaxe: \`${data.name_lower}.minehut.gg\``,
+						``,
+						`Check it out! :point_right: ${message.url}`
 					)
 				)
 			]
