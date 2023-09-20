@@ -257,7 +257,7 @@ const send = async (
 		embeds: [
 			createEmbed(
 				embedJoinList(
-					`Successfully posted your server advertisement!`,
+					`Successfully posted your marketplace listing!`,
 					`Check it out :point_right: ${message.url}`
 				)
 			)
