@@ -124,12 +124,12 @@ export class AdvertiseCommand {
 			});
 
 		const body = embedJoinList(
-			`<:minehut:583099471320055819> **${data.name}**`,
+			`${config.emotes.minehut} **${data.name}**`,
 			``,
 			description,
 			``,
-			`Play at \`${data.name_lower}.minehut.gg\``,
-			`<:bedrock:1101261334684901456> Bedrock: \`${data.name_lower}.bedrock.minehut.gg\``
+			`${config.emotes.java} Play at \`${data.name_lower}.minehut.gg\``,
+			`${config.emotes.bedrock} Bedrock: \`${data.name_lower}.bedrock.minehut.gg\``
 		);
 
 		const serverChannelId = getGuildConfig(interaction.guildId).channels.servers;
@@ -179,7 +179,7 @@ export class AdvertiseCommand {
 						`**Success** ${config.emotes.success}`,
 						``,
 						`You successfully posted your server advertisment!`,
-						`:pickaxe: \`${data.name_lower}.minehut.gg\``,
+						`${config.emotes.server} \`${data.name_lower}.minehut.gg\``,
 						``,
 						`Check it out! :point_right: ${message.url}`
 					)

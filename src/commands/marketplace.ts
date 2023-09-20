@@ -212,7 +212,7 @@ const send = async (
 	}
 
 	const body = embedJoinList(
-		`<:minehut:583099471320055819> **${serviceType}** | ${title}`,
+		`${config.emotes.minehut} **${serviceType}** | ${title}`,
 		``,
 		description
 	);
