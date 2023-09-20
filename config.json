@@ -1,4 +1,8 @@
 {
+	"sentry": {
+		"enabled": false,
+		"dsn": "https://sentry.io/endpoint"
+	},
 	"guilds": [
 		{
 			"guild": "765558158390984705",

@@ -13,5 +13,9 @@ pnpm-lock.yaml
 #IntelliJ
 .idea/
 
-# Databases
+# Project
 *.db
+minehut.config.json
+
+# Sentry Auth Token
+.sentryclirc

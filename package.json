@@ -8,7 +8,9 @@
 		"start": "node .",
 		"prestart": "tsc --p tsconfig.json",
 		"format": "prettier --write ./",
-		"dev": "npm run format && ts-node src/index.ts"
+		"dev": "npm run format && ts-node src/index.ts",
+		"sourcemaps": "pnpm run prestart && pnpm run sentry:sourcemaps && rm -rf ./dist",
+		"sentry:sourcemaps": "sentry-cli sourcemaps inject --org personal-bef300d81 --project node ./dist && sentry-cli sourcemaps upload --org personal-bef300d81 --project node ./dist"
 	},
 	"keywords": [],
 	"author": "Santio71",
@@ -20,6 +22,8 @@
 	"dependencies": {
 		"@discordx/importer": "^1.2.2",
 		"@prisma/client": "5.2.0",
+		"@sentry/node": "^7.69.0",
+		"@sentry/profiling-node": "^1.2.1",
 		"@types/node": "^18.6.1",
 		"axios": "^1.3.6",
 		"discord.js": "^14.11.0",
