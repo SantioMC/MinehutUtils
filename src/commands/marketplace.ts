@@ -1,17 +1,16 @@
 import {
-	CommandInteraction,
 	ActionRowBuilder,
-	ModalBuilder,
-	TextInputBuilder,
-	TextInputStyle,
-	ModalSubmitInteraction,
 	Channel,
-	TextChannel,
+	CommandInteraction,
+	ModalBuilder,
+	ModalSubmitInteraction,
 	StringSelectMenuBuilder,
 	StringSelectMenuInteraction,
-	StringSelectMenuComponent
+	TextChannel,
+	TextInputBuilder,
+	TextInputStyle
 } from 'discord.js';
-import { Discord, SelectMenuComponent, ModalComponent, Slash } from 'discordx';
+import { Discord, ModalComponent, SelectMenuComponent, Slash } from 'discordx';
 import { createEmbed, embedJoinList } from '../utils/embed';
 import * as modbot from '../services/modbot';
 import * as cooldown from '../services/cooldown';
@@ -97,7 +96,9 @@ export class MarketplaceCommand {
 				content: '',
 				embeds: [
 					createEmbed(
-						`${config.emotes.fail} You have already posted a listing in the last ${textDuration}.`
+						`${
+							process.env.FAIL_EMOJI || ''
+						} You have already posted a listing in the last ${textDuration}.`
 					)
 				],
 				components: []
@@ -118,7 +119,9 @@ export class MarketplaceCommand {
 					content: '',
 					embeds: [
 						createEmbed(
-							`${config.emotes.fail} You have already posted a listing for a \`${interaction.values[0]}\` in the last ${textDuration}.`
+							`${process.env.FAIL_EMOJI || ''} You have already posted a listing for a \`${
+								interaction.values[0]
+							}\` in the last ${textDuration}.`
 						)
 					],
 					components: []
@@ -193,7 +196,9 @@ const send = async (
 			ephemeral: true,
 			embeds: [
 				createEmbed(
-					`${config.emotes.fail} Description is too long, please keep it to 25 lines or under.`
+					`${
+						process.env.FAIL_EMOJI || ''
+					} Description is too long, please keep it to 25 lines or under.`
 				).setColor('#ff0000')
 			]
 		});
@@ -205,14 +210,14 @@ const send = async (
 			ephemeral: true,
 			embeds: [
 				createEmbed(
-					`${config.emotes.fail} Description contains blocked words. Please try again.`
+					`${process.env.FAIL_EMOJI || ''} Description contains blocked words. Please try again.`
 				).setColor('#ff0000')
 			]
 		});
 	}
 
 	const body = embedJoinList(
-		`${config.emotes.minehut} **${serviceType}** | ${title}`,
+		`${process.env.MINEHUT_EMOJI || ''} **${serviceType}** | ${title}`,
 		``,
 		description
 	);
@@ -225,7 +230,9 @@ const send = async (
 			ephemeral: true,
 			embeds: [
 				createEmbed(
-					`${config.emotes.fail} Marketplace channel is not a text channel. Please contact a moderator.`
+					`${
+						process.env.FAIL_EMOJI || ''
+					} Marketplace channel is not a text channel. Please contact a moderator.`
 				)
 			]
 		});

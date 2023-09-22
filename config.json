@@ -1,30 +1,22 @@
 {
-	"guilds": [
-		{
-			"guild": "765558158390984705",
-			"channels": {
-				"servers": "765563613196845066",
-				"marketplace": "765563613196845066",
-				"logs": "765563613196845066"
-			}
-		}
-	],
-	"settings": {
-		"servers": {
-			"cooldown": "24h",
-			"limit": 3
-		},
-		"marketplace": {
-			"cooldown": "24h",
-			"seperateCooldown": true
-		}
-	},
-	"emotes": {
-		"success": "<:yes:659939181056753665>",
-		"fail": "<:no:659939343875702859>",
-		"server": "<:pickaxe:587401667494936731>",
-		"minehut": "<:minehut:583099471320055819>",
-		"java": "<:grass_block:1154150535679717396>",
-		"bedrock": "<:bedrock:1101261334684901456>"
-	}
+  "guilds": [
+    {
+      "guild": "765558158390984705",
+      "channels": {
+        "servers": "765563613196845066",
+        "marketplace": "765563613196845066",
+        "logs": "765563613196845066"
+      }
+    }
+  ],
+  "settings": {
+    "servers": {
+      "cooldown": "24h",
+      "limit": 3
+    },
+    "marketplace": {
+      "cooldown": "24h",
+      "seperateCooldown": true
+    }
+  }
 }
