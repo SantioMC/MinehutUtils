@@ -1,12 +1,12 @@
 import {
-	CommandInteraction,
 	ActionRowBuilder,
-	ModalBuilder,
-	TextInputBuilder,
-	TextInputStyle,
-	ModalSubmitInteraction,
 	Channel,
-	TextChannel
+	CommandInteraction,
+	ModalBuilder,
+	ModalSubmitInteraction,
+	TextChannel,
+	TextInputBuilder,
+	TextInputStyle
 } from 'discord.js';
 import { Discord, ModalComponent, Slash } from 'discordx';
 import { clean, createEmbed, embedJoinList } from '../utils/embed';
@@ -58,7 +58,9 @@ export class AdvertiseCommand {
 			return interaction.reply({
 				ephemeral: true,
 				embeds: [
-					createEmbed(`${config.emotes.fail} Server \`${clean(serverName)}\` could not be found`)
+					createEmbed(
+						`${process.env.FAIL_EMOJI || ''} Server \`${clean(serverName)}\` could not be found`
+					)
 				]
 			});
 		const serverKey = cooldown.generateKey(interaction.guild, `advertise`, `server`, data._id);
@@ -70,7 +72,9 @@ export class AdvertiseCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`${config.emotes.fail} Description is too long, please keep it to 25 lines or under.`
+						`${
+							process.env.FAIL_EMOJI || ''
+						} Description is too long, please keep it to 25 lines or under.`
 					).setColor('#ff0000')
 				]
 			});
@@ -82,7 +86,7 @@ export class AdvertiseCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`${config.emotes.fail} Description contains blocked words. Please try again.`
+						`${process.env.FAIL_EMOJI || ''} Description contains blocked words. Please try again.`
 					).setColor('#ff0000')
 				]
 			});
@@ -107,7 +111,9 @@ export class AdvertiseCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`${config.emotes.fail} You have already advertised a server in the last ${textDuration}.`
+						`${
+							process.env.FAIL_EMOJI || ''
+						} You have already advertised a server in the last ${textDuration}.`
 					)
 				]
 			});
@@ -118,18 +124,20 @@ export class AdvertiseCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`${config.emotes.fail} The server \`${data.name}\` has already been advertised in the last ${textDuration}.`
+						`${process.env.FAIL_EMOJI || ''} The server \`${
+							data.name
+						}\` has already been advertised in the last ${textDuration}.`
 					)
 				]
 			});
 
 		const body = embedJoinList(
-			`${config.emotes.minehut} **${data.name}**`,
+			`${process.env.MINEHUT_EMOJI || ''} **${data.name}**`,
 			``,
 			description,
 			``,
-			`${config.emotes.java} Play at \`${data.name_lower}.minehut.gg\``,
-			`${config.emotes.bedrock} Bedrock: \`${data.name_lower}.bedrock.minehut.gg\``
+			`${process.env.JAVA_EMOJI || ''} Play at \`${data.name_lower}.minehut.gg\``,
+			`${process.env.BEDROCK_EMOJI || ''} Bedrock: \`${data.name_lower}.bedrock.minehut.gg\``
 		);
 
 		const serverChannelId = getGuildConfig(interaction.guildId).channels.servers;
@@ -140,7 +148,9 @@ export class AdvertiseCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`${config.emotes.fail} Server channel is not a text channel. Please contact a moderator.`
+						`${
+							process.env.FAIL_EMOJI || ''
+						} Server channel is not a text channel. Please contact a moderator.`
 					)
 				]
 			});
@@ -176,10 +186,10 @@ export class AdvertiseCommand {
 			embeds: [
 				createEmbed(
 					embedJoinList(
-						`**Success** ${config.emotes.success}`,
+						`**Success** ${process.env.SUCCESS_EMOJI || ''}`,
 						``,
 						`You successfully posted your server advertisment!`,
-						`${config.emotes.server} \`${data.name_lower}.minehut.gg\``,
+						`${process.env.SERVER_EMOJI || ''} \`${data.name_lower}.minehut.gg\``,
 						``,
 						`Check it out! :point_right: ${message.url}`
 					)

@@ -1,8 +1,8 @@
 import {
-	CommandInteraction,
 	ApplicationCommandOptionType,
-	User,
-	AutocompleteInteraction
+	AutocompleteInteraction,
+	CommandInteraction,
+	User
 } from 'discord.js';
 import { Discord, Slash, SlashGroup, SlashOption } from 'discordx';
 import * as cooldown from '../services/cooldown';
@@ -42,7 +42,6 @@ export class CooldownCommand {
 			required: false
 		})
 		user: User | null,
-
 		@SlashOption({
 			description: 'The server to reset the cooldown of',
 			name: 'server',
@@ -50,7 +49,6 @@ export class CooldownCommand {
 			required: false
 		})
 		server: string | null,
-
 		interaction: CommandInteraction
 	) {
 		if (!interaction.guild) return;
@@ -68,7 +66,9 @@ export class CooldownCommand {
 				return interaction.reply({
 					ephemeral: true,
 					embeds: [
-						createEmbed(`${config.emotes.fail} The server \`${server}\` could not be found.`)
+						createEmbed(
+							`${process.env.FAIL_EMOJI || ''} The server \`${server}\` could not be found.`
+						)
 					]
 				});
 
@@ -82,7 +82,9 @@ export class CooldownCommand {
 				ephemeral: true,
 				embeds: [
 					createEmbed(
-						`${config.emotes.fail} You must specify either a user and/or a server to reset the cooldown of`
+						`${
+							process.env.FAIL_EMOJI || ''
+						} You must specify either a user and/or a server to reset the cooldown of`
 					)
 				]
 			});
@@ -91,7 +93,9 @@ export class CooldownCommand {
 		interaction.reply({
 			embeds: [
 				createEmbed(
-					`${config.emotes.success} Reset the server ad cooldown for ${reset.join(' and ')}`
+					`${process.env.SUCCESS_EMOJI || ''} Reset the server ad cooldown for ${reset.join(
+						' and '
+					)}`
 				)
 			]
 		});
@@ -107,7 +111,6 @@ export class CooldownCommand {
 			required: true
 		})
 		user: User,
-
 		interaction: CommandInteraction
 	) {
 		if (!interaction.guild) return;
@@ -119,7 +122,9 @@ export class CooldownCommand {
 
 		interaction.reply({
 			embeds: [
-				createEmbed(`${config.emotes.success} Reset the marketplace cooldown for <@${user.id}>`)
+				createEmbed(
+					`${process.env.SUCCESS_EMOJI || ''} Reset the marketplace cooldown for <@${user.id}>`
+				)
 			]
 		});
 	}
@@ -134,7 +139,6 @@ export class CooldownCommand {
 			required: true
 		})
 		user: User,
-
 		@SlashOption({
 			description: 'The duration of the cooldown',
 			name: 'duration',
@@ -155,7 +159,6 @@ export class CooldownCommand {
 			}
 		})
 		duration: string,
-
 		interaction: CommandInteraction
 	) {
 		if (!interaction.guild) return;
@@ -164,7 +167,7 @@ export class CooldownCommand {
 		if (!time)
 			return interaction.reply({
 				ephemeral: true,
-				embeds: [createEmbed(`${config.emotes.fail} Invalid duration \`${duration}\``)]
+				embeds: [createEmbed(`${process.env.FAIL_EMOJI || ''} Invalid duration \`${duration}\``)]
 			});
 
 		const key = cooldown.generateKey(interaction.guild, 'marketplace', user.id);
@@ -173,7 +176,9 @@ export class CooldownCommand {
 		interaction.reply({
 			embeds: [
 				createEmbed(
-					`${config.emotes.success} Set the marketplace cooldown for <@${user.id}> to ${ms(time, {
+					`${process.env.SUCCESS_EMOJI || ''} Set the marketplace cooldown for <@${
+						user.id
+					}> to ${ms(time, {
 						long: true
 					})}`
 				)
@@ -191,7 +196,6 @@ export class CooldownCommand {
 			required: true
 		})
 		server: string,
-
 		@SlashOption({
 			description: 'The duration of the cooldown',
 			name: 'duration',
@@ -212,7 +216,6 @@ export class CooldownCommand {
 			}
 		})
 		duration: string,
-
 		interaction: CommandInteraction
 	) {
 		if (!interaction.guild) return;
@@ -221,14 +224,18 @@ export class CooldownCommand {
 		if (!time)
 			return interaction.reply({
 				ephemeral: true,
-				embeds: [createEmbed(`${config.emotes.fail} Invalid duration \`${duration}\``)]
+				embeds: [createEmbed(`${process.env.FAIL_EMOJI || ''} Invalid duration \`${duration}\``)]
 			});
 
 		const serverData = await getServerData(server);
 		if (!serverData)
 			return interaction.reply({
 				ephemeral: true,
-				embeds: [createEmbed(`${config.emotes.fail} The server \`${server}\` could not be found.`)]
+				embeds: [
+					createEmbed(
+						`${process.env.FAIL_EMOJI || ''} The server \`${server}\` could not be found.`
+					)
+				]
 			});
 
 		const key = cooldown.generateKey(interaction.guild, 'advertise', 'server', serverData._id);
@@ -237,7 +244,7 @@ export class CooldownCommand {
 		interaction.reply({
 			embeds: [
 				createEmbed(
-					`${config.emotes.success} Set the advertisement cooldown for \`${
+					`${process.env.SUCCESS_EMOJI || ''} Set the advertisement cooldown for \`${
 						serverData.name
 					}\` to ${ms(time, {
 						long: true
@@ -257,7 +264,6 @@ export class CooldownCommand {
 			required: true
 		})
 		user: User,
-
 		@SlashOption({
 			description: 'The duration of the cooldown',
 			name: 'duration',
@@ -278,7 +284,6 @@ export class CooldownCommand {
 			}
 		})
 		duration: string,
-
 		interaction: CommandInteraction
 	) {
 		if (!interaction.guild) return;
@@ -287,7 +292,7 @@ export class CooldownCommand {
 		if (!time)
 			return interaction.reply({
 				ephemeral: true,
-				embeds: [createEmbed(`${config.emotes.fail} Invalid duration \`${duration}\``)]
+				embeds: [createEmbed(`${process.env.FAIL_EMOJI || ''} Invalid duration \`${duration}\``)]
 			});
 
 		const key = cooldown.generateKey(interaction.guild, 'advertise', 'user', user.id);
@@ -296,7 +301,9 @@ export class CooldownCommand {
 		interaction.reply({
 			embeds: [
 				createEmbed(
-					`${config.emotes.success} Set the advertisement cooldown for <@${user.id}> to ${ms(time, {
+					`${process.env.SUCCESS_EMOJI || ''} Set the advertisement cooldown for <@${
+						user.id
+					}> to ${ms(time, {
 						long: true
 					})}`
 				)

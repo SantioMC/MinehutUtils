@@ -1,14 +1,14 @@
 import {
-	CommandInteraction,
 	ActionRowBuilder,
-	TextChannel,
 	ApplicationCommandOptionType,
 	AutocompleteInteraction,
+	CommandInteraction,
 	StringSelectMenuBuilder,
-	StringSelectMenuInteraction
+	StringSelectMenuInteraction,
+	TextChannel
 } from 'discord.js';
 import { Discord, SelectMenuComponent, Slash, SlashOption } from 'discordx';
-import { client, config } from '..';
+import { client } from '..';
 import { clean, createEmbed } from '../utils/embed';
 import { Plugin, searchPlugins } from '../utils/spigot';
 
@@ -46,13 +46,19 @@ export class PluginCommand {
 		searchPlugins(query).then(async (data: Plugin[] | null) => {
 			if (data == null) {
 				return interaction.followUp({
-					embeds: [createEmbed(`${config.emotes.fail} Failed to query plugins. Please try again.`)]
+					embeds: [
+						createEmbed(
+							`${process.env.FAIL_EMOJI || ''} Failed to query plugins. Please try again.`
+						)
+					]
 				});
 			}
 
 			if (data.length == 0) {
 				return interaction.followUp({
-					embeds: [createEmbed(`${config.emotes.fail} No plugins found for \`${clean(query)}\``)]
+					embeds: [
+						createEmbed(`${process.env.FAIL_EMOJI || ''} No plugins found for \`${clean(query)}\``)
+					]
 				});
 			}
 
@@ -103,7 +109,7 @@ export class PluginCommand {
 		searchPlugins(title).then((data: Plugin[] | null) => {
 			if (data == null || data.length == 0) {
 				return interaction.followUp({
-					embeds: [createEmbed(`${config.emotes.fail} Failed to fetch plugin data`)]
+					embeds: [createEmbed(`${process.env.FAIL_EMOJI || ''} Failed to fetch plugin data`)]
 				});
 			}
 
