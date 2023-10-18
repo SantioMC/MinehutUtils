@@ -22,6 +22,7 @@ object MOTDResolver {
             .split("\n")
             .dropLastWhile { it.isBlank() }
             .joinToString("\n")
+            .ifEmpty { "A Minehut Production" }
     }
 
 }
