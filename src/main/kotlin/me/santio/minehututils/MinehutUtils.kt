@@ -3,10 +3,9 @@ package me.santio.minehututils
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import io.github.cdimascio.dotenv.Dotenv
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
-import me.santio.coffee.jda.CoffeeJDA
 import me.santio.coffee.common.Coffee
+import me.santio.coffee.jda.CoffeeJDA
+import me.santio.minehututils.adapters.DurationAdapter
 import me.santio.minehututils.adapters.ServerAdapter
 import me.santio.minehututils.minehut.Minehut
 import net.dv8tion.jda.api.JDA
@@ -16,7 +15,7 @@ import me.santio.minehututils.db.Minehut as Database
 lateinit var bot: JDA
 lateinit var database: Database
 
-suspend fun main() = coroutineScope {
+suspend fun main() {
     // Load .env
     val dotenv = Dotenv.load()
 
@@ -32,7 +31,7 @@ suspend fun main() = coroutineScope {
 
     // Attach command handler
     Coffee.import(CoffeeJDA(bot))
-    Coffee.adapter(ServerAdapter)
+    Coffee.adapter(ServerAdapter, DurationAdapter)
     Coffee.brew("me.santio.minehututils.commands")
 
     // Start cache refreshes
@@ -41,9 +40,7 @@ suspend fun main() = coroutineScope {
     // Log user
     println("Logged in as ${bot.selfUser.name}")
 
-    runBlocking {
-        Minehut.status()
-    }
+    Minehut.status()
 
     // Attach shutdown hooks
     Runtime.getRuntime().addShutdownHook(Thread {

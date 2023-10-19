@@ -1,7 +1,11 @@
 CREATE TABLE IF NOT EXISTS GuildSettings (
     id TEXT PRIMARY KEY,
+
     advertChannel TEXT DEFAULT NULL,
-    marketChannel TEXT DEFAULT NULL
+    marketChannel TEXT DEFAULT NULL,
+
+    advertCooldown INTEGER DEFAULT 0,
+    marketCooldown INTEGER DEFAULT 0
 );
 
 from:
@@ -15,4 +19,14 @@ setAdvertChannel {
 setMarketChannel {
     INSERT OR IGNORE INTO GuildSettings(id) VALUES(:id);
     UPDATE GuildSettings SET marketChannel = :channel WHERE id = :id;
+}
+
+setAdvertCooldown {
+    INSERT OR IGNORE INTO GuildSettings(id) VALUES(:id);
+    UPDATE GuildSettings SET advertCooldown = :seconds WHERE id = :id;
+}
+
+setMarketCooldown {
+    INSERT OR IGNORE INTO GuildSettings(id) VALUES(:id);
+    UPDATE GuildSettings SET marketCooldown = :seconds WHERE id = :id;
 }

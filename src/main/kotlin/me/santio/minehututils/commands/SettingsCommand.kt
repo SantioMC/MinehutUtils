@@ -6,8 +6,10 @@ import me.santio.coffee.jda.annotations.Permission
 import me.santio.minehututils.database
 import me.santio.minehututils.ext.reply
 import me.santio.minehututils.factories.EmbedFactory
+import me.santio.minehututils.resolvers.DurationResolver.pretty
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import java.time.Duration
 import net.dv8tion.jda.api.Permission as JDAPermission
 
 @Command
@@ -33,7 +35,6 @@ class SettingsCommand {
         e.reply(EmbedFactory.success("Successfully set marketplace channel to ${channel.asMention}", guild)).queue()
     }
 
-    @Command("view")
     @Description("View the current settings")
     fun view(e: SlashCommandInteractionEvent) {
         val guild = e.guild ?: return
@@ -46,6 +47,26 @@ class SettingsCommand {
         | Advertise Channel: ${settings.advertChannel?.let { "<#$it>" } ?: "Not set"}
         | Marketplace Channel: ${settings.marketChannel?.let { "<#$it>" } ?: "Not set"}
         """.trimMargin())).queue()
+    }
+
+    class Cooldown {
+
+        @Description("Set the cooldown for advertising")
+        fun advertise(e: SlashCommandInteractionEvent, cooldown: Duration) {
+            val guild = e.guild ?: return
+            database.guildSettingsQueries.setAdvertCooldown(guild.id, cooldown.toSeconds())
+
+            e.reply(EmbedFactory.success("Successfully set the advertisement cooldown to ${cooldown.pretty()}", guild)).queue()
+        }
+
+        @Description("Set the cooldown for posting listings")
+        fun marketplace(e: SlashCommandInteractionEvent, cooldown: Duration) {
+            val guild = e.guild ?: return
+            database.guildSettingsQueries.setMarketCooldown(guild.id, cooldown.toSeconds())
+
+            e.reply(EmbedFactory.success("Successfully set the marketplace cooldown to ${cooldown.pretty()}", guild)).queue()
+        }
+
     }
 
 }

@@ -42,7 +42,7 @@ dependencies {
 
 //    Libraries
     implementation("org.reflections:reflections:0.10.2")
-    implementation("com.github.SantioMC.Coffee:jda:a8fb1430ce")
+    implementation("com.github.SantioMC.Coffee:jda:2fdcd9f384")
     implementation("app.cash.sqldelight:sqlite-driver:2.1.0-SNAPSHOT")
 
 //    Adventure API
