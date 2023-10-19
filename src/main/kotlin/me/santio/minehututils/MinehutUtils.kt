@@ -1,5 +1,7 @@
 package me.santio.minehututils
 
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import io.github.cdimascio.dotenv.Dotenv
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
@@ -9,12 +11,19 @@ import me.santio.minehututils.adapters.ServerAdapter
 import me.santio.minehututils.minehut.Minehut
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
+import me.santio.minehututils.db.Minehut as Database
 
 lateinit var bot: JDA
+lateinit var database: Database
 
 suspend fun main() = coroutineScope {
     // Load .env
     val dotenv = Dotenv.load()
+
+    // Setup database
+    val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:data.db")
+    Database.Schema.create(driver)
+    database = Database(driver)
 
     // Create JDA instance
     bot = JDABuilder.createDefault(

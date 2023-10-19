@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS GuildSettings (
+    id TEXT PRIMARY KEY,
+    advertChannel TEXT DEFAULT NULL,
+    marketChannel TEXT DEFAULT NULL
+);
+
+from:
+SELECT * FROM GuildSettings WHERE id = ? LIMIT 1;
+
+setAdvertChannel {
+    INSERT OR IGNORE INTO GuildSettings(id) VALUES(:id);
+    UPDATE GuildSettings SET advertChannel = :channel WHERE id = :id;
+}
+
+setMarketChannel {
+    INSERT OR IGNORE INTO GuildSettings(id) VALUES(:id);
+    UPDATE GuildSettings SET marketChannel = :channel WHERE id = :id;
+}

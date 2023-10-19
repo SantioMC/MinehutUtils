@@ -37,7 +37,7 @@ object ChannelResolver {
      * @param name The name of the channel to look for
      * @return The embeddable text, or '#<query>' if not found
      */
-    fun findName(name: String): String {
+    fun getMinehutName(name: String): String {
         val channel = fromMinehut(name) ?: return "#$name"
         return channel.asMention
     }

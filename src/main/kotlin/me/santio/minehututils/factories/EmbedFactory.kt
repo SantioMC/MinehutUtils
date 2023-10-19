@@ -1,6 +1,8 @@
 package me.santio.minehututils.factories
 
+import me.santio.minehututils.resolvers.EmojiResolver
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Guild
 
 /**
  * The factory for creating embed messages that the bot sends.
@@ -16,7 +18,7 @@ object EmbedFactory {
     private fun baseEmbed(block: (EmbedBuilder) -> Unit): EmbedBuilder {
         val embed = EmbedBuilder()
         embed.setTitle(" ")
-        embed.setColor(0x00FF00)
+        embed.setColor(0x19f4ba)
         block(embed)
         return embed
     }
@@ -40,9 +42,10 @@ object EmbedFactory {
      * @param block The block that is used to modify the embed.
      * @return The embed that is created.
      */
-    fun success(text: String, block: (EmbedBuilder) -> Unit = {}): EmbedBuilder {
+    fun success(text: String, guild: Guild? = null, block: (EmbedBuilder) -> Unit = {}): EmbedBuilder {
         return baseEmbed {
-            it.setDescription(text)
+            it.setDescription("${EmojiResolver.yes(guild)?.formatted} $text")
+            it.setColor(0x6efa61)
             block(it)
         }
     }
@@ -53,9 +56,10 @@ object EmbedFactory {
      * @param block The block that is used to modify the embed.
      * @return The embed that is created.
      */
-    fun error(text: String, block: (EmbedBuilder) -> Unit = {}): EmbedBuilder {
+    fun error(text: String, guild: Guild? = null, block: (EmbedBuilder) -> Unit = {}): EmbedBuilder {
         return baseEmbed {
-            it.setDescription(text)
+            it.setDescription("${EmojiResolver.no(guild)?.formatted} $text")
+            it.setColor(0xff6961)
             block(it)
         }
     }

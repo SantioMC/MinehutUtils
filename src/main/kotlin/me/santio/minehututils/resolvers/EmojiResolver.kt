@@ -20,6 +20,22 @@ object EmojiResolver {
             ?: default
     }
 
+    /**
+     * Finds an emote called :yes: in the current guild
+     * @param guild The guild to search in.
+     * @return The emoji, or the default checkmark if not found.
+     */
+    fun yes(guild: Guild?) = this.find(guild, "yes", checkmark())
+
+    /**
+     * Finds an emote called :no: in the current guild
+     * @param guild The guild to search in.
+     * @return The emoji, or the default crossmark if not found.
+     */
+    fun no(guild: Guild?) = this.find(guild, "no", crossmark())
+
+    /// Default emojis
+
     fun checkmark() = Emoji.fromUnicode("✅")
     fun crossmark() = Emoji.fromUnicode("❌")
     fun warning() = Emoji.fromUnicode("⚠️")

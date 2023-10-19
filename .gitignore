@@ -41,3 +41,4 @@ bin/
 ### Bot Specific ###
 *.env
 !.env.example
+*.db
