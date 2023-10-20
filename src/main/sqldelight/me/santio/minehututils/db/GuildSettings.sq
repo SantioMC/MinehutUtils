@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS GuildSettings (
     advertChannel TEXT DEFAULT NULL,
     marketChannel TEXT DEFAULT NULL,
 
-    advertCooldown INTEGER DEFAULT 0,
-    marketCooldown INTEGER DEFAULT 0
+    advertCooldown INTEGER DEFAULT 0 NOT NULL,
+    marketCooldown INTEGER DEFAULT 0 NOT NULL
 );
 
 from:

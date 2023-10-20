@@ -1,6 +1,7 @@
 package me.santio.minehututils.resolvers
 
 import me.santio.minehututils.bot
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 
 /**
@@ -12,13 +13,23 @@ object ChannelResolver {
     private const val MINEHUT_GUILD = 239599059415859200L
 
     /**
+     * Resolve a specific channel from a guild and the channel name
+     * @param guild The guild to look in
+     * @param name The name of the channel
+     * @return The channel, or null if not found
+     */
+    fun fromName(guild: Guild, name: String): GuildChannel? {
+        return guild.channels.firstOrNull { it.name.equals(name, true) }
+    }
+
+    /**
      * Resolve a specific channel from the Minehut guild
      * @param name The name of the channel
      * @return The channel, or null if not found
      */
     fun fromMinehut(name: String): GuildChannel? {
         val guild = bot.getGuildById(MINEHUT_GUILD) ?: return null
-        return guild.channels.firstOrNull { it.name.equals(name, true) }
+        return this.fromName(guild, name)
     }
 
     /**

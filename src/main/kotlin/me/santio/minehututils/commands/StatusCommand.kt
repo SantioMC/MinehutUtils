@@ -25,7 +25,8 @@ class StatusCommand {
             | **Minehut Bedrock**: ${status[Service.BEDROCK]}
             | **Minehut API**: ${status[Service.API]}
             |
-            | *This information is automatic, please refer to ${ChannelResolver.getMinehutName("announcements")} for status updates*
+            | *This information is automatic, please refer*
+            | *to ${ChannelResolver.getMinehutName("announcements")} for status updates*
             """.trimMargin()
         )).queue()
     }

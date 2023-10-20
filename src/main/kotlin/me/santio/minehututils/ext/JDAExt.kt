@@ -1,6 +1,7 @@
 package me.santio.minehututils.ext
 
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
 
@@ -16,3 +17,4 @@ fun Long.toTime(relative: Boolean = true): String {
 }
 
 fun IReplyCallback.reply(embed: EmbedBuilder) = this.replyEmbeds(embed.build())
+fun MessageChannel.sendMessage(embed: EmbedBuilder) = this.sendMessageEmbeds(embed.build())

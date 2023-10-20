@@ -9,16 +9,17 @@ object ServerAdapter: ArgumentAdapter<ServerModel>() {
 
     override val type: Class<ServerModel> = ServerModel::class.java
     override val error: String = "Failed to find server '%arg%'"
+    override val hasSuggestions: Boolean = true
 
     override fun adapt(arg: String, context: ContextData): ServerModel? {
         return Minehut.server(arg)
     }
 
     override fun suggest(arg: String): List<String> {
-        val servers = Minehut.servers()?.servers ?: emptyList()
-
-        if (arg.isEmpty() && servers.isEmpty()) return listOf("Loading servers...")
-        return servers.map { it.name }
+        return Minehut.servers()
+            ?.servers
+            ?.map { it.name }
+            ?: emptyList()
     }
 
 }
