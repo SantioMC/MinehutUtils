@@ -9,6 +9,8 @@ import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.minehut.api.ServerModel
 import me.santio.minehututils.resolvers.EmojiResolver
 import me.santio.minehututils.resolvers.MOTDResolver
+import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import kotlin.math.round
 
@@ -16,17 +18,14 @@ import kotlin.math.round
 @Description("Get the status of Minehut")
 class ServerCommand {
 
-    fun main(
-        e: SlashCommandInteractionEvent,
-        server: ServerModel
-    ) {
-        val motd = MOTDResolver.clean(server.motd.replace("`", "'"))
-        val check = EmojiResolver.find(e.guild, "yes", EmojiResolver.checkmark())!!.formatted
-        val cross = EmojiResolver.find(e.guild, "no", EmojiResolver.crossmark())!!.formatted
-        val status = if (server.online) "online" else "offline"
+    companion object {
+        fun buildServerEmbed(guild: Guild, server: ServerModel): EmbedBuilder {
+            val motd = MOTDResolver.clean(server.motd.replace("`", "'"))
+            val check = EmojiResolver.find(guild, "yes", EmojiResolver.checkmark())!!.formatted
+            val cross = EmojiResolver.find(guild, "no", EmojiResolver.crossmark())!!.formatted
+            val status = if (server.online) "online" else "offline"
 
-        e.reply(
-            EmbedFactory.default(
+            return EmbedFactory.default(
                 """ 
                 ${if (server.suspended) "| :warning: This server is currently suspended!" else ""}
                 | ```$motd```
@@ -36,8 +35,8 @@ class ServerCommand {
                 """.trimMargin()
             )
                 .setTitle(server.name + (
-                    if (server.proxy) " (Server Network)" else ""
-                ))
+                                        if (server.proxy) " (Server Network)" else ""
+                        ))
                 .addField(
                     "Server Status",
                     """
@@ -57,7 +56,15 @@ class ServerCommand {
                     """.trimMargin(),
                     true
                 ).setFooter("Server ID: ${server.id}")
-        ).queue()
+        }
+    }
+
+    fun main(
+        e: SlashCommandInteractionEvent,
+        server: ServerModel
+    ) {
+        val guild = e.guild ?: return
+        e.reply(buildServerEmbed(guild, server)).queue()
     }
 
 }

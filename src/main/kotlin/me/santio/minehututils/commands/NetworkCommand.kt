@@ -19,12 +19,12 @@ class NetworkCommand {
 
     fun main(e: SlashCommandInteractionEvent) {
         val playerDist = Minehut.players() ?: run {
-            e.reply(EmbedFactory.error("Failed to fetch player statistics")).setEphemeral(true).queue()
+            e.reply(EmbedFactory.error("Failed to fetch player statistics", e.guild)).setEphemeral(true).queue()
             return
         }
 
         val status = Minehut.network() ?: run {
-            e.reply(EmbedFactory.error("Failed to fetch network statistics")).setEphemeral(true).queue()
+            e.reply(EmbedFactory.error("Failed to fetch network statistics", e.guild)).setEphemeral(true).queue()
             return
         }
 

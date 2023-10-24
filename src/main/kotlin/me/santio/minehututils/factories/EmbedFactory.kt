@@ -42,7 +42,7 @@ object EmbedFactory {
      * @param block The block that is used to modify the embed.
      * @return The embed that is created.
      */
-    fun success(text: String, guild: Guild? = null, block: (EmbedBuilder) -> Unit = {}): EmbedBuilder {
+    fun success(text: String, guild: Guild?, block: (EmbedBuilder) -> Unit = {}): EmbedBuilder {
         return baseEmbed {
             it.setDescription("${EmojiResolver.yes(guild)?.formatted} $text")
             it.setColor(0x6efa61)
@@ -53,12 +53,33 @@ object EmbedFactory {
     /**
      * An embed that is used for error messages.
      * @param text The text that is displayed in the embed.
+     * @param guild The guild to check for the emote, else null to use discord default
      * @param block The block that is used to modify the embed.
      * @return The embed that is created.
      */
-    fun error(text: String, guild: Guild? = null, block: (EmbedBuilder) -> Unit = {}): EmbedBuilder {
+    fun error(text: String, guild: Guild?, block: (EmbedBuilder) -> Unit = {}): EmbedBuilder {
         return baseEmbed {
             it.setDescription("${EmojiResolver.no(guild)?.formatted} $text")
+            it.setColor(0xff6961)
+            block(it)
+        }
+    }
+
+    /**
+     * An embed that is used for error messages.
+     * @param text The text that is displayed in the embed.
+     * @param guild The guild to check for the emote, else null to use discord default
+     * @param exception The exception that was thrown.
+     * @param block The block that is used to modify the embed.
+     * @return The embed that is created.
+     */
+    fun exception(text: String, guild: Guild?, exception: Throwable, block: (EmbedBuilder) -> Unit = {}): EmbedBuilder {
+        return baseEmbed {
+            it.setDescription("""
+            | ${EmojiResolver.no(guild)?.formatted} $text
+            | ```diff
+            | - ${exception::class.java.simpleName}: ${exception.message}```
+            """.trimMargin())
             it.setColor(0xff6961)
             block(it)
         }

@@ -6,6 +6,7 @@ import me.santio.coffee.common.Coffee
 import me.santio.coffee.jda.CoffeeJDA
 import me.santio.minehututils.adapters.DurationAdapter
 import me.santio.minehututils.adapters.ServerAdapter
+import me.santio.minehututils.commands.AdvertiseCommand
 import me.santio.minehututils.minehut.Minehut
 import me.santio.minehututils.utils.EnvUtils.env
 import net.dv8tion.jda.api.JDA
@@ -30,6 +31,7 @@ suspend fun main() {
     Coffee.import(CoffeeJDA(bot))
     Coffee.adapter(ServerAdapter, DurationAdapter)
     Coffee.brew("me.santio.minehututils.commands")
+    Coffee.brew(AdvertiseCommand::class.java)
 
     // Start cache refreshes
     Minehut.startTimer()

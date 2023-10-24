@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.Interaction
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 /**
  * Represents a singular log that will be posted to the log channel
@@ -29,7 +31,7 @@ data class Log(
      */
     fun withContext(channel: GuildChannel): Log {
 
-        context = """
+        context += """
         | Channel ID: ${channel.id} *(${channel.asMention})*
         """.trimMargin()
 
@@ -43,7 +45,7 @@ data class Log(
      * @return The log
      */
     fun withContext(user: User): Log {
-        context = """
+        context += """
         | User ID: ${user.id} *(${user.asMention})*
         """.trimMargin()
 
@@ -57,7 +59,7 @@ data class Log(
      * @return The log
      */
     fun withContext(message: Message): Log {
-        context = """
+        context += """
         | Channel ID: ${message.channel.id} *(${message.channel.asMention})*
         | Message ID: ${message.id} ${ButtonFactory.textButton("JUMP", message.jumpUrl)}
         | User ID: ${message.author.id} *(${message.author.asMention} - ${message.author.name})*
@@ -72,12 +74,10 @@ data class Log(
      * @param event The SlashCommandInteractionEvent (command event) to attach
      * @return The log
      */
-    fun withContext(event: SlashCommandInteractionEvent): Log {
-        context = """
-        | Channel ID: ${event.channel.id} *(${event.channel.asMention})*
-        | User ID: ${event.user.id} *(${event.user.asMention} - ${event.user.name})*
-        | Full Command: `${event.commandString}`
-        """.trimMargin()
+    fun withContext(event: Interaction): Log {
+        if (event.channel != null) context += "Channel ID: ${event.channel!!.id} *(${event.channel!!.asMention})*\n"
+        context += "User ID: ${event.user.id} *(${event.user.asMention} - ${event.user.name})*\n"
+        if (event is SlashCommandInteractionEvent) context += "Full Command: `${MarkdownSanitizer.escape(event.commandString)}`\n"
 
         return this
     }

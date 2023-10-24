@@ -29,7 +29,7 @@ class CooldownCommand {
             || (guildSettings.advertChannel == null
                 && guildSettings.marketChannel == null)
         ) {
-            e.reply(EmbedFactory.error("This guild has no configured channels.")).queue()
+            e.reply(EmbedFactory.error("This guild has no configured channels.", guild)).queue()
             return
         }
 
@@ -91,7 +91,7 @@ class CooldownCommand {
             val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
 
             if (guildSettings?.marketChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.")).queue()
+                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
@@ -101,8 +101,9 @@ class CooldownCommand {
                 duration.toSeconds() + floor(System.currentTimeMillis() / 1000.0).toInt()
             )
 
-            e.reply(EmbedFactory.success("Set marketplace cooldown (offers) for ${user.asMention} to ${DurationResolver.pretty(duration)}"))
-                .setEphemeral(true).queue()
+            e.reply(EmbedFactory.success("Set marketplace cooldown (offers) for ${user.asMention} to ${
+                DurationResolver.pretty(duration)
+            }", guild)).setEphemeral(true).queue()
 
             Logger.of(guild)
                 .log(
@@ -121,7 +122,7 @@ class CooldownCommand {
             val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
 
             if (guildSettings?.marketChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.")).queue()
+                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
@@ -131,7 +132,7 @@ class CooldownCommand {
                 duration.toSeconds() + floor(System.currentTimeMillis() / 1000.0).toInt()
             )
 
-            e.reply(EmbedFactory.success("Set marketplace cooldown (requests) for ${user.asMention} to ${DurationResolver.pretty(duration)}"))
+            e.reply(EmbedFactory.success("Set marketplace cooldown (requests) for ${user.asMention} to ${DurationResolver.pretty(duration)}", guild))
                 .setEphemeral(true).queue()
 
             Logger.of(guild)
@@ -151,7 +152,7 @@ class CooldownCommand {
             val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
 
             if (guildSettings?.advertChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.")).queue()
+                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
@@ -161,8 +162,9 @@ class CooldownCommand {
                 duration.toSeconds() + floor(System.currentTimeMillis() / 1000.0).toInt()
             )
 
-            e.reply(EmbedFactory.success("Set advertisement cooldown for ${user.asMention} to ${DurationResolver.pretty(duration)}"))
-                .setEphemeral(true).queue()
+            e.reply(EmbedFactory.success("Set advertisement cooldown for ${user.asMention} to ${
+                DurationResolver.pretty(duration)
+            }", guild)).setEphemeral(true).queue()
 
             Logger.of(guild)
                 .log(
@@ -181,7 +183,7 @@ class CooldownCommand {
             val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
 
             if (guildSettings?.advertChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.")).queue()
+                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
@@ -191,8 +193,9 @@ class CooldownCommand {
                 duration.toSeconds() + floor(System.currentTimeMillis() / 1000.0).toInt()
             )
 
-            e.reply(EmbedFactory.success("Set advertisement cooldown for ${server.name} to ${DurationResolver.pretty(duration)}"))
-                .setEphemeral(true).queue()
+            e.reply(EmbedFactory.success("Set advertisement cooldown for ${server.name} to ${
+                DurationResolver.pretty(duration)
+            }", guild)).setEphemeral(true).queue()
 
             Logger.of(guild)
                 .log(
@@ -207,6 +210,7 @@ class CooldownCommand {
 
     }
 
+    @Permission(JDAPermission.MESSAGE_MANAGE)
     class Reset {
 
         @Description("Reset the user's marketplace cooldown for offers")
@@ -215,7 +219,7 @@ class CooldownCommand {
             val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
 
             if (guildSettings?.marketChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.")).queue()
+                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
@@ -224,7 +228,7 @@ class CooldownCommand {
                 "market-offer"
             )
 
-            e.reply(EmbedFactory.success("Reset the marketplace cooldown (offers) for ${user.asMention}"))
+            e.reply(EmbedFactory.success("Reset the marketplace cooldown (offers) for ${user.asMention}", guild))
                 .setEphemeral(true).queue()
 
             Logger.of(guild)
@@ -245,7 +249,7 @@ class CooldownCommand {
             val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
 
             if (guildSettings?.marketChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.")).queue()
+                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
@@ -254,7 +258,7 @@ class CooldownCommand {
                 "market-request"
             )
 
-            e.reply(EmbedFactory.success("Reset the marketplace cooldown (requests) for ${user.asMention}"))
+            e.reply(EmbedFactory.success("Reset the marketplace cooldown (requests) for ${user.asMention}", guild))
                 .setEphemeral(true).queue()
 
             Logger.of(guild)
@@ -274,7 +278,7 @@ class CooldownCommand {
             val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
 
             if (guildSettings?.advertChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.")).queue()
+                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
@@ -283,7 +287,7 @@ class CooldownCommand {
                 "advert"
             )
 
-            e.reply(EmbedFactory.success("Reset the advertisement cooldown for ${user.asMention}"))
+            e.reply(EmbedFactory.success("Reset the advertisement cooldown for ${user.asMention}", guild))
                 .setEphemeral(true).queue()
 
             Logger.of(guild)
@@ -303,7 +307,7 @@ class CooldownCommand {
             val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
 
             if (guildSettings?.advertChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.")).queue()
+                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
@@ -312,7 +316,7 @@ class CooldownCommand {
                 "advert"
             )
 
-            e.reply(EmbedFactory.success("Reset the advertisement cooldown for ${server.name}"))
+            e.reply(EmbedFactory.success("Reset the advertisement cooldown for ${server.name}", guild))
                 .setEphemeral(true).queue()
 
             Logger.of(guild)
