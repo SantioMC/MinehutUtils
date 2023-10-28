@@ -4,9 +4,9 @@ import me.santio.coffee.common.annotations.Command
 import me.santio.coffee.jda.annotations.Description
 import me.santio.coffee.jda.gui.button.Button
 import me.santio.coffee.jda.gui.showModal
+import me.santio.minehututils.cooldown.Cooldown
 import me.santio.minehututils.database
-import me.santio.minehututils.ext.reply
-import me.santio.minehututils.ext.sendMessage
+import me.santio.minehututils.ext.*
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.modals.AdvertisementModal
 import me.santio.minehututils.resolvers.AutoModResolver
@@ -34,6 +34,15 @@ class AdvertiseCommand {
             e.reply(EmbedFactory.error("Failed to find the advertisement channel, was it deleted?", guild)).setEphemeral(true).queue()
             return
         }
+
+        // Check if they're on cooldown
+        if (Cooldown.ADVERTISE_USER.get(member)?.isElapsed() == false) {
+            e.reply(EmbedFactory.error(
+                "You are currently on cooldown, try again ${Cooldown.ADVERTISE_USER.get(member)?.toTime() ?: "0 seconds"}",
+                guild
+            )).setEphemeral(true).queue()
+            return
+        }
         
         e.showModal(AdvertisementModal::class.java) { m, event ->
             // Run description through automod
@@ -46,7 +55,8 @@ class AdvertiseCommand {
                     return@thenAccept
                 }
 
-                val message = channel.sendMessage(EmbedFactory.default("""
+                Cooldown.ADVERTISE_USER.set(member, Duration.ofSeconds(settings.advertCooldown).toCooldown())
+                channel.sendMessage(EmbedFactory.default("""
                 | ${EmojiResolver.find(guild, "minehut")?.formatted ?: ""} **${m.server.name}**
                 | 
                 | ${m.description}

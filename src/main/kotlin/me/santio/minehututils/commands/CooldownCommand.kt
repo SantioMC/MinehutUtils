@@ -3,8 +3,10 @@ package me.santio.minehututils.commands
 import me.santio.coffee.common.annotations.Command
 import me.santio.coffee.jda.annotations.Description
 import me.santio.coffee.jda.annotations.Permission
+import me.santio.minehututils.cooldown.Cooldown
 import me.santio.minehututils.database
 import me.santio.minehututils.ext.reply
+import me.santio.minehututils.ext.toCooldown
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.logger.Logger
 import me.santio.minehututils.minehut.api.ServerModel
@@ -95,12 +97,7 @@ class CooldownCommand {
                 return
             }
 
-            database.cooldownQueries.setCooldown(
-                user.id,
-                "market-offer",
-                duration.toSeconds() + floor(System.currentTimeMillis() / 1000.0).toInt()
-            )
-
+            Cooldown.MARKET_OFFERING.set(user, duration.toCooldown())
             e.reply(EmbedFactory.success("Set marketplace cooldown (offers) for ${user.asMention} to ${
                 DurationResolver.pretty(duration)
             }", guild)).setEphemeral(true).queue()
@@ -126,12 +123,7 @@ class CooldownCommand {
                 return
             }
 
-            database.cooldownQueries.setCooldown(
-                user.id,
-                "market-request",
-                duration.toSeconds() + floor(System.currentTimeMillis() / 1000.0).toInt()
-            )
-
+            Cooldown.MARKET_REQUESTS.set(user, duration.toCooldown())
             e.reply(EmbedFactory.success("Set marketplace cooldown (requests) for ${user.asMention} to ${DurationResolver.pretty(duration)}", guild))
                 .setEphemeral(true).queue()
 
@@ -156,12 +148,7 @@ class CooldownCommand {
                 return
             }
 
-            database.cooldownQueries.setCooldown(
-                user.id,
-                "advert",
-                duration.toSeconds() + floor(System.currentTimeMillis() / 1000.0).toInt()
-            )
-
+            Cooldown.ADVERTISE_USER.set(user, duration.toCooldown())
             e.reply(EmbedFactory.success("Set advertisement cooldown for ${user.asMention} to ${
                 DurationResolver.pretty(duration)
             }", guild)).setEphemeral(true).queue()
@@ -187,12 +174,7 @@ class CooldownCommand {
                 return
             }
 
-            database.cooldownQueries.setCooldown(
-                server.id,
-                "advert",
-                duration.toSeconds() + floor(System.currentTimeMillis() / 1000.0).toInt()
-            )
-
+            Cooldown.ADVERTISE_SERVER.set(server, duration.toCooldown())
             e.reply(EmbedFactory.success("Set advertisement cooldown for ${server.name} to ${
                 DurationResolver.pretty(duration)
             }", guild)).setEphemeral(true).queue()
@@ -223,11 +205,7 @@ class CooldownCommand {
                 return
             }
 
-            database.cooldownQueries.resetCooldown(
-                user.id,
-                "market-offer"
-            )
-
+            Cooldown.MARKET_OFFERING.clear(user)
             e.reply(EmbedFactory.success("Reset the marketplace cooldown (offers) for ${user.asMention}", guild))
                 .setEphemeral(true).queue()
 
@@ -253,11 +231,7 @@ class CooldownCommand {
                 return
             }
 
-            database.cooldownQueries.resetCooldown(
-                user.id,
-                "market-request"
-            )
-
+            Cooldown.MARKET_REQUESTS.clear(user)
             e.reply(EmbedFactory.success("Reset the marketplace cooldown (requests) for ${user.asMention}", guild))
                 .setEphemeral(true).queue()
 
@@ -282,11 +256,7 @@ class CooldownCommand {
                 return
             }
 
-            database.cooldownQueries.resetCooldown(
-                user.id,
-                "advert"
-            )
-
+            Cooldown.ADVERTISE_USER.clear(user)
             e.reply(EmbedFactory.success("Reset the advertisement cooldown for ${user.asMention}", guild))
                 .setEphemeral(true).queue()
 
@@ -311,11 +281,7 @@ class CooldownCommand {
                 return
             }
 
-            database.cooldownQueries.resetCooldown(
-                server.id,
-                "advert"
-            )
-
+            Cooldown.ADVERTISE_SERVER.clear(server)
             e.reply(EmbedFactory.success("Reset the advertisement cooldown for ${server.name}", guild))
                 .setEphemeral(true).queue()
 
