@@ -6,6 +6,7 @@ import me.santio.coffee.jda.annotations.Permission
 import me.santio.minehututils.database
 import me.santio.minehututils.ext.reply
 import me.santio.minehututils.factories.EmbedFactory
+import me.santio.minehututils.logger.Logger
 import me.santio.minehututils.resolvers.DurationResolver.pretty
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -23,7 +24,13 @@ class SettingsCommand {
         val guild = e.guild ?: return
         database.guildSettingsQueries.setAdvertChannel(guild.id, channel.id)
 
-        e.reply(EmbedFactory.success("Successfully set advertise channel to ${channel.asMention}", guild)).queue()
+        e.reply(EmbedFactory.success("Successfully set advertise channel to ${channel.asMention}", guild))
+            .setEphemeral(true).queue()
+
+        Logger.of(guild).log(
+            "The advertisement channel's configuration was changed",
+            ":gear: Channel was set to ${channel.asMention} (${channel.id})"
+        ).withContext(e).titled("Channel Modified").post()
    }
 
     @Command("marketplace")
@@ -32,7 +39,13 @@ class SettingsCommand {
         val guild = e.guild ?: return
         database.guildSettingsQueries.setMarketChannel(guild.id, channel.id)
 
-        e.reply(EmbedFactory.success("Successfully set marketplace channel to ${channel.asMention}", guild)).queue()
+        e.reply(EmbedFactory.success("Successfully set marketplace channel to ${channel.asMention}", guild))
+            .setEphemeral(true).queue()
+
+        Logger.of(guild).log(
+            "The marketplace channel's configuration was changed",
+            ":gear: Channel was set to ${channel.asMention} (${channel.id})"
+        ).withContext(e).titled("Channel Modified").post()
     }
 
     @Description("View the current settings")
@@ -56,7 +69,13 @@ class SettingsCommand {
             val guild = e.guild ?: return
             database.guildSettingsQueries.setAdvertCooldown(guild.id, cooldown.toSeconds())
 
-            e.reply(EmbedFactory.success("Successfully set the advertisement cooldown to ${cooldown.pretty()}", guild)).queue()
+            e.reply(EmbedFactory.success("Successfully set the advertisement cooldown to ${cooldown.pretty()}", guild))
+                .setEphemeral(true).queue()
+
+            Logger.of(guild).log(
+                "The advertisement channel's configuration was changed",
+                ":gear: Cooldown was set to ${cooldown.pretty()}"
+            ).withContext(e).titled("Channel Modified").post()
         }
 
         @Description("Set the cooldown for posting listings")
@@ -64,7 +83,13 @@ class SettingsCommand {
             val guild = e.guild ?: return
             database.guildSettingsQueries.setMarketCooldown(guild.id, cooldown.toSeconds())
 
-            e.reply(EmbedFactory.success("Successfully set the marketplace cooldown to ${cooldown.pretty()}", guild)).queue()
+            e.reply(EmbedFactory.success("Successfully set the marketplace cooldown to ${cooldown.pretty()}", guild))
+                .setEphemeral(true).queue()
+
+            Logger.of(guild).log(
+                "The marketplace channel's configuration was changed",
+                ":gear: Cooldown was set to ${cooldown.pretty()}"
+            ).withContext(e).titled("Channel Modified").post()
         }
 
     }
