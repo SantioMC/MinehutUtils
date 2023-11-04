@@ -15,7 +15,7 @@ import me.santio.minehututils.db.Minehut as Database
 lateinit var bot: JDA
 lateinit var database: Database
 
-suspend fun main() {
+fun main() {
     // Setup database
     val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:data.db")
     Database.Schema.create(driver)
@@ -27,6 +27,7 @@ suspend fun main() {
     ).build().awaitReady()
 
     // Attach command handler
+    bot.updateCommands().complete()
     Coffee.import(CoffeeJDA(bot))
     Coffee.adapter(ServerAdapter, DurationAdapter)
     Coffee.brew("me.santio.minehututils.commands")
@@ -36,8 +37,6 @@ suspend fun main() {
 
     // Log user
     println("Logged in as ${bot.selfUser.name}")
-
-    Minehut.status()
 
     // Attach shutdown hooks
     Runtime.getRuntime().addShutdownHook(Thread {
