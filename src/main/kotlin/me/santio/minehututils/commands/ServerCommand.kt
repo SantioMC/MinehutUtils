@@ -20,7 +20,7 @@ class ServerCommand {
 
     companion object {
         fun buildServerEmbed(guild: Guild, server: ServerModel): EmbedBuilder {
-            val motd = MOTDResolver.clean(server.motd.replace("`", "'"))
+            val motd = MOTDResolver.toAnsi(server.motd.replace("`", "'"))
             val check = EmojiResolver.find(guild, "yes", EmojiResolver.checkmark())!!.formatted
             val cross = EmojiResolver.find(guild, "no", EmojiResolver.crossmark())!!.formatted
             val status = if (server.online) "online" else "offline"
@@ -28,7 +28,8 @@ class ServerCommand {
             return EmbedFactory.default(
                 """ 
                 ${if (server.suspended) "| :warning: This server is currently suspended!" else ""}
-                | ```$motd```
+                | ```ansi
+                | $motd```
                 | :chart_with_upwards_trend: **Players:** ${server.playerCount.formatted()} *(${server.joins.formatted()} total joins)*
                 | :calendar: **Created:** ${server.createdAt.toTime()}
                 | :file_folder: **Categories:** ${server.categories.joinToString(", ").ifEmpty { "None" }}

@@ -14,6 +14,9 @@ repositories {
     google()
     maven("https://jitpack.io")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
+    maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+        name = "sonatype-oss-snapshots"
+    }
 }
 
 sqldelight {
@@ -49,6 +52,8 @@ dependencies {
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("net.kyori:adventure-text-serializer-plain:4.14.0")
     implementation("net.kyori:adventure-text-serializer-legacy:4.14.0")
+    implementation("net.kyori:adventure-text-serializer-ansi:4.14.0")
+    implementation("net.kyori:ansi:1.1.0-SNAPSHOT")
 }
 
 kotlin {
