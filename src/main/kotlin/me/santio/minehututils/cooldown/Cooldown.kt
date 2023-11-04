@@ -40,6 +40,7 @@ enum class Cooldown(private val key: String) {
      */
     fun set(user: Member, time: Long) {
         if (this == ADVERTISE_SERVER) return
+        if (time == 0L) return clear(user)
         database.cooldownQueries.setCooldown(user.id, key, time)
     }
 
@@ -50,6 +51,7 @@ enum class Cooldown(private val key: String) {
      */
     fun set(server: ServerModel, time: Long) {
         if (this != ADVERTISE_SERVER) return
+        if (time == 0L) return clear(server)
         database.cooldownQueries.setCooldown(server.id, key, time)
     }
 
@@ -69,5 +71,20 @@ enum class Cooldown(private val key: String) {
     fun clear(server: ServerModel) {
         if (this != ADVERTISE_SERVER) return
         database.cooldownQueries.resetCooldown(server.id, key)
+    }
+
+    companion object {
+        /**
+         * Get a marketplace type cooldown from the type provided
+         * @param type The listing type, either 'offer' or 'request'
+         * @return The cooldown relating to the type, or null if the type is invalid
+         */
+        fun getMarketplaceType(type: String): Cooldown? {
+            return when (type) {
+                "offer" -> MARKET_OFFERING
+                "request" -> MARKET_REQUESTS
+                else -> null
+            }
+        }
     }
 }

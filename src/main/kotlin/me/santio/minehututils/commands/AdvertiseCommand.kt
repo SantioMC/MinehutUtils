@@ -38,7 +38,7 @@ class AdvertiseCommand {
         // Check if they're on cooldown
         if (Cooldown.ADVERTISE_USER.get(member)?.isElapsed() == false) {
             e.reply(EmbedFactory.error(
-                "You are currently on cooldown, try again ${Cooldown.ADVERTISE_USER.get(member)?.toTime() ?: "0 seconds"}",
+                "You are currently on cooldown, try again ${Cooldown.ADVERTISE_USER.get(member)?.toTime() ?: "in a few seconds"}",
                 guild
             )).setEphemeral(true).queue()
             return
