@@ -21,8 +21,10 @@ object AutoModResolver {
     /**
      * Parses a query and checks if it passes all auto mod rules
      * @param guild The guild containing the auto mod rules
+     * @param member The member who sent the query
+     * @param interaction The interaction that triggered the query
      * @param query The query to evaluate
-     * @return A completable future which will return whether or not the query passes, if the bot is missing permissions to
+     * @return A completable future which will return whether the query passes, if the bot is missing permissions to
      * access the auto mod rules (MANAGE_GUILD), then we'll default to the query passing to avoid any functionality breaking.
      */
     fun parse(guild: Guild, query: String, member: Member, interaction: Interaction): CompletableFuture<Boolean> {
@@ -56,6 +58,35 @@ object AutoModResolver {
             future.complete(true)
         })
         
+        return future
+    }
+
+    /**
+     * Parses multiple queries and checks if it all pass each auto mod rules
+     * @param guild The guild containing the auto mod rules
+     * @param member The member who sent the query
+     * @param interaction The interaction that triggered the query
+     * @param queries The queries to evaluate
+     * @return A completable future which will return whether the query passes, if the bot is missing permissions to
+     * access the auto mod rules (MANAGE_GUILD), then we'll default to the query passing to avoid any functionality breaking.
+     */
+    fun parse(guild: Guild, member: Member, interaction: Interaction, vararg queries: String): CompletableFuture<Boolean> {
+        val future = CompletableFuture<Boolean>()
+        var remaining = queries.size
+
+        for (query in queries) {
+            parse(guild, query, member, interaction).thenAccept {
+                if (!it) {
+                    future.complete(false)
+                    return@thenAccept
+                }
+
+                if (--remaining == 0) {
+                    future.complete(true)
+                }
+            }
+        }
+
         return future
     }
     
