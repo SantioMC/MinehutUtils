@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import me.santio.minehututils.minehut.Minehut
 import me.santio.minehututils.minehut.ServerPlan
 
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 data class ServerModel(
     @SerializedName("_id")
     val id: String,
@@ -47,6 +48,8 @@ data class ServerModel(
     val defaultBannerTint: String,
     @SerializedName("using_cosmetics")
     val usingCosmetics: Boolean,
+    @SerializedName("daily_online_time")
+    private val dailyUptime: Map<String, Int>? = null,
     val joins: Int,
     val icon: String,
     val online: Boolean,
@@ -62,4 +65,15 @@ data class ServerModel(
     val ownerUsername: String
         get() = Minehut.servers()?.servers?.find { it.staticInfo.id == id }?.author ?: "Unknown"
 
+    val uptime: Long
+        get() = (dailyUptime?.values?.first() ?: 0) + (System.currentTimeMillis() - lastOnline)
+
+    val timeRemaining: Long
+        get() = Minehut.dailyTimeLimit.toMillis() - uptime
+
+    val outOfTime: Boolean
+        get() = timeRemaining <= 0
+
+    val hasDailyLimit: Boolean
+        get() = dailyUptime.isNullOrEmpty().not()
 }

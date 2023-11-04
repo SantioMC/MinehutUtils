@@ -1,8 +1,8 @@
 package me.santio.minehututils.minehut
 
 import kong.unirest.core.Unirest
-import me.santio.minehututils.adapters.ServerAdapter
 import me.santio.minehututils.minehut.api.*
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.Executors
 import kotlin.concurrent.schedule
@@ -13,6 +13,7 @@ import kotlin.concurrent.schedule
 @Suppress("MemberVisibilityCanBePrivate")
 object Minehut {
 
+    val dailyTimeLimit: Duration = Duration.ofHours(4)
     private var serverCache: ServersModel? = null
 
     private val client = Unirest.spawnInstance().apply {
@@ -46,6 +47,24 @@ object Minehut {
      */
     fun close() {
         client.close()
+    }
+
+    /**
+     * Gets the epoch time of the next daily time reset
+     * @return The epoch time of the next daily time reset
+     */
+    fun getDailyTimeReset(): Long {
+        val reset = Calendar.getInstance(TimeZone.getTimeZone("GMT-8")).apply {
+            set(Calendar.HOUR_OF_DAY, 1)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+        }
+
+        if (reset.before(Calendar.getInstance(TimeZone.getTimeZone("GMT-8")))) {
+            reset.add(Calendar.DATE, 1)
+        }
+
+        return reset.timeInMillis / 1000
     }
 
     /**
