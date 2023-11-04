@@ -55,6 +55,14 @@ class AdvertiseCommand {
                     return@thenAccept
                 }
 
+                if (m.description.lines().size > 25) {
+                    event.reply(EmbedFactory.error(
+                        "Your description is too long, please shorten it to 25 lines or less.",
+                        event.guild!!
+                    )).setEphemeral(true).queue()
+                    return@thenAccept
+                }
+
                 Cooldown.ADVERTISE_USER.set(member, Duration.ofSeconds(settings.advertCooldown).toCooldown())
                 channel.sendMessage(EmbedFactory.default("""
                 | ${EmojiResolver.find(guild, "minehut")?.formatted ?: ""} **${m.server.name}**
