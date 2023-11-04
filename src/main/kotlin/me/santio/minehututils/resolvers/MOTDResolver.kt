@@ -50,7 +50,7 @@ object MOTDResolver {
             .trimIndent()
             .split("\n")
             .dropLastWhile { it.isBlank() }
-            .joinToString("\n")
+            .joinToString("\n\u001B[0m")
             .ifEmpty { "A Minehut Production" }
     }
 
