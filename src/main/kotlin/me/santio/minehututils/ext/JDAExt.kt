@@ -12,7 +12,6 @@ fun Int.asEmote(): Emoji {
 }
 
 fun Long.toTime(relative: Boolean = true): String {
-    println(this.toString().length)
     val seconds = if (this.toString().length == 13) this / 1000 else this
     return if (relative) "<t:${seconds.toInt()}:R>"
     else "<t:${seconds.toInt()}>"
