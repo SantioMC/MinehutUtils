@@ -10,6 +10,7 @@ import me.santio.minehututils.minehut.Minehut
 import me.santio.minehututils.utils.EnvUtils.env
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
+import java.io.File
 import me.santio.minehututils.db.Minehut as Database
 
 lateinit var bot: JDA
@@ -17,7 +18,10 @@ lateinit var database: Database
 
 fun main() {
     // Setup database
-    val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:data.db")
+    val dbFile = File(env("DB_FILE", "data.db"))
+    if (!dbFile.exists()) dbFile.createNewFile()
+
+    val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
     Database.Schema.create(driver)
     database = Database(driver)
 
