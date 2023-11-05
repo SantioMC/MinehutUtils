@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  minehututils:
+    image: ghcr.io/santiomc/minehututils:nightly
+    container_name: minehututils
+    restart: always
+    volumes:
+      - minehututils:/app
+    env_file: .env
+
+volumes:
+  minehututils:
