@@ -39,7 +39,7 @@ class NetworkCommand {
             | **Servers**: ${status.serverCount}/${status.serverMax}
             | **RAM**: ${ceil(status.ramCount / 1000.0).toInt()}GB/${status.ramMax}GB
             |
-            | *View player statistics at [Minehut Track](https://track.minehut.com)*
+            | *View player statistics at [Minehut Track](https://track.gamersafer.systems/)*
             """.trimMargin()
         )).queue()
     }
