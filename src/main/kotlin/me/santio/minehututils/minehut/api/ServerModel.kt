@@ -75,5 +75,5 @@ data class ServerModel(
         get() = timeRemaining <= 0
 
     val hasDailyLimit: Boolean
-        get() = dailyUptime.isNullOrEmpty().not()
+        get() = dailyUptime.isNullOrEmpty().not() && plan != ServerPlan.EXTERNAL
 }
