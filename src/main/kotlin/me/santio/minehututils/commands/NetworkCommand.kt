@@ -37,7 +37,7 @@ class NetworkCommand {
             | → Bedrock: ${playerDist.bedrockTotal.formatted()} (Lobby: ${playerDist.bedrockLobby.formatted()}, Servers: ${playerDist.bedrockPlayerServer.formatted()})
             |
             | **Servers**: ${status.serverCount}/${status.serverMax}
-            | **RAM**: ${ceil(status.ramCount / 1000.0).toInt()}GB/${status.ramMax}GB
+            | **RAM**: ${ceil(status.ramCount / 1000.0).toInt()}GB
             |
             | *View player statistics at [Minehut Track](https://track.gamersafer.systems/)*
             """.trimMargin()
