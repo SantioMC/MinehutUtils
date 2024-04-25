@@ -1,5 +1,6 @@
 package me.santio.minehututils.cooldown
 
+import me.santio.minehututils.data.Channel
 import me.santio.minehututils.resolvers.DurationResolver
 import me.santio.minehututils.resolvers.DurationResolver.pretty
 import me.santio.minehututils.utils.EnvUtils.env
@@ -41,11 +42,11 @@ data class Cooldown(
         return pretty(Duration.ofSeconds(remaining))
     }
 
-    enum class Kind(val display: String, private val envVariable: String) {
-        ADVERTISEMENT_SERVER("Advertisement (Server)", "ADVERT_COOLDOWN"),
-        ADVERTISEMENT_USER("Advertisement (User)", "ADVERT_COOLDOWN"),
-        MARKET_OFFER("Marketplace (Offer)", "MARKET_COOLDOWN"),
-        MARKET_REQUEST("Marketplace (Request)", "MARKET_COOLDOWN"),
+    enum class Kind(val display: String, val channel: Channel, private val envVariable: String) {
+        ADVERTISEMENT_SERVER("Advertisement (Server)", Channel.ADVERTISEMENTS, "ADVERT_COOLDOWN"),
+        ADVERTISEMENT_USER("Advertisement (User)", Channel.ADVERTISEMENTS, "ADVERT_COOLDOWN"),
+        MARKET_OFFER("Marketplace (Offer)", Channel.MARKETPLACE, "MARKET_COOLDOWN"),
+        MARKET_REQUEST("Marketplace (Request)", Channel.MARKETPLACE, "MARKET_COOLDOWN"),
         ;
 
         fun getDuration(): Duration {

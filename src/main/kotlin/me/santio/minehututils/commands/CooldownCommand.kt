@@ -32,12 +32,14 @@ class CooldownCommand {
         }
 
         val cooldowns = CooldownRegistry.cooldowns[e.user.id] ?: emptySet()
+        val defaultCooldowns = Cooldown.Kind.entries.distinctBy { it.channel }
+
         var body = """
         | :clipboard: Channel Cooldowns
         | 
         | **Server Cooldowns**
-        ${Cooldown.Kind.entries.joinToString("\n") {
-            val name = it.display
+        ${defaultCooldowns.joinToString("\n") {
+            val name = it.channel.display
             val duration = DurationResolver.pretty(it.getDuration())
 
             "| $name: $duration"
