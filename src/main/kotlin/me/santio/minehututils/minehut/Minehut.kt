@@ -1,5 +1,6 @@
 package me.santio.minehututils.minehut
 
+import com.google.gson.Gson
 import kong.unirest.core.Unirest
 import me.santio.minehututils.minehut.api.*
 import java.time.Duration
@@ -91,7 +92,9 @@ object Minehut {
      * @return The server model, or null if the server does not exist
      */
     fun server(name: String): ServerModel? {
-        val response = client.get("https://api.minehut.com/server/${name}?byName=true").asObject(ServerResponseModel::class.java)
+        val response = client.get("https://api.minehut.com/server/${name}?byName=true")
+            .asObject(ServerResponseModel::class.java)
+
         return if (response.isSuccess && response.body.ok != false) { response.body.server } else null
     }
 

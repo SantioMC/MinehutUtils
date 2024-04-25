@@ -49,7 +49,7 @@ data class ServerModel(
     @SerializedName("using_cosmetics")
     val usingCosmetics: Boolean,
     @SerializedName("daily_online_time")
-    private val dailyUptime: Map<String, Int>? = null,
+    private val dailyUptime: Map<String, Long>? = null,
     val joins: Int,
     val icon: String,
     val online: Boolean,
