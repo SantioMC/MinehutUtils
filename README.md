@@ -65,14 +65,14 @@ Running the bot with docker is the easiest way to get started and recommended fo
 
 1. Pull the docker image from github packages
     ```shell
-    docker pull ghcr.io/santiomc/minehututils:nightly
+    docker pull ghcr.io/santiomc/minehututils:master
     ```
 
 2. Run the docker image
     ```shell
     docker run -d --rm \
     -e TOKEN=<your bot token> \
-   ghcr.io/santiomc/minehututils:nightly
+   ghcr.io/santiomc/minehututils:master
     ```
 
 > Note: Since the bot uses a database to store cooldowns and settings, you'll need to mount a volume

@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   minehututils:
-    image: ghcr.io/santiomc/minehututils:nightly
+    image: ghcr.io/santiomc/minehututils:master
     container_name: minehututils
     restart: always
     volumes:
