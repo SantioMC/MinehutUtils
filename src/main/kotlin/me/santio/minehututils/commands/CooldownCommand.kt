@@ -4,9 +4,9 @@ import me.santio.coffee.common.annotations.Command
 import me.santio.coffee.jda.annotations.Description
 import me.santio.coffee.jda.annotations.Permission
 import me.santio.minehututils.cooldown.Cooldown
-import me.santio.minehututils.database
+import me.santio.minehututils.cooldown.CooldownRegistry
+import me.santio.minehututils.data.Channel
 import me.santio.minehututils.ext.reply
-import me.santio.minehututils.ext.toCooldown
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.logger.Logger
 import me.santio.minehututils.minehut.api.ServerModel
@@ -14,7 +14,6 @@ import me.santio.minehututils.resolvers.DurationResolver
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import java.time.Duration
-import kotlin.math.floor
 import net.dv8tion.jda.api.Permission as JDAPermission
 
 @Command
@@ -24,57 +23,34 @@ class CooldownCommand {
     fun info(e: SlashCommandInteractionEvent) {
         val guild = e.guild ?: return
 
-        val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
+        val channels = Channel.entries.map { it.get() }
+        val anyConfigured = channels.any { it != null }
 
-        if (
-            guildSettings == null
-            || (guildSettings.advertChannel == null
-                && guildSettings.marketChannel == null)
-        ) {
+        if (!anyConfigured) {
             e.reply(EmbedFactory.error("This guild has no configured channels.", guild)).queue()
             return
         }
 
-        val now = floor(System.currentTimeMillis() / 1000.0).toInt()
-        val cooldowns = database.cooldownQueries.getCooldowns(e.user.id).executeAsList()
-
+        val cooldowns = CooldownRegistry.cooldowns[e.user.id] ?: emptySet()
         var body = """
         | :clipboard: Channel Cooldowns
         | 
         | **Server Cooldowns**
-        ${guildSettings.advertChannel?.let { 
-            if (guildSettings.advertCooldown == 0L) return@let ""
-            val duration = Duration.ofSeconds(guildSettings.advertCooldown)
-            "| <#$it>: ${DurationResolver.pretty(duration)}"
-        } ?: ""}
-        ${guildSettings.marketChannel?.let {
-            if (guildSettings.marketCooldown == 0L) return@let ""
-            val duration = Duration.ofSeconds(guildSettings.marketCooldown)
-            "| <#$it>: ${DurationResolver.pretty(duration)}\n"
-        } ?: ""}
-        | **Your Cooldowns**
+        ${Cooldown.Kind.entries.joinToString("\n") {
+            val name = it.display
+            val duration = DurationResolver.pretty(it.getDuration())
+
+            "| $name: $duration"
+        }}
         | 
+        | **Your Cooldowns**
+        ${cooldowns.joinToString("\n") {
+            val name = it.key.display
+            val timestamp = it.expiresAt()
+            
+            "| $name: <t:$timestamp:R>"
+        }}
         """.trimMargin()
-
-        for (category in listOf("advert", "market-offer", "market-request")) {
-            val cooldown = cooldowns.firstOrNull { it.category == category } ?: continue
-
-            val channel = when (category) {
-                "advert" -> guildSettings.advertChannel
-                "market-offer", "market-request" -> guildSettings.marketChannel
-                else -> null
-            } ?: continue
-
-            val extra = when (category) {
-                "market-offer" -> " (Offering)"
-                "market-request" -> " (Requesting)"
-                else -> ""
-            }
-
-            var duration = Duration.ofSeconds(cooldown.time_end - now)
-            if (duration.toSeconds() <= 0) duration = Duration.ofSeconds(1)
-            body += "<#$channel>$extra: ${DurationResolver.pretty(duration)}\n"
-        }
 
         if (cooldowns.isEmpty()) {
             body += "You have no active cooldowns"
@@ -90,14 +66,14 @@ class CooldownCommand {
         @Description("Set a user's marketplace cooldown for offers")
         fun offers(e: SlashCommandInteractionEvent, user: Member, duration: Duration) {
             val guild = e.guild ?: return
-            val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
+            val marketChannel = Channel.MARKETPLACE.get()
 
-            if (guildSettings?.marketChannel == null) {
+            if (marketChannel == null) {
                 e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
-            Cooldown.MARKET_OFFERING.set(user, duration.toCooldown())
+            CooldownRegistry.setCooldown(user.id, Cooldown.Kind.MARKET_OFFER, duration)
             e.reply(EmbedFactory.success("Set marketplace cooldown (offers) for ${user.asMention} to ${
                 DurationResolver.pretty(duration)
             }", guild)).setEphemeral(true).queue()
@@ -116,14 +92,14 @@ class CooldownCommand {
         @Description("Set a user's marketplace cooldown for requests")
         fun requests(e: SlashCommandInteractionEvent, user: Member, duration: Duration) {
             val guild = e.guild ?: return
-            val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
+            val marketChannel = Channel.MARKETPLACE.get()
 
-            if (guildSettings?.marketChannel == null) {
+            if (marketChannel == null) {
                 e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
-            Cooldown.MARKET_REQUESTS.set(user, duration.toCooldown())
+            CooldownRegistry.setCooldown(user.id, Cooldown.Kind.MARKET_REQUEST, duration)
             e.reply(EmbedFactory.success("Set marketplace cooldown (requests) for ${user.asMention} to ${DurationResolver.pretty(duration)}", guild))
                 .setEphemeral(true).queue()
 
@@ -141,14 +117,14 @@ class CooldownCommand {
         @Description("Set a user's cooldown for advertisements")
         fun advertise(e: SlashCommandInteractionEvent, user: Member, duration: Duration) {
             val guild = e.guild ?: return
-            val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
+            val advertChannel = Channel.ADVERTISEMENTS.get()
 
-            if (guildSettings?.advertChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
+            if (advertChannel == null) {
+                e.reply(EmbedFactory.error("This guild has no configured advertisement channel.", guild)).queue()
                 return
             }
 
-            Cooldown.ADVERTISE_USER.set(user, duration.toCooldown())
+            CooldownRegistry.setCooldown(user.id, Cooldown.Kind.ADVERTISEMENT_USER, duration)
             e.reply(EmbedFactory.success("Set advertisement cooldown for ${user.asMention} to ${
                 DurationResolver.pretty(duration)
             }", guild)).setEphemeral(true).queue()
@@ -167,14 +143,14 @@ class CooldownCommand {
         @Description("Set a server's cooldown for advertisements")
         fun server(e: SlashCommandInteractionEvent, server: ServerModel, duration: Duration) {
             val guild = e.guild ?: return
-            val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
+            val advertChannel = Channel.ADVERTISEMENTS.get()
 
-            if (guildSettings?.advertChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
+            if (advertChannel == null) {
+                e.reply(EmbedFactory.error("This guild has no configured advertisement channel.", guild)).queue()
                 return
             }
 
-            Cooldown.ADVERTISE_SERVER.set(server, duration.toCooldown())
+            CooldownRegistry.setCooldown(server.id, Cooldown.Kind.ADVERTISEMENT_SERVER, duration)
             e.reply(EmbedFactory.success("Set advertisement cooldown for ${server.name} to ${
                 DurationResolver.pretty(duration)
             }", guild)).setEphemeral(true).queue()
@@ -198,14 +174,14 @@ class CooldownCommand {
         @Description("Reset the user's marketplace cooldown for offers")
         fun offers(e: SlashCommandInteractionEvent, user: Member) {
             val guild = e.guild ?: return
-            val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
+            val marketChannel = Channel.MARKETPLACE.get()
 
-            if (guildSettings?.marketChannel == null) {
+            if (marketChannel == null) {
                 e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
-            Cooldown.MARKET_OFFERING.clear(user)
+            CooldownRegistry.resetCooldown(user.id, Cooldown.Kind.MARKET_OFFER)
             e.reply(EmbedFactory.success("Reset the marketplace cooldown (offers) for ${user.asMention}", guild))
                 .setEphemeral(true).queue()
 
@@ -224,14 +200,14 @@ class CooldownCommand {
         @Description("Reset the user's marketplace cooldown for requests")
         fun requests(e: SlashCommandInteractionEvent, user: Member) {
             val guild = e.guild ?: return
-            val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
+            val marketChannel = Channel.MARKETPLACE.get()
 
-            if (guildSettings?.marketChannel == null) {
+            if (marketChannel == null) {
                 e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
                 return
             }
 
-            Cooldown.MARKET_REQUESTS.clear(user)
+            CooldownRegistry.resetCooldown(user.id, Cooldown.Kind.MARKET_REQUEST)
             e.reply(EmbedFactory.success("Reset the marketplace cooldown (requests) for ${user.asMention}", guild))
                 .setEphemeral(true).queue()
 
@@ -249,14 +225,14 @@ class CooldownCommand {
         @Description("Reset the user's cooldown for advertisements")
         fun advertise(e: SlashCommandInteractionEvent, user: Member) {
             val guild = e.guild ?: return
-            val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
+            val advertChannel = Channel.ADVERTISEMENTS.get()
 
-            if (guildSettings?.advertChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
+            if (advertChannel == null) {
+                e.reply(EmbedFactory.error("This guild has no configured advertisement channel.", guild)).queue()
                 return
             }
 
-            Cooldown.ADVERTISE_USER.clear(user)
+            CooldownRegistry.resetCooldown(user.id, Cooldown.Kind.ADVERTISEMENT_USER)
             e.reply(EmbedFactory.success("Reset the advertisement cooldown for ${user.asMention}", guild))
                 .setEphemeral(true).queue()
 
@@ -274,14 +250,14 @@ class CooldownCommand {
         @Description("Reset a server's cooldown for advertisements")
         fun server(e: SlashCommandInteractionEvent, server: ServerModel) {
             val guild = e.guild ?: return
-            val guildSettings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
+            val advertChannel = Channel.ADVERTISEMENTS.get()
 
-            if (guildSettings?.advertChannel == null) {
-                e.reply(EmbedFactory.error("This guild has no configured market channel.", guild)).queue()
+            if (advertChannel == null) {
+                e.reply(EmbedFactory.error("This guild has no configured advertisement channel.", guild)).queue()
                 return
             }
 
-            Cooldown.ADVERTISE_SERVER.clear(server)
+            CooldownRegistry.resetCooldown(server.id, Cooldown.Kind.ADVERTISEMENT_SERVER)
             e.reply(EmbedFactory.success("Reset the advertisement cooldown for ${server.name}", guild))
                 .setEphemeral(true).queue()
 

@@ -6,12 +6,9 @@ import me.santio.coffee.jda.gui.dropdown.Dropdown
 import me.santio.coffee.jda.gui.showModal
 import me.santio.minehututils.bot
 import me.santio.minehututils.cooldown.Cooldown
-import me.santio.minehututils.database
-import me.santio.minehututils.db.GuildSettings
-import me.santio.minehututils.ext.isElapsed
+import me.santio.minehututils.cooldown.CooldownRegistry
+import me.santio.minehututils.data.Channel
 import me.santio.minehututils.ext.reply
-import me.santio.minehututils.ext.toCooldown
-import me.santio.minehututils.ext.toTime
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.modals.MarketplaceModal
 import me.santio.minehututils.resolvers.AutoModResolver
@@ -23,7 +20,6 @@ import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
-import java.time.Duration
 
 @Command
 @Description("Request or offer services")
@@ -32,8 +28,7 @@ class MarketplaceCommand {
     fun marketplace(e: SlashCommandInteractionEvent) {
         if (e.guild == null) return
 
-        val guildSettings = database.guildSettingsQueries.from(e.guild!!.id).executeAsOneOrNull()
-        if (guildSettings?.marketChannel == null) {
+        val marketChannel = Channel.MARKETPLACE.get() ?: run {
             e.reply(EmbedFactory.error("This server hasn't setup a server marketplace!", e.guild!!)).setEphemeral(true).queue()
             return
         }
@@ -48,15 +43,24 @@ class MarketplaceCommand {
                     .withEmoji(Emoji.fromFormatted("📝"))
                     .withDescription("Request services, staff, or code from the community")
             ) {
-                if (Cooldown.getMarketplaceType(it.selected.first())?.get(e.member!!)?.isElapsed() == false) {
+
+                val kind = when (it.selected.first()) {
+                    "offer" -> Cooldown.Kind.MARKET_OFFER
+                    "request" -> Cooldown.Kind.MARKET_REQUEST
+                    else -> error("Failed to get cooldown kind")
+                }
+
+                val cooldown = CooldownRegistry.getCooldown(e.user.id, kind)
+
+                if (cooldown != null) {
                     it.event.reply(EmbedFactory.error(
-                        "You are currently on cooldown, try again ${Cooldown.getMarketplaceType(it.selected.first())?.get(e.member!!)?.toTime() ?: "in a few seconds"}",
+                        "You are currently on cooldown, try again in ${cooldown.remaining()}",
                         e.guild!!
                     )).setEphemeral(true).queue()
                     return@from
                 }
 
-                handlePosting(it.event as StringSelectInteraction, guildSettings)
+                handlePosting(it.event as StringSelectInteraction, marketChannel)
             }.onExpire {
                 message.editOriginal("This interaction has been automatically closed").queue()
             }.build())
@@ -66,13 +70,8 @@ class MarketplaceCommand {
             }
     }
 
-    private fun handlePosting(e: StringSelectInteraction, settings: GuildSettings) {
-        val type = when (e.selectedOptions.first().value) {
-            "offer" -> "Offer"
-            "request" -> "Request"
-            else -> return
-        }
-
+    private fun handlePosting(e: StringSelectInteraction, channelId: String) {
+        val value = e.selectedOptions.first().value.lowercase()
         e.showModal(MarketplaceModal::class.java) { modal, event ->
 
             // Run everything through auto-mod
@@ -94,13 +93,13 @@ class MarketplaceCommand {
                 return@showModal
             }
 
-            postListing(type, modal, event, settings)
+            postListing(value, modal, event, channelId)
         }
     }
 
-    private fun postListing(type: String, modal: MarketplaceModal, event: ModalInteractionEvent, settings: GuildSettings) {
+    private fun postListing(type: String, modal: MarketplaceModal, event: ModalInteractionEvent, channelId: String) {
 
-        val channel = bot.getTextChannelById(settings.marketChannel!!) ?: run {
+        val channel = bot.getTextChannelById(channelId) ?: run {
             event.reply(EmbedFactory.error("Failed to find the marketplace channel, was it deleted?", event.guild!!)).setEphemeral(true).queue()
             return
         }
@@ -110,8 +109,9 @@ class MarketplaceCommand {
                 MarkdownSanitizer.sanitize(modal.title.replace("*", ""))
                     .ifEmpty { "Untitled" }
             }**
-            | 
+            |
             | ${modal.description}
+            | ​
             """.trimMargin()) {
 
             it.setFooter(
@@ -120,7 +120,7 @@ class MarketplaceCommand {
             )
         }
 
-        channel.sendMessage("Listing posted- by ${event.user.asMention}")
+        channel.sendMessage("Listing posted by ${event.user.asMention}")
             .addEmbeds(embed.build())
             .queue {
                 event.reply(EmbedFactory.default("""
@@ -131,7 +131,13 @@ class MarketplaceCommand {
                     """.trimMargin())).setEphemeral(true).queue()
             }
 
-        Cooldown.getMarketplaceType(type.lowercase())?.set(event.member!!, Duration.ofSeconds(settings.advertCooldown).toCooldown())
+        val cooldown = when (type) {
+            "offer" -> Cooldown.Kind.MARKET_OFFER
+            "request" -> Cooldown.Kind.MARKET_REQUEST
+            else -> error("Failed to get cooldown kind: $type")
+        }
+
+        CooldownRegistry.setCooldown(event.member!!.id, cooldown)
     }
 
 }

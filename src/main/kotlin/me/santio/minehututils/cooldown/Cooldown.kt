@@ -1,90 +1,63 @@
 package me.santio.minehututils.cooldown
 
-import me.santio.minehututils.database
-import me.santio.minehututils.minehut.api.ServerModel
-import net.dv8tion.jda.api.entities.Member
+import me.santio.minehututils.resolvers.DurationResolver
+import me.santio.minehututils.resolvers.DurationResolver.pretty
+import me.santio.minehututils.utils.EnvUtils.env
+import me.santio.minehututils.utils.TimeUtils.now
+import java.time.Duration
 
-enum class Cooldown(private val key: String) {
-    ADVERTISE_USER("advert"),
-    ADVERTISE_SERVER("advert"),
-    MARKET_OFFERING("market-offer"),
-    MARKET_REQUESTS("market-request"),
-    ;
+/**
+ * The cooldown data for a user
+ * @param key The cooldown key this cooldown is for
+ * @param timestamp When the cooldown started
+ * @param duration The duration of the cooldown in seconds
+ */
+data class Cooldown(
+    val key: Kind,
+    val timestamp: Long,
+    val duration: Long
+) {
 
     /**
-     * Gets the user's cooldown relating to the specified [Cooldown]
-     * @param user The user to get the cooldown for
-     * @return The time the cooldown ends, or null if the cooldown doesn't exist or
-     * if the cooldown is not related to a user
+     * @return Whether the cooldown is expired
      */
-    fun get(user: Member): Long? {
-        if (this == ADVERTISE_SERVER) return null
-        return database.cooldownQueries.getCooldown(user.id, key).executeAsOneOrNull()?.time_end
+    fun isExpired(): Boolean {
+        return now() > (timestamp + duration)
     }
 
     /**
-     * Gets the server's cooldown relating to the specified [Cooldown]
-     * @param server The server to get the cooldown for
-     * @return The time the cooldown ends, or null if the cooldown doesn't exist or
-     * if the cooldown is not related to a server
+     * @return When the cooldown expires
      */
-    fun get(server: ServerModel): Long? {
-        if (this != ADVERTISE_SERVER) return null
-        return database.cooldownQueries.getCooldown(server.id, key).executeAsOneOrNull()?.time_end
+    fun expiresAt(): Long {
+        return timestamp + duration
     }
 
     /**
-     * Sets the user's cooldown relating to the specified [Cooldown]
-     * @param user The user to set the cooldown for
-     * @param time The time the cooldown ends
+     * @return The amount of time remaining pretty printed
+     * @see DurationResolver.pretty
      */
-    fun set(user: Member, time: Long) {
-        if (this == ADVERTISE_SERVER) return
-        if (time == 0L) return clear(user)
-        database.cooldownQueries.setCooldown(user.id, key, time)
+    fun remaining(): String {
+        val remaining = (timestamp + duration) - now()
+        return pretty(Duration.ofSeconds(remaining))
     }
 
-    /**
-     * Sets the server's cooldown relating to the specified [Cooldown]
-     * @param server The server to set the cooldown for
-     * @param time The time the cooldown ends
-     */
-    fun set(server: ServerModel, time: Long) {
-        if (this != ADVERTISE_SERVER) return
-        if (time == 0L) return clear(server)
-        database.cooldownQueries.setCooldown(server.id, key, time)
-    }
+    enum class Kind(val display: String, private val envVariable: String) {
+        ADVERTISEMENT_SERVER("Advertisement (Server)", "ADVERT_COOLDOWN"),
+        ADVERTISEMENT_USER("Advertisement (User)", "ADVERT_COOLDOWN"),
+        MARKET_OFFER("Marketplace (Offer)", "MARKET_COOLDOWN"),
+        MARKET_REQUEST("Marketplace (Request)", "MARKET_COOLDOWN"),
+        ;
 
-    /**
-     * Clears the user's cooldown relating to the specified [Cooldown]
-     * @param user The user to clear the cooldown for
-     */
-    fun clear(user: Member) {
-        if (this == ADVERTISE_SERVER) return
-        database.cooldownQueries.resetCooldown(user.id, key)
-    }
-
-    /**
-     * Clears the server's cooldown relating to the specified [Cooldown]
-     * @param server The server to clear the cooldown for
-     */
-    fun clear(server: ServerModel) {
-        if (this != ADVERTISE_SERVER) return
-        database.cooldownQueries.resetCooldown(server.id, key)
-    }
-
-    companion object {
-        /**
-         * Get a marketplace type cooldown from the type provided
-         * @param type The listing type, either 'offer' or 'request'
-         * @return The cooldown relating to the type, or null if the type is invalid
-         */
-        fun getMarketplaceType(type: String): Cooldown? {
-            return when (type) {
-                "offer" -> MARKET_OFFERING
-                "request" -> MARKET_REQUESTS
-                else -> null
-            }
+        fun getDuration(): Duration {
+            val value = env(this.envVariable, "24h")
+            return DurationResolver.from(value)
+                ?: Duration.ofHours(24)
         }
+
+        fun getCooldownTime(): Long {
+            return getDuration().toSeconds()
+        }
+
     }
+
 }
