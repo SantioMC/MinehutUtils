@@ -135,7 +135,7 @@ After that, users should be able to post advertisements in the channel.
 #### Cooldowns
 Cooldowns are pretty simple to set up and by default will fall back to 24 hours if they aren't
 specified. Setting a custom duration can be done by setting `MARKET_COOLDOWN` or `ADVERT_COOLDOWN`
-to a duration. Durations follow [ms format](https://www.npmjs.com/package/ms), so a value of `10m` is valid.
+to a duration. Durations follow the format shown below.
 
 Valid Examples: `10s`, `10m`, `10h`, `10d`
 
