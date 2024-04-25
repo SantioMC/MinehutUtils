@@ -5,8 +5,10 @@ import me.santio.coffee.jda.annotations.Description
 import me.santio.coffee.jda.gui.button.Button
 import me.santio.coffee.jda.gui.showModal
 import me.santio.minehututils.cooldown.Cooldown
-import me.santio.minehututils.database
-import me.santio.minehututils.ext.*
+import me.santio.minehututils.cooldown.CooldownRegistry
+import me.santio.minehututils.data.Channel
+import me.santio.minehututils.ext.reply
+import me.santio.minehututils.ext.sendMessage
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.modals.AdvertisementModal
 import me.santio.minehututils.resolvers.AutoModResolver
@@ -23,22 +25,22 @@ class AdvertiseCommand {
     fun advertise(e: SlashCommandInteractionEvent) {
         val guild = e.guild ?: return
         val member = e.member ?: return
-        val settings = database.guildSettingsQueries.from(guild.id).executeAsOneOrNull()
-        
-        if (settings?.advertChannel == null) {
-            e.reply(EmbedFactory.error("This server hasn't setup server advertisements!", guild)).setEphemeral(true).queue()
+
+        val advertChannel = Channel.ADVERTISEMENTS.get() ?: run {
+            e.reply(EmbedFactory.error("This server hasn't setup a advertisement channel!", e.guild!!)).setEphemeral(true).queue()
             return
         }
         
-        val channel = guild.getTextChannelById(settings.advertChannel) ?: run {
+        val channel = guild.getTextChannelById(advertChannel) ?: run {
             e.reply(EmbedFactory.error("Failed to find the advertisement channel, was it deleted?", guild)).setEphemeral(true).queue()
             return
         }
 
         // Check if they're on cooldown
-        if (Cooldown.ADVERTISE_USER.get(member)?.isElapsed() == false) {
+        val cooldown = CooldownRegistry.getCooldown(member.id, Cooldown.Kind.ADVERTISEMENT_USER)
+        if (cooldown != null) {
             e.reply(EmbedFactory.error(
-                "You are currently on cooldown, try again ${Cooldown.ADVERTISE_USER.get(member)?.toTime() ?: "in a few seconds"}",
+                "You are currently on cooldown, try again in ${cooldown.remaining()}",
                 guild
             )).setEphemeral(true).queue()
             return
@@ -55,6 +57,15 @@ class AdvertiseCommand {
                     return@thenAccept
                 }
 
+                val serverCooldown = CooldownRegistry.getCooldown(m.server.id, Cooldown.Kind.ADVERTISEMENT_SERVER)
+                if (serverCooldown != null) {
+                    e.reply(EmbedFactory.error(
+                        "This server is currently on cooldown, try again in ${serverCooldown.remaining()}",
+                        guild
+                    )).setEphemeral(true).queue()
+                    return@thenAccept
+                }
+
                 if (m.description.lines().size > 25) {
                     event.reply(EmbedFactory.error(
                         "Your description is too long, please shorten it to 25 lines or less.",
@@ -63,7 +74,9 @@ class AdvertiseCommand {
                     return@thenAccept
                 }
 
-                Cooldown.ADVERTISE_USER.set(member, Duration.ofSeconds(settings.advertCooldown).toCooldown())
+                CooldownRegistry.setCooldown(member.id, Cooldown.Kind.ADVERTISEMENT_USER)
+                CooldownRegistry.setCooldown(m.server.id, Cooldown.Kind.ADVERTISEMENT_SERVER)
+
                 channel.sendMessage(EmbedFactory.default("""
                 | ${EmojiResolver.find(guild, "minehut")?.formatted ?: ""} **${m.server.name}**
                 | 

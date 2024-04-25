@@ -53,7 +53,6 @@ The following is a full list of commands that MinehutUtils provides:
 | `marketplace`   | Either request or offer your services          | ✅      |
 | `cooldown info` | View server and your cooldown                  | ✅      |
 | `cooldown`      | Manage user's cooldowns                        | ❌      |
-| `settings`      | Change the bot settings or behaviour           | ❌      |
 
 ## Getting Started
 
@@ -118,27 +117,27 @@ If you want to run the bot without a container, you can do so by following these
 ### Setup
 
 The bot by default should now have most things working, however a bit of configuration is needed
-to get both the marketplace and advertisement commands setup, along with a few other settings.
-For more advanced configuration, see the [environment variables](#environment-variables)
+to get both the marketplace and advertisement commands setup. By default, if the [environment variables](#environment-variables)
+are not setup for `MARKET_CHANNEL` or `ADVERT_CHANNEL` their respective commands won't work and will be disabled.
 
 #### Marketplace
 To get the marketplace working, you should first create a channel for it if you haven't already.
-Once you have a channel selected, use `/settings marketplace channel:<channel>` to set the channel.
+Once you have a channel created, set `MARKET_CHANNEL` to the ID of the channel.
 
 After that, users should be able to post both offers and requests in the channel.
 
 #### Advertise
-To get the advertise command working, create a channel for it like before, and run the following command:
-`/settings advertise channel:<channel>`
+To get advertisements working, you should first create a channel for it if you haven't already.
+Once you have a channel created, set `ADVERT_CHANNEL` to the ID of the channel.
+
+After that, users should be able to post advertisements in the channel.
 
 #### Cooldowns
-Setting a cooldown for either the advertise or marketplace command is easy. Simply run the following command:
-```
-/settings cooldown advertise cooldown:<time>
-/settings cooldown marketplace cooldown:<time>
-```
+Cooldowns are pretty simple to set up and by default will fall back to 24 hours if they aren't
+specified. Setting a custom duration can be done by setting `MARKET_COOLDOWN` or `ADVERT_COOLDOWN`
+to a duration. Durations follow [ms format](https://www.npmjs.com/package/ms), so a value of `10m` is valid.
 
-You're able to put any short-form time value in the cooldown, for example `1d`, `1h` or `30m`.
+Valid Examples: `10s`, `10m`, `10h`, `10d`
 
 #### Logs
 By default, the bot will log to any channel appropriately named `#logs`, however this channel can be
@@ -148,11 +147,15 @@ any non-existent channel, a good example of this is `LOG_CHANNEL=.` *(Channels c
 ## Environment Variables
 Below are a list of all possible environment variables that can be set to configure the bot.
 
-| Variable    | Description                                   | Default |
-|-------------|-----------------------------------------------|---------|
-| DB_FILE     | What should the database file be named        | data.db |
-| TOKEN       | The bot token                                 |         |
-| LOG_CHANNEL | The channel to post logs to *(without the #)* | logs    |
+| Variable        | Description                                        | Default |
+|-----------------|----------------------------------------------------|---------|
+| DB_FILE         | What should the database file be named             | data.db |
+| TOKEN           | The bot token                                      |         |
+| LOG_CHANNEL     | The channel to post logs to *(without the #)*      | logs    |
+| MARKET_CHANNEL  | The channel to where marketplace postings are sent |         |
+| ADVERT_CHANNEL  | The channel to where advertisements are sent       |         |
+| MARKET_COOLDOWN | The cooldown for the marketplace command           | 24h     |
+| ADVERT_COOLDOWN | The cooldown for the advertisement command         | 24h     |
 
 ## Contributing
 Thanks for everyone who has already contributed, and anyone willing to. This is a community bot and

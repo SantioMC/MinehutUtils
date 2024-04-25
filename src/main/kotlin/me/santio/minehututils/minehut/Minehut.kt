@@ -1,7 +1,7 @@
 package me.santio.minehututils.minehut
 
-import com.google.gson.Gson
 import kong.unirest.core.Unirest
+import me.santio.minehututils.cooldown.CooldownRegistry
 import me.santio.minehututils.minehut.api.*
 import java.time.Duration
 import java.util.*
@@ -39,7 +39,11 @@ object Minehut {
      */
     fun startTimer() {
         Timer().schedule(30000) {
+            // Update in-memory server cache
             refreshList()
+
+            // Cleanup in-memory cooldown cache
+            CooldownRegistry.cleanup()
         }.also { refreshList() }
     }
 
