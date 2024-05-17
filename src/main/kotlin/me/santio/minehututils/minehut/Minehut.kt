@@ -1,6 +1,6 @@
 package me.santio.minehututils.minehut
 
-import kong.unirest.core.Unirest
+import kong.unirest.core.*
 import me.santio.minehututils.cooldown.CooldownRegistry
 import me.santio.minehututils.minehut.api.*
 import java.time.Duration
@@ -21,7 +21,13 @@ object Minehut {
         config().addDefaultHeader("Content-Type", "application/json")
         config().addDefaultHeader("Accept", "application/json")
         config().addDefaultHeader("User-Agent", "MinehutUtils/2.0")
-        config().connectTimeout(5000)
+        config().connectTimeout(2000)
+
+        config().interceptor(object : Interceptor {
+            override fun onFail(e: Exception?, request: HttpRequestSummary?, config: Config?): HttpResponse<*> {
+                return FailedResponse<String>(e)
+            }
+        })
     }
 
 
@@ -77,7 +83,9 @@ object Minehut {
      * @return The network stats model, or null if the request failed
      */
     fun network(): SimpleStatsModel? {
-        val response = client.get("https://api.minehut.com/network/simple_stats").asObject(SimpleStatsModel::class.java)
+        val response = client.get("https://api.minehut.com/network/simple_stats")
+            .asObject(SimpleStatsModel::class.java)
+
         return if (response.isSuccess) { response.body } else null
     }
 
