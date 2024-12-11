@@ -1,13 +1,11 @@
-version: "3.8"
-
 services:
   minehututils:
-    image: ghcr.io/santiomc/minehututils:master
+#    image: ghcr.io/santiomc/minehututils:master
+    build:
+        context: .
+        dockerfile: Dockerfile
     container_name: minehututils
     restart: always
     volumes:
-      - minehututils:/app
+      - ./data:/app/data
     env_file: .env
-
-volumes:
-  minehututils:

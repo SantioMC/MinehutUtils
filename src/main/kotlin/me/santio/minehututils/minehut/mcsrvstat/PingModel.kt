@@ -1,4 +1,4 @@
-package me.santio.minehututils.minehut.api
+package me.santio.minehututils.minehut.mcsrvstat
 
 import com.google.gson.annotations.SerializedName
 

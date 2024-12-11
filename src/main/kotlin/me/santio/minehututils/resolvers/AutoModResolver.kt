@@ -1,6 +1,6 @@
 package me.santio.minehututils.resolvers
 
-import me.santio.minehututils.logger.Logger
+import me.santio.minehututils.logger.GuildLogger
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.automod.AutoModResponse
@@ -15,9 +15,9 @@ import java.util.concurrent.CompletableFuture
  * functionality as automod does however perfect functionality is not guaranteed.
  */
 object AutoModResolver {
-    
+
     private val mentionRegex = Regex("<@!?\\d{18}>")
-    
+
     /**
      * Parses a query and checks if it passes all auto mod rules
      * @param guild The guild containing the auto mod rules
@@ -29,7 +29,7 @@ object AutoModResolver {
      */
     fun parse(guild: Guild, query: String, member: Member, interaction: Interaction): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
-        
+
         guild.retrieveAutoModRules().queue({ rules ->
             for (rule in rules.filter { it.isEnabled }) {
                 var passes = rule.passes(query, interaction.guildChannel, member)
@@ -44,6 +44,7 @@ object AutoModResolver {
                             AutoModResponse.Type.TIMEOUT -> {
                                 action.timeoutDuration?.let { member.timeoutFor(it) }
                             }
+
                             else -> {}
                         }
                     }
@@ -52,12 +53,12 @@ object AutoModResolver {
                     return@queue
                 }
             }
-            
+
             future.complete(true)
         }, {
             future.complete(true)
         })
-        
+
         return future
     }
 
@@ -70,7 +71,12 @@ object AutoModResolver {
      * @return A completable future which will return whether the query passes, if the bot is missing permissions to
      * access the auto mod rules (MANAGE_GUILD), then we'll default to the query passing to avoid any functionality breaking.
      */
-    fun parse(guild: Guild, member: Member, interaction: Interaction, vararg queries: String): CompletableFuture<Boolean> {
+    fun parse(
+        guild: Guild,
+        member: Member,
+        interaction: Interaction,
+        vararg queries: String
+    ): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
         var remaining = queries.size
 
@@ -89,37 +95,37 @@ object AutoModResolver {
 
         return future
     }
-    
+
     private fun AutoModRule.passes(query: String, channel: GuildChannel, member: Member): Boolean {
         if (channel in this.exemptChannels) return true
         if (member.roles.any { it in this.exemptRoles }) return true
-        
+
         val regex = this.filteredRegex.map { Regex(it, RegexOption.IGNORE_CASE) }
         val blockedWords = this.filteredKeywords
         val allowedWords = this.allowlist
-        
+
         val words = query.split(" ").map { it.lowercase().trim() }
         for (word in words) {
             if (word in blockedWords && word !in allowedWords) {
                 return false
             }
         }
-        
+
         return regex
-            .map {it.findAll(query) }
+            .map { it.findAll(query) }
             .map {
                 it.filter { m -> m.value !in allowedWords }.count() > 0
             }
             .all { !it }
     }
-    
+
     private fun sendLog(query: String, guild: Guild, interaction: Interaction, rule: AutoModRule) {
-        Logger.of(guild).log(
+        GuildLogger.of(guild).log(
             "Message was caught failing to pass auto moderation rules",
             ":identification_card: User: ${interaction.member?.asMention} *(${interaction.user.name} - ${interaction.user.id})*",
             ":pencil: Query: `${MarkdownSanitizer.escape(query)}`",
             ":scroll: Rule Broken: ${rule.name}"
         ).withContext(interaction).titled("Auto Moderation").post()
     }
-    
+
 }

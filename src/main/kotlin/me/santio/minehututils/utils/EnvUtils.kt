@@ -1,6 +1,5 @@
 package me.santio.minehututils.utils
 
-
 import io.github.cdimascio.dotenv.Dotenv
 
 @Suppress("unused")
@@ -12,7 +11,7 @@ object EnvUtils {
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T: Any> env(key: String, def: T): T {
+    fun <T : Any> env(key: String, def: T): T {
         return env(key) as? T ?: def
     }
 

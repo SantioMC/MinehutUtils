@@ -1,8 +1,20 @@
 package me.santio.minehututils.minehut
 
-import kong.unirest.core.*
-import me.santio.minehututils.cooldown.CooldownRegistry
-import me.santio.minehututils.minehut.api.*
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.serialization.gson.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import me.santio.minehututils.minehut.mcsrvstat.PingModel
+import me.santio.sdk.minehut.apis.Minehut
+import me.santio.sdk.minehut.models.ListedServer
+import me.santio.sdk.minehut.models.PlayerStats
+import me.santio.sdk.minehut.models.Server
+import me.santio.sdk.minehut.models.SimpleStats
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.Executors
@@ -14,29 +26,26 @@ import kotlin.concurrent.schedule
 @Suppress("MemberVisibilityCanBePrivate")
 object Minehut {
 
+    private var serverCache: List<ListedServer>? = null
+    private val executor = Executors.newCachedThreadPool()
+    private val client = Minehut("https://api.minehut.com")
+
     val dailyTimeLimit: Duration = Duration.ofHours(4)
-    private var serverCache: ServersModel? = null
-
-    private val client = Unirest.spawnInstance().apply {
-        config().addDefaultHeader("Content-Type", "application/json")
-        config().addDefaultHeader("Accept", "application/json")
-        config().addDefaultHeader("User-Agent", "MinehutUtils/2.0")
-        config().connectTimeout(2000)
-
-        config().interceptor(object : Interceptor {
-            override fun onFail(e: Exception?, request: HttpRequestSummary?, config: Config?): HttpResponse<*> {
-                return FailedResponse<String>(e)
-            }
-        })
+    val httpClient = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            gson()
+        }
     }
-
 
     /**
      * Refresh the server list cache
      */
+    // todo: dont do this
     private fun refreshList() {
-        Executors.newSingleThreadExecutor().submit {
-            serverCache = servers(true)
+        executor.submit {
+            runBlocking {
+                serverCache = servers(true)
+            }
         }
     }
 
@@ -45,19 +54,12 @@ object Minehut {
      */
     fun startTimer() {
         Timer().schedule(30000) {
-            // Update in-memory server cache
             refreshList()
-
-            // Cleanup in-memory cooldown cache
-            CooldownRegistry.cleanup()
         }.also { refreshList() }
     }
 
-    /**
-     * Close the unirest client
-     */
     fun close() {
-        client.close()
+        httpClient.close()
     }
 
     /**
@@ -82,20 +84,16 @@ object Minehut {
      * Get the network statistics
      * @return The network stats model, or null if the request failed
      */
-    fun network(): SimpleStatsModel? {
-        val response = client.get("https://api.minehut.com/network/simple_stats")
-            .asObject(SimpleStatsModel::class.java)
-
-        return if (response.isSuccess) { response.body } else null
+    suspend fun network(): SimpleStats? {
+        return client.getNetworkStatistics().takeIf { it.success }?.body()
     }
 
     /**
      * Get the player statistics and distribution
      * @return The player stats model, or null if the request failed
      */
-    fun players(): PlayerStatsModel? {
-        val response = client.get("https://api.minehut.com/network/players/distribution").asObject(PlayerStatsModel::class.java)
-        return if (response.isSuccess) { response.body } else null
+    suspend fun players(): PlayerStats? {
+        return client.getPlayerDistribution().takeIf { it.success }?.body()
     }
 
     /**
@@ -103,11 +101,8 @@ object Minehut {
      * @param name The name of the server
      * @return The server model, or null if the server does not exist
      */
-    fun server(name: String): ServerModel? {
-        val response = client.get("https://api.minehut.com/server/${name}?byName=true")
-            .asObject(ServerResponseModel::class.java)
-
-        return if (response.isSuccess && response.body.ok != false) { response.body.server } else null
+    suspend fun server(name: String): Server? {
+        return client.getServer(name, true).takeIf { it.success }?.body()?.server
     }
 
     /**
@@ -115,10 +110,17 @@ object Minehut {
      * @param bypassCache Whether to bypass the server list cache
      * @return A servers model containing a list of servers along with extra information, or null if the request failed
      */
-    fun servers(bypassCache: Boolean = false): ServersModel? {
-        if (!bypassCache) return serverCache
-        val response = client.get("https://api.minehut.com/servers").asObject(ServersModel::class.java)
-        return if (response.isSuccess) { response.body } else null
+    suspend fun servers(bypassCache: Boolean = false): List<ListedServer> {
+        if (!bypassCache && serverCache != null) return serverCache!!
+
+        val servers = client.getServers()
+            .takeIf { it.success }
+            ?.body()
+            ?.servers
+            ?: emptyList()
+
+        serverCache = servers
+        return servers
     }
 
     /**
@@ -126,22 +128,25 @@ object Minehut {
      * @param service The service to ping
      * @return The ping model, or null if the service failed to ping
      */
-    fun ping(service: Service): PingModel? {
-        val url = when (service) {
-            Service.JAVA, Service.PROXY -> "https://api.mcsrvstat.us/3/minehut.com"
-            Service.BEDROCK -> "https://api.mcsrvstat.us/bedrock/3/bedrock.minehut.com"
-            else -> return null
-        }
+    suspend fun ping(service: Service): PingModel? {
+        return withContext(Dispatchers.IO) {
+            val url = when (service) {
+                Service.JAVA, Service.PROXY -> "https://api.mcsrvstat.us/3/minehut.com"
+                Service.BEDROCK -> "https://api.mcsrvstat.us/bedrock/3/bedrock.minehut.com"
+                else -> return@withContext null
+            }
 
-        val response = client.get(url).asObject(PingModel::class.java)
-        return if (response.isSuccess) { response.body } else null
+            return@withContext httpClient.get(url)
+                .takeIf { it.status.value == 200 }
+                ?.body<PingModel>()
+        }
     }
 
     /**
      * Get the status of core Minehut services
      * @return A map of services to their status
      */
-    fun status(): Map<Service, State> {
+    suspend fun status(): Map<Service, State> {
         val status = mutableMapOf(
             Service.JAVA to State.ONLINE,
             Service.BEDROCK to State.ONLINE,
@@ -155,11 +160,11 @@ object Minehut {
                 return@apply
             }
 
-            if (this.bedrockTotal < 50) status[Service.BEDROCK] = State.DEGRADED
-            if (this.bedrockTotal == 0) status[Service.BEDROCK] = State.OFFLINE
+            if (this.bedrockTotal != null && this.bedrockTotal < 50) status[Service.BEDROCK] = State.DEGRADED
+            if (this.bedrockTotal != null && this.bedrockTotal == 0) status[Service.BEDROCK] = State.OFFLINE
 
-            if (this.javaTotal < 1000) status[Service.JAVA] = State.DEGRADED
-            if (this.javaTotal == 0) status[Service.JAVA] = State.OFFLINE
+            if (this.javaTotal != null && this.javaTotal < 1000) status[Service.JAVA] = State.DEGRADED
+            if (this.javaTotal != null && this.javaTotal == 0) status[Service.JAVA] = State.OFFLINE
         }
 
         for (service in listOf(Service.PROXY, Service.BEDROCK)) {
