@@ -1,3 +1,4 @@
+import com.google.devtools.ksp.gradle.KspTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
@@ -114,6 +115,10 @@ tasks.register("createMigration") {
          """.trimMargin()
         )
     }
+}
+
+tasks.withType<KspTask> {
+    dependsOn("openApiGenerate")
 }
 
 application {

@@ -5,7 +5,7 @@ WORKDIR /app
 FROM base AS build
 
 COPY . .
-RUN gradle openApiGenerate shadowJar --no-daemon
+RUN ./gradlew openApiGenerate shadowJar --no-daemon
 
 FROM base AS runtime
 COPY --from=build /app/build/libs/*.jar app.jar
