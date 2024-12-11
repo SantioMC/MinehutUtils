@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.automod.AutoModResponse
 import net.dv8tion.jda.api.entities.automod.AutoModRule
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.interactions.Interaction
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.util.concurrent.CompletableFuture
@@ -30,34 +31,39 @@ object AutoModResolver {
     fun parse(guild: Guild, query: String, member: Member, interaction: Interaction): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
 
-        guild.retrieveAutoModRules().queue({ rules ->
-            for (rule in rules.filter { it.isEnabled }) {
-                var passes = rule.passes(query, interaction.guildChannel, member)
+        try {
+            guild.retrieveAutoModRules().queue({ rules ->
+                for (rule in rules.filter { it.isEnabled }) {
+                    var passes = rule.passes(query, interaction.guildChannel, member)
 
-                val mentions = mentionRegex.findAll(query).count()
-                if (mentions > 0 && rule.mentionLimit > mentions) passes = false
+                    val mentions = mentionRegex.findAll(query).count()
+                    if (mentions > 0 && rule.mentionLimit > mentions) passes = false
 
-                if (!passes) {
-                    for (action in rule.actions) {
-                        when (action.type) {
-                            AutoModResponse.Type.SEND_ALERT_MESSAGE -> sendLog(query, guild, interaction, rule)
-                            AutoModResponse.Type.TIMEOUT -> {
-                                action.timeoutDuration?.let { member.timeoutFor(it) }
+                    if (!passes) {
+                        for (action in rule.actions) {
+                            when (action.type) {
+                                AutoModResponse.Type.SEND_ALERT_MESSAGE -> sendLog(query, guild, interaction, rule)
+                                AutoModResponse.Type.TIMEOUT -> {
+                                    action.timeoutDuration?.let { member.timeoutFor(it) }
+                                }
+
+                                else -> {}
                             }
-
-                            else -> {}
                         }
+
+                        future.complete(false)
+                        return@queue
                     }
-
-                    future.complete(false)
-                    return@queue
                 }
-            }
 
+                future.complete(true)
+            }, {
+                future.complete(true)
+            })
+        } catch (e: InsufficientPermissionException) {
+            // No permissions
             future.complete(true)
-        }, {
-            future.complete(true)
-        })
+        }
 
         return future
     }
