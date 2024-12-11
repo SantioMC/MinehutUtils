@@ -53,6 +53,7 @@ object Minehut {
      * Start the server list cache timer
      */
     fun startTimer() {
+        refreshList()
         Timer().schedule(30000) {
             refreshList()
         }.also { refreshList() }
