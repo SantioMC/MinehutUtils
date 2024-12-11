@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import org.slf4j.LoggerFactory
 import java.nio.file.Paths
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
 import kotlin.io.path.notExists
 
 lateinit var bot: JDA
@@ -35,9 +36,11 @@ suspend fun main() {
     }.awaitReady()
 
     // Prepare database
-    if (Paths.get("data").notExists()) {
-        Paths.get("data").createDirectories()
-    }
+    val databaseUri = env("DATABASE_URI", "jdbc:sqlite:data/minehut.db")
+    val path = Paths.get(databaseUri)
+
+    if (path.parent.notExists()) path.parent.createDirectories()
+    if (path.notExists()) path.createFile()
 
     iron = Iron(env("DATABASE_URI", "jdbc:sqlite:data/minehut.db")).connect()
     Migrator.migrate()
