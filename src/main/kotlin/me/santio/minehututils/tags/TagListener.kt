@@ -3,13 +3,13 @@ package me.santio.minehututils.tags
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import java.util.*
+import kotlin.concurrent.schedule
 
 object TagListener: ListenerAdapter() {
 
     private val cooldownReaction = Emoji.fromUnicode("⌛")
-    private val executor = Executors.newSingleThreadScheduledExecutor()
+    private val timer = Timer()
     private val recentlySent = mutableListOf<String>()
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
@@ -27,9 +27,9 @@ object TagListener: ListenerAdapter() {
         recentlySent.add(id)
         tag.send(event.message)
 
-        executor.schedule({
+        timer.schedule(10000) {
             recentlySent.remove(id)
-        }, 10, TimeUnit.SECONDS)
+        }
     }
 
 }
