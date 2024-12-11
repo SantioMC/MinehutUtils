@@ -50,6 +50,8 @@ object DurationResolver {
      * @return The pretty string, in the format of '1 day 2 hours 3 minutes 4 seconds'
      */
     fun pretty(duration: Duration): String {
+        if (duration.isZero) return "0 seconds"
+
         val days = duration.toDaysPart().toInt()
         val hours = duration.toHoursPart()
         val minutes = duration.toMinutesPart()
