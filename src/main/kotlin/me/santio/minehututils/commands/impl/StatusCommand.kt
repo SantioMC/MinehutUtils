@@ -1,23 +1,31 @@
-package me.santio.minehututils.commands
+package me.santio.minehututils.commands.impl
 
-import me.santio.coffee.common.annotations.Command
-import me.santio.coffee.jda.annotations.Description
+import com.google.auto.service.AutoService
+import dev.minn.jda.ktx.interactions.commands.Command
+import me.santio.minehututils.commands.SlashCommand
 import me.santio.minehututils.ext.reply
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.minehut.Minehut
 import me.santio.minehututils.minehut.Service
 import me.santio.minehututils.resolvers.ChannelResolver
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.commands.build.CommandData
 
-@Command
-@Description("Get the status of Minehut")
-class StatusCommand {
+@AutoService(SlashCommand::class)
+class StatusCommand : SlashCommand {
 
-    fun main(e: SlashCommandInteractionEvent) {
+    override fun getData(): CommandData {
+        return Command("status", "Get the status of Minehut") {
+            isGuildOnly = true
+        }
+    }
+
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         val status = Minehut.status()
 
-        e.reply(EmbedFactory.default(
-            """
+        event.reply(
+            EmbedFactory.default(
+                """
             | :chart_with_upwards_trend: **Minehut Status**
             | 
             | **Minehut Proxy**: ${status[Service.PROXY]}
@@ -28,7 +36,8 @@ class StatusCommand {
             | *This information is automatic, please refer*
             | *to ${ChannelResolver.getMinehutName("announcements")} for status updates*
             """.trimMargin()
-        )).queue()
+            )
+        ).queue()
     }
 
 }

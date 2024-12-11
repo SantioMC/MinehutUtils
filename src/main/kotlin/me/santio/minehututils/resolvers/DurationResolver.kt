@@ -1,6 +1,7 @@
 package me.santio.minehututils.resolvers
 
 import java.time.Duration
+import kotlin.time.toJavaDuration
 
 /**
  * Handles parsing a string to a duration
@@ -29,13 +30,15 @@ object DurationResolver {
             val amount = part.first
             val unit = part.second
 
-            duration = duration.plus(when (unit) {
-                "s" -> Duration.ofSeconds(amount)
-                "m" -> Duration.ofMinutes(amount)
-                "h" -> Duration.ofHours(amount)
-                "d" -> Duration.ofDays(amount)
-                else -> return null
-            })
+            duration = duration.plus(
+                when (unit) {
+                    "s" -> Duration.ofSeconds(amount)
+                    "m" -> Duration.ofMinutes(amount)
+                    "h" -> Duration.ofHours(amount)
+                    "d" -> Duration.ofDays(amount)
+                    else -> return null
+                }
+            )
         }
 
         return duration
@@ -61,10 +64,29 @@ object DurationResolver {
     }
 
     /**
+     * Converts a Kotlin duration to a pretty string
+     * @param duration The duration to convert
+     * @return The pretty string, in the format of '1 day 2 hours 3 minutes 4 seconds'
+     */
+    fun pretty(duration: kotlin.time.Duration): String {
+        return pretty(duration.toJavaDuration())
+    }
+
+    /**
      * An extension function for converting a duration to a pretty string
      */
     @JvmName("asPretty")
     fun Duration.pretty() = this@DurationResolver.pretty(this)
+
+    /**
+     * An extension function for converting a duration to discord's time format
+     */
+    fun Duration.discord(relative: Boolean = false): String {
+        val time = this.toSeconds() + (System.currentTimeMillis() / 1000)
+
+        return if (relative) "<t:$time:R>"
+        else "<t:$time>"
+    }
 
     private fun asPlural(amount: Int, singular: String): String {
         return "$amount ${if (amount > 1) "${singular}s" else singular} "

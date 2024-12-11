@@ -1,5 +1,6 @@
 package me.santio.minehututils.factories
 
+import me.santio.minehututils.factories.EmbedFactory.exception
 import me.santio.minehututils.resolvers.EmojiResolver
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Guild
@@ -75,11 +76,13 @@ object EmbedFactory {
      */
     fun exception(text: String, guild: Guild?, exception: Throwable, block: (EmbedBuilder) -> Unit = {}): EmbedBuilder {
         return baseEmbed {
-            it.setDescription("""
+            it.setDescription(
+                """
             | ${EmojiResolver.no(guild)?.formatted} $text
             | ```diff
             | - ${exception::class.java.simpleName}: ${exception.message}```
-            """.trimMargin())
+            """.trimMargin()
+            )
             it.setColor(0xff6961)
             block(it)
         }

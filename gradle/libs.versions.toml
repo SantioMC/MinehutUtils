@@ -1,0 +1,49 @@
+[versions]
+kotlin = "2.0.21"
+ksp = "2.0.21-1.0.25"
+shadow = "8.0.0"
+autoservice-google = "1.1.1"
+autoservice-ksp = "1.2.0"
+jda = "5.2.1"
+adventure-text = "4.18.0-SNAPSHOT"
+openapi-generator = "7.10.0"
+ktor = "3.0.2"
+jda-ktx = "0.12.0"
+gson = "2.11.0"
+dotenv = "6.4.2"
+log4j = "2.23.0"
+flyway = "10.16.0"
+sqlite = "3.47.1.0"
+iron = "f77a1ccb6a"
+
+[plugins]
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
+
+[libraries]
+autoservice-google = { module = "com.google.auto.service:auto-service", version.ref = "autoservice-google" }
+autoservice-ksp = { module = "dev.zacsweers.autoservice:auto-service-ksp", version.ref = "autoservice-ksp" }
+jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
+jda-kts = { module = "club.minnced:jda-ktx", version.ref = "jda-ktx" }
+adventure-text-minimessage = { module = "net.kyori:adventure-text-minimessage", version.ref = "adventure-text" }
+adventure-text-serializer-plain = { module = "net.kyori:adventure-text-serializer-plain", version.ref = "adventure-text" }
+adventure-text-serializer-legacy = { module = "net.kyori:adventure-text-serializer-legacy", version.ref = "adventure-text" }
+adventure-text-serializer-ansi = { module = "net.kyori:adventure-text-serializer-ansi", version.ref = "adventure-text" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", version.ref = "ktor" }
+ktor-client-serialization-gson = { module = "io.ktor:ktor-serialization-gson", version.ref = "ktor" }
+ktor-client-contentnegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+dotenv = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenv" }
+log4j = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
+sqlite = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+iron = { module = "gg.ingot.iron:iron", version.ref = "iron" }
+
+[bundles]
+log4j = ["log4j", "log4j-slf4j-impl"]
+ktor-client = ["ktor-client-core", "ktor-client-cio", "ktor-client-serialization", "ktor-client-serialization-gson", "ktor-client-contentnegotiation"]
+adventure-api = ["adventure-text-minimessage", "adventure-text-serializer-plain", "adventure-text-serializer-legacy", "adventure-text-serializer-ansi"]

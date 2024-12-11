@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.utils.MarkdownSanitizer
  */
 @Suppress("unused")
 data class Log(
-    private var logger: Logger,
+    private var guildLogger: GuildLogger,
     var message: String
 ) {
 
@@ -97,12 +97,14 @@ data class Log(
      * @return A embed builder
      */
     private fun build(): EmbedBuilder {
-        return EmbedFactory.default("""
+        return EmbedFactory.default(
+            """
         | :clipboard: **Log ${if (title.isNotEmpty()) "| $title" else ""}**
         | 
         | $message
         ${if (context.isNotEmpty()) "\n$context" else ""}
-        """.trimMargin())
+        """.trimMargin()
+        )
     }
 
     /**
@@ -111,8 +113,8 @@ data class Log(
      * @return The log
      */
     fun post(): Log {
-        if (!logger.isEnabled()) return this
-        logger.channel()?.sendMessage(build())?.queue()
+        if (!guildLogger.isEnabled()) return this
+        guildLogger.channel()?.sendMessage(build())?.queue()
         return this
     }
 

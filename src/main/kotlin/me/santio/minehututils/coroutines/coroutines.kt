@@ -43,6 +43,6 @@ suspend fun <T> RestAction<T>.await(): T = submit().await()
  */
 suspend fun <T> Task<T>.await() = suspendCancellableCoroutine<T> {
     it.invokeOnCancellation { cancel() }
-    onSuccess { r -> it.resume(r)  }
+    onSuccess { r -> it.resume(r) }
     onError { e -> it.resumeWithException(e) }
 }

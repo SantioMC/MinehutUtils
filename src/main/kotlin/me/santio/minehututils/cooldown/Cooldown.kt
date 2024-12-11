@@ -1,64 +1,27 @@
 package me.santio.minehututils.cooldown
 
-import me.santio.minehututils.data.Channel
-import me.santio.minehututils.resolvers.DurationResolver
-import me.santio.minehututils.resolvers.DurationResolver.pretty
-import me.santio.minehututils.utils.EnvUtils.env
-import me.santio.minehututils.utils.TimeUtils.now
-import java.time.Duration
-
 /**
- * The cooldown data for a user
- * @param key The cooldown key this cooldown is for
- * @param timestamp When the cooldown started
- * @param duration The duration of the cooldown in seconds
+ * Represents the different kinds of cooldowns that a user can have. These will be stored in memory as
+ * there is really no reason to persist them.
+ * @author santio
  */
-data class Cooldown(
-    val key: Kind,
-    val timestamp: Long,
-    val duration: Long
-) {
+enum class Cooldown(val humanName: String) {
+    MARKET_OFFERING("Marketplace (Offers)"),
+    MARKET_REQUESTS("Marketplace (Requests)"),
+    ;
 
-    /**
-     * @return Whether the cooldown is expired
-     */
-    fun isExpired(): Boolean {
-        return now() > (timestamp + duration)
-    }
-
-    /**
-     * @return When the cooldown expires
-     */
-    fun expiresAt(): Long {
-        return timestamp + duration
-    }
-
-    /**
-     * @return The amount of time remaining pretty printed
-     * @see DurationResolver.pretty
-     */
-    fun remaining(): String {
-        val remaining = (timestamp + duration) - now()
-        return pretty(Duration.ofSeconds(remaining))
-    }
-
-    enum class Kind(val display: String, val channel: Channel, private val envVariable: String) {
-        ADVERTISEMENT_SERVER("Advertisement (Server)", Channel.ADVERTISEMENTS, "ADVERT_COOLDOWN"),
-        ADVERTISEMENT_USER("Advertisement (User)", Channel.ADVERTISEMENTS, "ADVERT_COOLDOWN"),
-        MARKET_OFFER("Marketplace (Offer)", Channel.MARKETPLACE, "MARKET_COOLDOWN"),
-        MARKET_REQUEST("Marketplace (Request)", Channel.MARKETPLACE, "MARKET_COOLDOWN"),
-        ;
-
-        fun getDuration(): Duration {
-            val value = env(this.envVariable, "24h")
-            return DurationResolver.from(value)
-                ?: Duration.ofHours(24)
+    companion object {
+        /**
+         * Get a marketplace type cooldown from the type provided
+         * @param type The listing type, either 'offer' or 'request'
+         * @return The cooldown relating to the type, or null if the type is invalid
+         */
+        fun getMarketplaceType(type: String): Cooldown {
+            return when (type) {
+                "offer" -> MARKET_OFFERING
+                "request" -> MARKET_REQUESTS
+                else -> throw IllegalArgumentException("Invalid marketplace type $type")
+            }
         }
-
-        fun getCooldownTime(): Long {
-            return getDuration().toSeconds()
-        }
-
     }
-
 }

@@ -17,5 +17,7 @@ fun Long.toTime(relative: Boolean = true): String {
     else "<t:${seconds.toInt()}>"
 }
 
+fun Int.toTime(relative: Boolean = true): String = this.toLong().toTime(relative)
+
 fun IReplyCallback.reply(embed: EmbedBuilder) = this.replyEmbeds(embed.build())
 fun MessageChannel.sendMessage(embed: EmbedBuilder) = this.sendMessageEmbeds(embed.build())
