@@ -32,6 +32,7 @@ object CommandManager {
         } catch (e: CommandError) {
             event.replyEmbeds(EmbedFactory.error(e.message, event.guild).build()).setEphemeral(e.ephemeral).queue()
         } catch (e: Exception) {
+            logger.error("An error occurred while executing the command", e)
             event.replyEmbeds(
                 EmbedFactory.exception("An error occurred while executing the command", event.guild, e).build()
             ).queue()

@@ -1,4 +1,4 @@
--- Create your migration here
+-- Settings
 
 CREATE TABLE IF NOT EXISTS settings
 (

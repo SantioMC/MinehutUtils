@@ -77,7 +77,7 @@ class SettingsCommand: SlashCommand {
 
     private suspend fun setMarketplaceChannel(event: SlashCommandInteractionEvent) {
         val channel = event.getOption("channel")?.asChannel ?: error("Channel not provided")
-        if (channel.type != ChannelType.TEXT) error("Channel must be a text channel", true)
+        if (channel.type != ChannelType.TEXT) error("Channel must be a text channel")
 
         iron.prepare(
             "UPDATE settings SET marketplace_channel = ? WHERE id = ?",
@@ -93,7 +93,7 @@ class SettingsCommand: SlashCommand {
 
     private suspend fun setMarketplaceCooldown(event: SlashCommandInteractionEvent) {
         val cooldown = event.getOption("cooldown")?.asString ?: error("Cooldown not provided")
-        val duration = DurationResolver.from(cooldown) ?: error("Invalid cooldown provided", true)
+        val duration = DurationResolver.from(cooldown) ?: error("Invalid cooldown provided")
 
         iron.prepare(
             "UPDATE settings SET marketplace_cooldown = ? WHERE id = 1",
@@ -111,15 +111,15 @@ class SettingsCommand: SlashCommand {
         when(event.subcommandGroup) {
             "channel" -> when(event.subcommandName) {
                 "marketplace" -> setMarketplaceChannel(event)
-                else -> error("Subcommand not found", true)
+                else -> error("Subcommand not found")
             }
             "cooldown" -> when(event.subcommandName) {
                 "marketplace" -> setMarketplaceCooldown(event)
-                else -> error("Subcommand not found", true)
+                else -> error("Subcommand not found")
             }
             else -> when(event.subcommandName) {
                 "view" -> viewSettings(event)
-                else -> error("Subcommand not found", true)
+                else -> error("Subcommand not found")
             }
         }
     }

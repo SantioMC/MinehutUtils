@@ -15,7 +15,7 @@ interface SlashCommand {
         return emptyList()
     }
 
-    fun error(message: String, ephemeral: Boolean = false): Nothing {
+    fun error(message: String, ephemeral: Boolean = true): Nothing {
         throw CommandError(message, ephemeral)
     }
 
