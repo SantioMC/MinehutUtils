@@ -23,10 +23,9 @@
 * [Introduction](#introduction)
 * [Getting Started](#getting-started)
     * [Installation](#installation)
-    * [Setup](#setup)
-        * [Marketplace](#marketplace)
-        * [Cooldowns](#cooldowns)
-        * [Logs](#logs)
+* [Setup](#setup)
+    * [Marketplace](#marketplace)
+    * [Logs](#logs)
 * [Environment Variables](#environment-variables)
 * [Contributing](#contributing)
 
@@ -77,7 +76,7 @@ Running the bot with docker is the easiest way to get started and recommended fo
     ```
 
 > Note: Since the bot uses a database to store cooldowns and settings, you'll need to mount a volume
-> to store the database. You can do this by adding a mount for `/app` to the docker container.
+> to store the database. You can do this by adding a mount for `/data` to the docker container.
 
 #### Docker Compose
 
@@ -117,27 +116,15 @@ If you want to run the bot without a container, you can do so by following these
     java -jar build/libs/MinehutUtils-<version>.jar
     ```
 
-### Setup
-
-The bot by default should now have most things working, however a bit of configuration is needed
-to get both the marketplace and advertisement commands setup. By default, if the [environment variables](#environment-variables)
-are not setup for `MARKET_CHANNEL` or `ADVERT_CHANNEL` their respective commands won't work and will be disabled.
+## Setup
 
 #### Marketplace
 
-To get the marketplace working, you should first create a channel for it if you haven't already.
-Once you have a channel created, set `MARKET_CHANNEL` to the ID of the channel.
-
-After that, users should be able to post both offers and requests in the channel.
-
-#### Cooldowns
-Setting a cooldown for either the advertise or marketplace command is easy. Simply run the following command:
-```
-/settings cooldown advertise cooldown:<time>
-/settings cooldown marketplace cooldown:<time>
-```
-
-Valid Examples: `10s`, `10m`, `10h`, `10d`
+The bot by default should now have most things working, however a bit of configuration is needed
+to get both the marketplace setup. You can use the settings command to configure how the marketplace works.
+Start with using `/settings channel marketplace channel:` to configure which channel marketplace postings are sent
+to. You can then use `/settings cooldown marketplace cooldown:` to configure the cooldown for the marketplace command.
+The cooldown is applied per listing kind per user.
 
 #### Logs
 
@@ -149,15 +136,11 @@ any non-existent channel, a good example of this is `LOG_CHANNEL=.` *(Channels c
 
 Below are a list of all possible environment variables that can be set to configure the bot.
 
-| Variable        | Description                                        | Default |
-|-----------------|----------------------------------------------------|---------|
-| DB_FILE         | What should the database file be named             | data.db |
-| TOKEN           | The bot token                                      |         |
-| LOG_CHANNEL     | The channel to post logs to *(without the #)*      | logs    |
-| MARKET_CHANNEL  | The channel to where marketplace postings are sent |         |
-| ADVERT_CHANNEL  | The channel to where advertisements are sent       |         |
-| MARKET_COOLDOWN | The cooldown for the marketplace command           | 24h     |
-| ADVERT_COOLDOWN | The cooldown for the advertisement command         | 24h     |
+| Variable        | Description                                   | Default         |
+|-----------------|-----------------------------------------------|-----------------|
+| DB_FILE         | Where the sqlite file is located              | data/minehut.db |
+| TOKEN           | The bot token                                 |                 |
+| LOG_CHANNEL     | The channel to post logs to *(without the #)* | logs            |
 
 ## Contributing
 

@@ -1,15 +1,15 @@
-FROM gradle:7.6.3-jdk11-alpine 
+FROM gradle:8.11.1-jdk21 AS base
 LABEL author="Santio"
+WORKDIR /app
 
-WORKDIR /build
+FROM base AS build
 
 COPY . .
-RUN gradle shadowJar 
+RUN gradle shadowJar --no-daemon
 
-FROM openjdk:17-jdk-slim
-LABEL author="Santio"
+FROM base AS runtime
+COPY --from=build /app/build/libs/*.jar app.jar
 
-WORKDIR /app
-COPY --from=0 /build/build/libs/*.jar app.jar
+USER 1000
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
