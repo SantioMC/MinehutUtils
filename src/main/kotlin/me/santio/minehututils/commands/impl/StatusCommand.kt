@@ -34,7 +34,7 @@ class StatusCommand : SlashCommand {
             | **Minehut API**: ${status[Service.API]}
             |
             | *This information is automatic, please refer*
-            | *to ${ChannelResolver.getMinehutName("announcements")} for status updates*
+            | *to ${ChannelResolver.getMinehutName("status-and-changelog")} for status updates*
             """.trimMargin()
             )
         ).queue()
