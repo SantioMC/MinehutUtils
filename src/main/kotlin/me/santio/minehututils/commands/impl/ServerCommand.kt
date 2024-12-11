@@ -31,9 +31,9 @@ class ServerCommand : SlashCommand {
         val status = if (server.online == true) "online" else "offline"
 
         val plan = server.serverPlan?.lowercase()?.replace("_", " ") ?: "unknown"
-        val owner = Minehut.servers().first {
+        val owner = Minehut.servers().firstOrNull {
             it.staticInfo?.id == server.id
-        }.author ?: "Unknown"
+        }?.author ?: "Unknown"
 
         return EmbedFactory.default(
             """ 
