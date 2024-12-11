@@ -12,7 +12,7 @@ import java.net.URL
 
 @Model(table = "tags", naming = NamingStrategy.SNAKE_CASE)
 data class Tag(
-    val id: Int? = null,
+    var id: Int? = null,
     private var searchAlg: String,
     var searchValue: String,
     var body: String,

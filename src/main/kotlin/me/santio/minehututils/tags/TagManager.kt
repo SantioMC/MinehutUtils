@@ -18,15 +18,18 @@ object TagManager {
 
     suspend fun add(tag: Tag) {
         tags.add(tag)
-        iron.prepare(
-            "INSERT INTO tags(search_alg, search_value, body, created_at, updated_at, created_by) VALUES (?, ?, ?, ?, ?, ?)",
+
+        val id = iron.prepare(
+            "INSERT INTO tags(search_alg, search_value, body, created_at, updated_at, created_by) VALUES (?, ?, ?, ?, ?, ?) RETURNING id",
             tag.searchAlg().id,
             tag.searchValue,
             tag.body,
             tag.createdAt,
             tag.updatedAt,
             tag.createdBy
-        )
+        ).single<Int>()
+
+        tag.id = id
     }
 
     suspend fun remove(tag: Tag) {
