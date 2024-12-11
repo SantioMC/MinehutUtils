@@ -10,7 +10,4 @@ RUN ./gradlew openApiGenerate shadowJar --no-daemon
 FROM base AS runtime
 COPY --from=build /app/build/libs/*.jar app.jar
 
-RUN chmod -R 700 /app && chown -R 1000:1000 /app
-USER 1000:1000
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
