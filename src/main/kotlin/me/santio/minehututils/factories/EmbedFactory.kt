@@ -19,7 +19,7 @@ object EmbedFactory {
     private fun baseEmbed(block: (EmbedBuilder) -> Unit): EmbedBuilder {
         val embed = EmbedBuilder()
         embed.setTitle(" ")
-        embed.setColor(0x19f4ba)
+        embed.setColor(0x488aff)
         block(embed)
         return embed
     }

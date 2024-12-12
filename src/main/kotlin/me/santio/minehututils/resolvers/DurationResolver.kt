@@ -75,12 +75,6 @@ object DurationResolver {
     }
 
     /**
-     * An extension function for converting a duration to a pretty string
-     */
-    @JvmName("asPretty")
-    fun Duration.pretty() = this@DurationResolver.pretty(this)
-
-    /**
      * An extension function for converting a duration to discord's time format
      */
     fun Duration.discord(relative: Boolean = false): String {

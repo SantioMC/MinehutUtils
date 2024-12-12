@@ -193,7 +193,7 @@ class TagCommand : SlashCommand {
         }
     }
 
-    private suspend fun getTagInfo(event: SlashCommandInteractionEvent) {
+    private fun getTagInfo(event: SlashCommandInteractionEvent) {
         val tagId = event.getOption("id")?.asString ?: error("Tag id not provided")
         val tag = TagManager.get(tagId.toInt()) ?: error("Tag not found")
 
@@ -209,6 +209,7 @@ class TagCommand : SlashCommand {
                 | :bust_in_silhouette: Author: <@${tag.createdBy}> (${tag.createdBy})
                 | :calendar: Created: <t:${tag.createdAt / 1000}:R>
                 | :stopwatch: Last updated: <t:${tag.updatedAt / 1000}:R>
+                | :chart_with_upwards_trend: Uses: `${tag.uses}`
                 |
                 | ```${tag.body}```
                 """.trimMargin()
