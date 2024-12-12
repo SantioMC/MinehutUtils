@@ -1,4 +1,4 @@
-FROM base AS build
+FROM gradle:8.11.1-jdk21 AS build
 
 LABEL author="Santio"
 WORKDIR /app
