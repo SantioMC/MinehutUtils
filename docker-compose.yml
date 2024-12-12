@@ -4,5 +4,5 @@ services:
     container_name: minehututils
     restart: always
     volumes:
-      - ./data:/app/data
+      - ./data:/bot/data
     env_file: .env
