@@ -1,13 +1,16 @@
-FROM gradle:8.11.1-jdk21 AS base
-LABEL author="Santio"
-WORKDIR /app
-
 FROM base AS build
 
+LABEL author="Santio"
+WORKDIR /app
 COPY . .
-RUN ./gradlew openApiGenerate shadowJar --no-daemon
+RUN gradle openApiGenerate shadowJar --no-daemon
 
-FROM base AS runtime
+FROM eclipse-temurin:21-alpine AS runtime
+
+LABEL author="Santio"
+WORKDIR /home/user
+RUN adduser --disabled-password --gecos "" user
 COPY --from=build /app/build/libs/*.jar app.jar
 
+USER user
 ENTRYPOINT ["java", "-jar", "app.jar"]

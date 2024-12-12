@@ -37,7 +37,7 @@ suspend fun main() {
 
     // Prepare database
     val databaseUri = env("DATABASE_URI", "jdbc:sqlite:data/minehut.db")
-    val path = Paths.get(databaseUri)
+    val path = Paths.get(databaseUri.substringAfterLast(":"))
 
     if (path.parent.notExists()) path.parent.createDirectories()
     if (path.notExists()) path.createFile()
