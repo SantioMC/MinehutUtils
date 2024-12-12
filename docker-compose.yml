@@ -1,9 +1,6 @@
 services:
   minehututils:
-#    image: ghcr.io/santiomc/minehututils:master
-    build:
-        context: .
-        dockerfile: Dockerfile
+    image: ghcr.io/santiomc/minehututils:master
     container_name: minehututils
     restart: always
     volumes:

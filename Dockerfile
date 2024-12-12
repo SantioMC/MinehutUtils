@@ -5,12 +5,16 @@ WORKDIR /app
 COPY . .
 RUN gradle openApiGenerate shadowJar --no-daemon
 
-FROM eclipse-temurin:21-alpine AS runtime
+FROM alpine/java:21-jre AS runtime
 
 LABEL author="Santio"
-WORKDIR /home/user
-RUN adduser --disabled-password --gecos "" user
+WORKDIR /bot
+
 COPY --from=build /app/build/libs/*.jar app.jar
 
-USER user
-ENTRYPOINT ["java", "-jar", "app.jar"]
+RUN adduser -HD -u 1000 user \
+    && chown -R user:user /bot \
+    && chmod -R 777 /bot
+
+USER user:user
+CMD ["java", "-jar", "app.jar"]
