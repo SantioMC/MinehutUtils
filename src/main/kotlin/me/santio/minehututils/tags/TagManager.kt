@@ -35,7 +35,8 @@ object TagManager {
     suspend fun remove(tag: Tag) {
         tags.remove(tag)
         iron.prepare(
-            "DELETE FROM tags WHERE id = ?",
+            "UPDATE tags SET deleted_at = ? WHERE id = ?",
+            System.currentTimeMillis(),
             tag.id
         )
     }
@@ -49,7 +50,7 @@ object TagManager {
     }
 
     suspend fun fetchAll(): List<Tag> {
-        return iron.prepare("SELECT * FROM tags").all<Tag>()
+        return iron.prepare("SELECT * FROM tags WHERE deleted_at IS NULL").all()
     }
 
     suspend fun save(tag: Tag) {
@@ -67,6 +68,11 @@ object TagManager {
             tag.updatedAt,
             tag.id
         )
+    }
+
+    suspend fun addUse(tag: Tag) {
+        tag.uses++
+        this.save(tag)
     }
 
 }

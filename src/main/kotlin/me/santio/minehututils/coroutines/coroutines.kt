@@ -2,12 +2,16 @@
 
 package me.santio.minehututils.coroutines
 
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.utils.concurrent.Task
+import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+
+private val logger = LoggerFactory.getLogger("MinehutUtils-CoroutineScope")
 
 /**
  * Allows for the use of coroutines in JDA
@@ -45,4 +49,11 @@ suspend fun <T> Task<T>.await() = suspendCancellableCoroutine<T> {
     it.invokeOnCancellation { cancel() }
     onSuccess { r -> it.resume(r) }
     onError { e -> it.resumeWithException(e) }
+}
+
+/**
+ * A simple exception handler for coroutines, this will log any exceptions thrown in coroutines
+ */
+val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+    logger.error("Exception in coroutine scope ${Thread.currentThread().name}", throwable)
 }

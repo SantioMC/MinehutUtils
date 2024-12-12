@@ -6,18 +6,17 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.serialization.gson.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import me.santio.minehututils.coroutines.exceptionHandler
 import me.santio.minehututils.minehut.mcsrvstat.PingModel
 import me.santio.sdk.minehut.apis.Minehut
 import me.santio.sdk.minehut.models.ListedServer
 import me.santio.sdk.minehut.models.PlayerStats
 import me.santio.sdk.minehut.models.Server
 import me.santio.sdk.minehut.models.SimpleStats
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
-import java.util.concurrent.Executors
 import kotlin.concurrent.schedule
 
 /**
@@ -26,8 +25,10 @@ import kotlin.concurrent.schedule
 @Suppress("MemberVisibilityCanBePrivate")
 object Minehut {
 
+    private val logger = LoggerFactory.getLogger(Minehut::class.java)
+    private val timer = Timer()
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var serverCache: List<ListedServer>? = null
-    private val executor = Executors.newCachedThreadPool()
     private val client = Minehut("https://api.minehut.com")
 
     val dailyTimeLimit: Duration = Duration.ofHours(4)
@@ -42,10 +43,8 @@ object Minehut {
      */
     // todo: dont do this
     private fun refreshList() {
-        executor.submit {
-            runBlocking {
-                serverCache = servers(true)
-            }
+        scope.launch(exceptionHandler) {
+            serverCache = servers(true)
         }
     }
 
@@ -53,7 +52,7 @@ object Minehut {
      * Start the server list cache timer
      */
     fun startTimer() {
-        Timer().schedule(0, 30000) {
+        timer.schedule(0, 30000) {
             refreshList()
         }
     }
