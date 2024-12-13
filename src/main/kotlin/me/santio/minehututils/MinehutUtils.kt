@@ -6,10 +6,9 @@ import dev.minn.jda.ktx.jdabuilder.intents
 import gg.ingot.iron.Iron
 import me.santio.minehututils.commands.CommandLoader
 import me.santio.minehututils.commands.CommandManager
-import me.santio.minehututils.database.Migrator
+import me.santio.minehututils.database.DatabaseHandler
 import me.santio.minehututils.minehut.Minehut
 import me.santio.minehututils.tags.TagListener
-import me.santio.minehututils.tags.TagManager
 import me.santio.minehututils.utils.EnvUtils.env
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
@@ -43,10 +42,8 @@ suspend fun main() {
     if (path.notExists()) path.createFile()
 
     iron = Iron(env("DATABASE_URI", "jdbc:sqlite:data/minehut.db")).connect()
-    Migrator.migrate()
-
-    // Preload resources
-    TagManager.preload()
+    DatabaseHandler.migrate()
+    DatabaseHandler.callHooks()
 
     // Attach command handler
     CommandLoader.load()

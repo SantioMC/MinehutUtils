@@ -42,7 +42,7 @@ class SlowModeCommand : SlashCommand {
             "Slowmode modified in ${event.channel.asMention}",
             ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
             ":stopwatch: Slowmode was set to `${DurationResolver.pretty(setDuration)}`",
-            ":package: Channel modified was ${event.channel.asMention} (${event.channel.id})",
+            ":package: Channel: ${event.channel.asMention} *(${event.channel.name} - ${event.channel.id})*",
         ).withContext(event).titled("Slowmode Modified").post()
 
         event.replyEmbeds(

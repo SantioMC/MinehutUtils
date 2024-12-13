@@ -11,9 +11,9 @@ import me.santio.minehututils.bot
 import me.santio.minehututils.commands.SlashCommand
 import me.santio.minehututils.cooldown.Cooldown
 import me.santio.minehututils.cooldown.CooldownManager
+import me.santio.minehututils.database.DatabaseHandler
 import me.santio.minehututils.database.models.Settings
 import me.santio.minehututils.factories.EmbedFactory
-import me.santio.minehututils.iron
 import me.santio.minehututils.resolvers.AutoModResolver
 import me.santio.minehututils.resolvers.DurationResolver.discord
 import me.santio.minehututils.resolvers.EmojiResolver
@@ -37,7 +37,7 @@ class MarketplaceCommand : SlashCommand {
     }
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
-        val settings = iron.prepare("SELECT * FROM settings").single<Settings>()
+        val settings = DatabaseHandler.getSettings(event.guild!!.id)
         val id = UUID.randomUUID().toString()
 
         if (settings.marketplaceChannel == null || settings.marketplaceCooldown < 0L) {

@@ -1,5 +1,7 @@
 package me.santio.minehututils.tags
 
+import com.google.auto.service.AutoService
+import me.santio.minehututils.database.DatabaseHook
 import me.santio.minehututils.database.models.Tag
 import me.santio.minehututils.iron
 
@@ -8,11 +10,11 @@ import me.santio.minehututils.iron
  * to make searching for tags faster.
  * @author santio
  */
-object TagManager {
+object TagManager: DatabaseHook {
 
     private val tags = mutableSetOf<Tag>()
 
-    suspend fun preload() {
+    override suspend fun onHook() {
         tags.addAll(this.fetchAll())
     }
 
@@ -76,3 +78,6 @@ object TagManager {
     }
 
 }
+
+@AutoService(DatabaseHook::class)
+class TagManagerProxy: DatabaseHook by TagManager

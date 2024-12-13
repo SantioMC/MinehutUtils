@@ -1,22 +1,32 @@
 package me.santio.minehututils.commands.impl
 
 import com.google.auto.service.AutoService
+import dev.minn.jda.ktx.events.onEntitySelect
 import dev.minn.jda.ktx.interactions.commands.Command
 import dev.minn.jda.ktx.interactions.commands.Option
 import dev.minn.jda.ktx.interactions.commands.Subcommand
 import dev.minn.jda.ktx.interactions.commands.SubcommandGroup
+import dev.minn.jda.ktx.interactions.components.EntitySelectMenu
+import me.santio.minehututils.bot
 import me.santio.minehututils.commands.SlashCommand
-import me.santio.minehututils.database.models.Settings
+import me.santio.minehututils.database.DatabaseHandler
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.iron
+import me.santio.minehututils.lockdown.Lockdown
+import me.santio.minehututils.logger.GuildLogger
 import me.santio.minehututils.resolvers.DurationResolver
 import me.santio.minehututils.resolvers.EmojiResolver
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu
+import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu.SelectTarget
+import java.util.*
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 @AutoService(SlashCommand::class)
@@ -24,7 +34,7 @@ class SettingsCommand: SlashCommand {
 
     override fun getData(): CommandData {
         return Command("settings", "Manage specific settings for the bot") {
-            defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL)
+            defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)
             isGuildOnly = true
 
             addSubcommands(
@@ -49,6 +59,16 @@ class SettingsCommand: SlashCommand {
                             )
                         }
                     )
+                },
+                SubcommandGroup("lockdown", "Manage the lockdown settings") {
+                    addSubcommands(
+                        Subcommand("role", "Set the role to lock channels with") {
+                            addOptions(
+                                Option<Role>("role", "The role to lock channels with")
+                            )
+                        },
+                        Subcommand("channels", "Which channels to restrict the lockdown command to")
+                    )
                 }
             )
         }
@@ -59,9 +79,9 @@ class SettingsCommand: SlashCommand {
     }
 
     private suspend fun viewSettings(event: SlashCommandInteractionEvent) {
-        val settings = iron.prepare("SELECT * FROM settings").single<Settings>()
-
+        val settings = DatabaseHandler.getSettings(event.guild!!.id)
         val marketplaceCooldown = settings.marketplaceCooldown.seconds
+        val lockdownRole = settings.lockdownRole?.let { event.guild!!.getRoleById(it) }
 
         event.replyEmbeds(
             EmbedFactory.default(
@@ -70,9 +90,10 @@ class SettingsCommand: SlashCommand {
                 | 
                 | ${getNullIcon(settings.marketplaceChannel)} Marketplace Channel: ${settings.marketplaceChannel?.let { "<#$it>" } ?: "Not set"}
                 | ${EmojiResolver.checkmark().formatted} Marketplace Cooldown: ${DurationResolver.pretty(marketplaceCooldown)}
+                | ${EmojiResolver.checkmark().formatted} Lockdown Role: ${lockdownRole?.asMention ?: "@everyone"}
                 """.trimMargin()
             ).build()
-        ).queue()
+        ).setEphemeral(true).queue()
     }
 
     private suspend fun setMarketplaceChannel(event: SlashCommandInteractionEvent) {
@@ -80,15 +101,21 @@ class SettingsCommand: SlashCommand {
         if (channel.type != ChannelType.TEXT) error("Channel must be a text channel")
 
         iron.prepare(
-            "UPDATE settings SET marketplace_channel = ? WHERE id = ?",
+            "UPDATE settings SET marketplace_channel = ? WHERE guild_id = ?",
             channel.id,
-            1
+            event.guild!!.id
         )
+
+        GuildLogger.of(event.guild!!).log(
+            "The marketplace channel was set to ${channel.asMention} by ${event.user.asMention}",
+            ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
+            ":package: Channel: ${channel.asMention} *(${channel.name} - ${channel.id})*"
+        ).withContext(event).titled("Marketplace Channel Changed").post()
 
         event.replyEmbeds(
             EmbedFactory.success("Successfully set the marketplace channel to ${channel.asMention}", event.guild!!)
                 .build()
-        ).queue()
+        ).setEphemeral(true).queue()
     }
 
     private suspend fun setMarketplaceCooldown(event: SlashCommandInteractionEvent) {
@@ -96,17 +123,83 @@ class SettingsCommand: SlashCommand {
         val duration = DurationResolver.from(cooldown) ?: error("Invalid cooldown provided")
 
         iron.prepare(
-            "UPDATE settings SET marketplace_cooldown = ? WHERE id = 1",
-            duration.toSeconds()
+            "UPDATE settings SET marketplace_cooldown = ? WHERE guild_id = ?",
+            duration.toSeconds(),
+            event.guild!!.id
         )
+
+        GuildLogger.of(event.guild!!).log(
+            "The marketplace cooldown was set to `${DurationResolver.pretty(duration)}` by ${event.user.asMention}",
+            ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
+            ":stopwatch: Cooldown was set to `${DurationResolver.pretty(duration)}`"
+        ).withContext(event).titled("Marketplace Cooldown Changed").post()
 
         event.replyEmbeds(
             EmbedFactory.success("Successfully set the marketplace cooldown to `${DurationResolver.pretty(duration)}`", event.guild!!)
                 .build()
-        ).queue()
+        ).setEphemeral(true).queue()
+    }
+
+    private suspend fun setLockdownRole(event: SlashCommandInteractionEvent) {
+        val role = event.getOption("role")?.asRole
+
+        iron.prepare(
+            "UPDATE settings SET lockdown_role = ? WHERE guild_id = ?",
+            role?.id,
+            event.guild!!.id
+        )
+
+        GuildLogger.of(event.guild!!).log(
+            "The lockdown role was set to ${role?.asMention ?: "@everyone"} by ${event.user.asMention}",
+            ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
+            ":label: Role: ${role?.asMention ?: "@everyone"} *(${role?.name} - ${role?.id})*"
+        ).withContext(event).titled("Lockdown Role Changed").post()
+
+        event.replyEmbeds(
+            EmbedFactory.success("Successfully set the lockdown role to ${role?.asMention ?: "@everyone"}", event.guild!!)
+                .build()
+        ).setEphemeral(true).queue()
+    }
+
+    private fun setLockdownChannels(event: SlashCommandInteractionEvent) {
+        val id = UUID.randomUUID().toString()
+        val channels = Lockdown.getLockdownChannels(event.guild!!.id)
+
+        event.replyEmbeds(
+            EmbedFactory.default("Which channels do you want to restrict the lockdown command to?")
+                .build()
+        ).addActionRow(
+            EntitySelectMenu("minehut:settings:lockdown:channels:$id", listOf(SelectTarget.CHANNEL)) {
+                setChannelTypes(ChannelType.TEXT)
+                setMaxValues(25)
+                setDefaultValues(channels.map {
+                    EntitySelectMenu.DefaultValue.channel(it)
+                })
+            }
+        ).setEphemeral(true).queue()
+
+        bot.onEntitySelect("minehut:settings:lockdown:channels:$id", timeout = 2.minutes) {
+            cancel()
+
+            val channels = it.values.map { it.id }
+            Lockdown.setChannels(event.guild!!.id, channels)
+
+            GuildLogger.of(event.guild!!).log(
+                "The lockdown channels were modified by ${event.user.asMention}",
+                ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
+                ":package: Channel IDs: ${channels.joinToString(", ")} *(${it.values.joinToString(", ") { it.asMention }})*"
+            ).withContext(event).titled("Lockdown Channels Modified").post()
+
+            it.replyEmbeds(
+                EmbedFactory.default("Successfully updated the lockdown channels!")
+                    .build()
+            ).setEphemeral(true).queue()
+        }
     }
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
+        DatabaseHandler.createIfNotExists(event.guild!!.id)
+
         // Router
         when(event.subcommandGroup) {
             "channel" -> when(event.subcommandName) {
@@ -115,6 +208,11 @@ class SettingsCommand: SlashCommand {
             }
             "cooldown" -> when(event.subcommandName) {
                 "marketplace" -> setMarketplaceCooldown(event)
+                else -> error("Subcommand not found")
+            }
+            "lockdown" -> when(event.subcommandName) {
+                "role" -> setLockdownRole(event)
+                "channels" -> setLockdownChannels(event)
                 else -> error("Subcommand not found")
             }
             else -> when(event.subcommandName) {

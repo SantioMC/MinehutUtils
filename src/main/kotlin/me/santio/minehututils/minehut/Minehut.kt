@@ -112,8 +112,11 @@ object Minehut {
     suspend fun servers(bypassCache: Boolean = false): List<ListedServer> {
         if (!bypassCache && serverCache != null) return serverCache!!
 
-        val servers = client.getServers()
-            .takeIf { it.success }
+        val servers = client.getServers(
+            q = null,
+            category = null,
+            limit = null
+        ).takeIf { it.success }
             ?.body()
             ?.servers
             ?: emptyList()
