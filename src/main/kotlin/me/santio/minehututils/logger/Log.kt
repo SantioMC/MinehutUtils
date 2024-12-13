@@ -114,7 +114,7 @@ data class Log(
      */
     fun post(): Log {
         if (!guildLogger.isEnabled()) return this
-        guildLogger.channel()?.sendMessage(build())?.queue()
+        guildLogger.channel?.sendMessage(build())?.queue()
         return this
     }
 

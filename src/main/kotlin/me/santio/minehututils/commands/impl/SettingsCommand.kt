@@ -69,7 +69,16 @@ class SettingsCommand: SlashCommand {
                         },
                         Subcommand("channels", "Which channels to restrict the lockdown command to")
                     )
-                }
+                },
+                SubcommandGroup("log", "Manage the log settings") {
+                    addSubcommands(
+                        Subcommand("channel", "Set the channel to post logs in") {
+                            addOptions(
+                                Option<TextChannel>("channel", "The channel to post logs in", true)
+                            )
+                        }
+                    )
+                },
             )
         }
     }
@@ -88,6 +97,7 @@ class SettingsCommand: SlashCommand {
                 """
                 | :gear: Settings
                 | 
+                | ${getNullIcon(settings.logChannel)} Log Channel: ${settings.logChannel?.let { "<#$it>" } ?: "Not set"}
                 | ${getNullIcon(settings.marketplaceChannel)} Marketplace Channel: ${settings.marketplaceChannel?.let { "<#$it>" } ?: "Not set"}
                 | ${EmojiResolver.checkmark().formatted} Marketplace Cooldown: ${DurationResolver.pretty(marketplaceCooldown)}
                 | ${EmojiResolver.checkmark().formatted} Lockdown Role: ${lockdownRole?.asMention ?: "@everyone"}
@@ -197,6 +207,29 @@ class SettingsCommand: SlashCommand {
         }
     }
 
+    private suspend fun setLogChannel(event: SlashCommandInteractionEvent) {
+        val channel = event.getOption("channel")?.asChannel ?: error("Channel not provided")
+        if (channel.type != ChannelType.TEXT) error("Channel must be a text channel")
+        val guild = event.guild ?: return
+
+        iron.prepare(
+            "UPDATE settings SET log_channel = ? WHERE guild_id = ?",
+            channel.id,
+            guild.id
+        )
+
+        GuildLogger.of(guild).log(
+            "The log channel was set to ${channel.asMention} by ${event.user.asMention}",
+            ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
+            ":package: Channel: ${channel.asMention} *(${channel.name} - ${channel.id})*"
+        ).withContext(event).titled("Log Channel Changed").post()
+
+        event.replyEmbeds(
+            EmbedFactory.default("Successfully set the log channel to ${channel.asMention}!")
+                .build()
+        ).setEphemeral(true).queue()
+    }
+
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         DatabaseHandler.createIfNotExists(event.guild!!.id)
 
@@ -213,6 +246,10 @@ class SettingsCommand: SlashCommand {
             "lockdown" -> when(event.subcommandName) {
                 "role" -> setLockdownRole(event)
                 "channels" -> setLockdownChannels(event)
+                else -> error("Subcommand not found")
+            }
+            "log" -> when(event.subcommandName) {
+                "channel" -> setLogChannel(event)
                 else -> error("Subcommand not found")
             }
             else -> when(event.subcommandName) {

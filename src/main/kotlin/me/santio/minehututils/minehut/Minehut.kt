@@ -41,7 +41,6 @@ object Minehut {
     /**
      * Refresh the server list cache
      */
-    // todo: dont do this
     private fun refreshList() {
         scope.launch(exceptionHandler) {
             serverCache = servers(true)

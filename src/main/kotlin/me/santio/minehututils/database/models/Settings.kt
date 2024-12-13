@@ -8,5 +8,6 @@ data class Settings(
     val guildId: String,
     val marketplaceChannel: String? = null,
     val marketplaceCooldown: Int = 86400,
-    val lockdownRole: String? = null
+    val lockdownRole: String? = null,
+    val logChannel: String? = null
 )

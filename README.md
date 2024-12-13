@@ -128,9 +128,8 @@ The cooldown is applied per listing kind per user.
 
 #### Logs
 
-By default, the bot will log to any channel appropriately named `#logs`, however this channel can be
-overridden by setting the `LOG_CHANNEL` environment variable. Logging can be disabled by setting this to
-any non-existent channel, a good example of this is `LOG_CHANNEL=.` *(Channels can not contain a dot)*.
+The bot no longer uses environment variables to configure the log channel, instead you can use the `/settings log channel:`
+command to configure the log channel. This allows for per-guild log channels.
 
 ## Environment Variables
 
@@ -140,7 +139,6 @@ Below are a list of all possible environment variables that can be set to config
 |-----------------|-----------------------------------------------|-----------------|
 | DB_FILE         | Where the sqlite file is located              | data/minehut.db |
 | TOKEN           | The bot token                                 |                 |
-| LOG_CHANNEL     | The channel to post logs to *(without the #)* | logs            |
 
 ## Contributing
 

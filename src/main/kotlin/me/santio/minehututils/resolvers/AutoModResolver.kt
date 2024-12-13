@@ -1,5 +1,9 @@
 package me.santio.minehututils.resolvers
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import me.santio.minehututils.logger.GuildLogger
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
@@ -17,6 +21,7 @@ import java.util.concurrent.CompletableFuture
  */
 object AutoModResolver {
 
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val mentionRegex = Regex("<@!?\\d{18}>")
 
     /**
@@ -42,7 +47,9 @@ object AutoModResolver {
                     if (!passes) {
                         for (action in rule.actions) {
                             when (action.type) {
-                                AutoModResponse.Type.SEND_ALERT_MESSAGE -> sendLog(query, guild, interaction, rule)
+                                AutoModResponse.Type.SEND_ALERT_MESSAGE -> coroutineScope.launch {
+                                    sendLog(query, guild, interaction, rule)
+                                }
                                 AutoModResponse.Type.TIMEOUT -> {
                                     action.timeoutDuration?.let { member.timeoutFor(it) }
                                 }
@@ -125,7 +132,7 @@ object AutoModResolver {
             .all { !it }
     }
 
-    private fun sendLog(query: String, guild: Guild, interaction: Interaction, rule: AutoModRule) {
+    private suspend fun sendLog(query: String, guild: Guild, interaction: Interaction, rule: AutoModRule) {
         GuildLogger.of(guild).log(
             "Message was caught failing to pass auto moderation rules",
             ":identification_card: User: ${interaction.member?.asMention} *(${interaction.user.name} - ${interaction.user.id})*",

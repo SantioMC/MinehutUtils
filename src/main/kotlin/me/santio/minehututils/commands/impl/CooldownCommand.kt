@@ -61,7 +61,7 @@ class CooldownCommand: SlashCommand {
         event.replyEmbeds(EmbedFactory.default(body).build()).setEphemeral(true).queue()
     }
 
-    private fun resetCooldown(event: SlashCommandInteractionEvent) {
+    private suspend fun resetCooldown(event: SlashCommandInteractionEvent) {
         val user = event.getOption("user")?.asUser ?: error("User not provided")
         CooldownManager.clear(user.id)
 
@@ -74,7 +74,7 @@ class CooldownCommand: SlashCommand {
             .queue()
     }
 
-    private fun setCooldown(event: SlashCommandInteractionEvent) {
+    private suspend fun setCooldown(event: SlashCommandInteractionEvent) {
         val user = event.getOption("user")?.asUser ?: error("User not provided")
         val type = event.getOption("type")?.asString ?: error("Type not provided")
         val length = event.getOption("duration")?.asString ?: error("Duration not provided")
@@ -96,7 +96,7 @@ class CooldownCommand: SlashCommand {
             .queue()
     }
 
-    private fun flushCooldowns(event: SlashCommandInteractionEvent) {
+    private suspend fun flushCooldowns(event: SlashCommandInteractionEvent) {
         CooldownManager.reset()
 
         GuildLogger.of(event.guild!!).log(
