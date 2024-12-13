@@ -35,7 +35,8 @@ class TagCommand : SlashCommand {
                     defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MANAGE)
 
                     addOptions(
-                        Option<String>("type", "How should the tag be detected", true, true)
+                        Option<String>("type", "How should the tag be detected", true, true),
+                        Option<Boolean>("global", "Whether the tag should be applied to the entire bot")
                     )
                 },
                 Subcommand("delete", "Delete a tag") {
@@ -49,7 +50,8 @@ class TagCommand : SlashCommand {
                     defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MANAGE)
 
                     addOptions(
-                        Option<String>("id", "The id of the tag to edit", true, true)
+                        Option<String>("id", "The id of the tag to edit", true, true),
+                        Option<Boolean>("global", "Whether the tag should be edited globally")
                     )
                 },
                 Subcommand("list", "List all tags"),
@@ -79,6 +81,7 @@ class TagCommand : SlashCommand {
     private suspend fun createTag(event: SlashCommandInteractionEvent) {
         val type = event.getOption("type")?.asString ?: error("Type not provided")
         val searchAlg = SearchAlgorithm.from(type) ?: error("Invalid search algorithm provided")
+        val global = event.getOption("global")?.asBoolean == true
 
         val id = UUID.randomUUID().toString()
         val modal = Modal("minehut:tag:create:$id", "Create a new tag") {
@@ -102,6 +105,7 @@ class TagCommand : SlashCommand {
                 searchValue = searchValue.trim(),
                 body = body,
                 uses = 0,
+                guildId = if (global) null else event.guild!!.id,
                 createdAt = System.currentTimeMillis(),
                 updatedAt = System.currentTimeMillis(),
                 createdBy = event.user.id
@@ -113,6 +117,7 @@ class TagCommand : SlashCommand {
                 ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
                 ":gear: Tag type set to `${searchAlg.name.lowercase()}`",
                 ":label: Tag can be used using `${searchValue.trim()}`",
+                ":earth_americas: Tag is ${if (global) "globally available" else "specific to ${event.guild!!.name}"}",
             ).withContext(event).titled("Tag Created").post()
 
             it.replyEmbeds(
@@ -131,7 +136,8 @@ class TagCommand : SlashCommand {
             "Deleted the tag `${tag.name}`",
             ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
             ":gear: The tag was used `${tag.uses} times`",
-            ":label: Tag ID: `${tag.id}`"
+            ":label: Tag ID: `${tag.id}`",
+            ":earth_americas: This tag was ${if (tag.guildId == null) "globally available" else "specific to ${event.guild!!.name}"}",
         ).withContext(event).titled("Tag Deleted").post()
 
         event.replyEmbeds(
@@ -140,7 +146,7 @@ class TagCommand : SlashCommand {
     }
 
     private fun listTags(event: SlashCommandInteractionEvent) {
-        val tags = TagManager.all()
+        val tags = TagManager.getTags(event.guild!!.id)
 
         event.replyEmbeds(
             EmbedFactory.default(
@@ -148,7 +154,7 @@ class TagCommand : SlashCommand {
                 | :label: Tags
                 | 
                 | ${tags.joinToString("\n") {
-                    "[${it.id}] ${it.name}"
+                    "[${it.id}] ${it.name} ${if (it.guildId == null) "(Global)" else ""}"
                 }}
                 """.trimMargin()
             ).build()
@@ -158,6 +164,7 @@ class TagCommand : SlashCommand {
     private suspend fun editTag(event: SlashCommandInteractionEvent) {
         val tagId = event.getOption("id")?.asString ?: error("Tag id not provided")
         val tag = TagManager.get(tagId.toInt()) ?: error("Tag not found")
+        val global = event.getOption("global")?.asBoolean == true
 
         val id = UUID.randomUUID().toString()
         val modal = Modal("minehut:tag:edit:$id", "Edit a tag") {
@@ -178,13 +185,15 @@ class TagCommand : SlashCommand {
 
             tag.searchValue = searchValue
             tag.body = body
+            tag.guildId = if (global) null else event.guild!!.id
 
             TagManager.save(tag)
 
             GuildLogger.of(event.guild!!).log(
                 "Edited the tag `${tag.name}`",
                 ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
-                ":label: Tag ID: `${tag.id}`"
+                ":label: Tag ID: `${tag.id}`",
+                ":earth_americas: This tag is ${if (global) "globally available" else "specific to ${event.guild!!.name}"}",
             ).withContext(event).titled("Tag Edited").post()
 
             it.replyEmbeds(
@@ -206,6 +215,7 @@ class TagCommand : SlashCommand {
                 | :label: Search Algorithm: `${tag.searchAlg().name.lowercase()}`
                 | :mag: Search Value: `${tag.searchValue}`
                 | 
+                | :earth_americas: This tag is ${if (tag.guildId == null) "globally available" else "specific to ${event.guild!!.name}"}
                 | :bust_in_silhouette: Author: <@${tag.createdBy}> (${tag.createdBy})
                 | :calendar: Created: <t:${tag.createdAt / 1000}:R>
                 | :stopwatch: Last updated: <t:${tag.updatedAt / 1000}:R>

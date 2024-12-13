@@ -17,6 +17,7 @@ data class Tag(
     var searchValue: String,
     var body: String,
     var uses: Int,
+    var guildId: String?,
     val createdBy: String,
     val createdAt: Long,
     var updatedAt: Long

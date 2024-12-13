@@ -19,7 +19,7 @@ object TagListener: ListenerAdapter() {
     private val recentlySent = mutableListOf<String>()
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
-        val tags = TagManager.all()
+        val tags = TagManager.getTags(event.guild.id)
 
         val tag = tags.firstOrNull { it.isIncluded(event.message.contentRaw) }
             ?: return

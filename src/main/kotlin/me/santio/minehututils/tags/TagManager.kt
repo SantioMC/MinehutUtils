@@ -47,8 +47,8 @@ object TagManager: DatabaseHook {
         return tags.firstOrNull { it.id == id }
     }
 
-    fun all(): List<Tag> {
-        return tags.toList()
+    fun getTags(guild: String): List<Tag> {
+        return tags.filter { it.guildId == guild || it.guildId == null }
     }
 
     suspend fun fetchAll(): List<Tag> {
@@ -62,12 +62,13 @@ object TagManager: DatabaseHook {
         this.tags.add(tag)
 
         iron.prepare(
-            "UPDATE tags SET search_alg = ?, search_value = ?, body = ?, uses = ?, updated_at = ? WHERE id = ?",
+            "UPDATE tags SET search_alg = ?, search_value = ?, body = ?, uses = ?, updated_at = ?, guild_id = ? WHERE id = ?",
             tag.searchAlg().id,
             tag.searchValue,
             tag.body,
             tag.uses,
             tag.updatedAt,
+            tag.guildId,
             tag.id
         )
     }
