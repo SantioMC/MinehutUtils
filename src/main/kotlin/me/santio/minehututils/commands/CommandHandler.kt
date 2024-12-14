@@ -5,6 +5,7 @@ import me.santio.minehututils.factories.EmbedFactory
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.slf4j.LoggerFactory
 
 object CommandManager {
@@ -45,8 +46,8 @@ object CommandManager {
 
         try {
             val choices = command.autoComplete(event)
-                .filter { it.name.startsWith(event.focusedOption.value, true) }
-                .take(10)
+                .filter { it.name.contains(event.focusedOption.value, true) }
+                .take(OptionData.MAX_CHOICES)
 
             event.replyChoices(choices).queue()
         } catch (e: CommandError) {
