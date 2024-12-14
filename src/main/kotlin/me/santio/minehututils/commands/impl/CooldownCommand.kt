@@ -71,7 +71,7 @@ class CooldownCommand: SlashCommand {
         ).withContext(event).titled("Cooldowns Reset").post()
 
         event.replyEmbeds(EmbedFactory.success("The cooldown for ${user.asMention} was reset", event.guild!!).build())
-            .queue()
+            .setEphemeral(true).queue()
     }
 
     private suspend fun setCooldown(event: SlashCommandInteractionEvent) {
@@ -93,7 +93,7 @@ class CooldownCommand: SlashCommand {
         ).withContext(event).titled("Cooldown Modified").post()
 
         event.replyEmbeds(EmbedFactory.success("The cooldown for ${user.asMention} was set to `${DurationResolver.pretty(duration)}`", event.guild!!).build())
-            .queue()
+            .setEphemeral(true).queue()
     }
 
     private suspend fun flushCooldowns(event: SlashCommandInteractionEvent) {
@@ -104,7 +104,8 @@ class CooldownCommand: SlashCommand {
             ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
         ).withContext(event).titled("Cooldowns Flushed").post()
 
-        event.replyEmbeds(EmbedFactory.success("All cooldowns were reset", event.guild!!).build()).queue()
+        event.replyEmbeds(EmbedFactory.success("All cooldowns were reset", event.guild!!).build())
+            .setEphemeral(true).queue()
     }
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
