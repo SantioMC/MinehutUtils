@@ -31,7 +31,12 @@ object TagListener: ListenerAdapter() {
         }
 
         recentlySent.add(id)
-        tag.send(event.message)
+
+        try {
+            tag.send(event.message)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         coroutineScope.launch(exceptionHandler) {
             TagManager.addUse(tag)
