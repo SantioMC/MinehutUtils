@@ -51,6 +51,7 @@ class TagCommand : SlashCommand {
 
                     addOptions(
                         Option<String>("id", "The id of the tag to edit", true, true),
+                        Option<String>("type", "How should the tag be detected", false, true),
                         Option<Boolean>("global", "Whether the tag should be edited globally")
                     )
                 },
@@ -165,6 +166,7 @@ class TagCommand : SlashCommand {
         val tagId = event.getOption("id")?.asString ?: error("Tag id not provided")
         val tag = TagManager.get(tagId.toInt()) ?: error("Tag not found")
         val global = event.getOption("global")?.asBoolean == true
+        val type = event.getOption("type")?.asString ?: tag.searchAlg().id
 
         val id = UUID.randomUUID().toString()
         val modal = Modal("minehut:tag:edit:$id", "Edit a tag") {
@@ -186,6 +188,7 @@ class TagCommand : SlashCommand {
             tag.searchValue = searchValue
             tag.body = body
             tag.guildId = if (global) null else event.guild!!.id
+            tag.searchAlg(SearchAlgorithm.from(type) ?: error("Invalid search algorithm provided"))
 
             TagManager.save(tag)
 
