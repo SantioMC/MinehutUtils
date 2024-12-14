@@ -147,7 +147,7 @@ class TagCommand : SlashCommand {
     }
 
     private fun listTags(event: SlashCommandInteractionEvent) {
-        val tags = TagManager.getTags(event.guild!!.id)
+        val tags = TagManager.getTags(event.guild!!.id).sortedBy { it.id }
 
         event.replyEmbeds(
             EmbedFactory.default(
