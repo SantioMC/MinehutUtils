@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import me.santio.minehututils.coroutines.exceptionHandler
+import net.dv8tion.jda.api.entities.Message.MessageFlag
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -21,19 +22,24 @@ object TagListener: ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val tags = TagManager.getTags(event.guild.id)
 
-        val tag = tags.firstOrNull { it.isIncluded(event.message.contentRaw) }
+        val message = event.message
+        val tag = tags.firstOrNull { it.isIncluded(message.contentRaw) }
             ?: return
 
         val id = "${event.channel.id}-${tag.id}"
         if (recentlySent.contains(id)) {
-            event.message.addReaction(cooldownReaction).queue()
+            message.addReaction(cooldownReaction).queue()
             return
         }
 
         recentlySent.add(id)
 
         try {
-            tag.send(event.message)
+            tag.send(message)
+
+            if (message.flags.contains(MessageFlag.NOTIFICATIONS_SUPPRESSED)) {
+                message.delete().queue()
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
