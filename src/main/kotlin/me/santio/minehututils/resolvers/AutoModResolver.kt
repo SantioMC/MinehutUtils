@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import me.santio.minehututils.coroutines.exceptionHandler
 import me.santio.minehututils.logger.GuildLogger
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
@@ -47,7 +48,7 @@ object AutoModResolver {
                     if (!passes) {
                         for (action in rule.actions) {
                             when (action.type) {
-                                AutoModResponse.Type.SEND_ALERT_MESSAGE -> coroutineScope.launch {
+                                AutoModResponse.Type.SEND_ALERT_MESSAGE -> coroutineScope.launch(exceptionHandler) {
                                     sendLog(query, guild, interaction, rule)
                                 }
                                 AutoModResponse.Type.TIMEOUT -> {
