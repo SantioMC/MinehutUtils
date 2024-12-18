@@ -11,6 +11,7 @@ import me.santio.minehututils.minehut.Minehut
 import me.santio.minehututils.minehut.Minehut.server
 import me.santio.minehututils.resolvers.EmojiResolver
 import me.santio.minehututils.resolvers.MOTDResolver
+import me.santio.minehututils.utils.TextHelper.titlecase
 import me.santio.sdk.minehut.models.Server
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Guild
@@ -55,7 +56,7 @@ class ServerCommand : SlashCommand {
             .addField(
                 "Server Status",
                 """
-                 | Server is `$status` ${if (server.online == true) check else cross}
+                 | Server is `${status.titlecase()}` ${if (server.online == true) check else cross}
                  | Started ${server.lastOnline?.toTime() ?: "Unknown"}
                  | Created ${server.creation?.toTime() ?: "Unknown"}
                  """.trimMargin(),
@@ -67,7 +68,7 @@ class ServerCommand : SlashCommand {
                 """
                  | Owned by `${owner}`
                  | The plan is `$plan` *(${round(server.creditsPerDay?.toDouble() ?: 0.0).toInt()} credits/d)*
-                 | Server is using **${server.serverVersionType?.lowercase() ?: "Unknown"}**
+                 | Server is using **${server.serverVersionType?.titlecase() ?: "Unknown"}**
                  """.trimMargin(),
                 true
             ).setFooter("Server ID: ${server.id ?: "Unknown"}")
