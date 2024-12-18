@@ -155,6 +155,8 @@ class MarketplaceCommand : SlashCommand {
                 "Listing made by ${event.user.name} (${event.user.id})",
                 event.user.avatarUrl
             )
+
+            it.setColor(getEmbedColor(type))
         }
 
         channel.sendMessage("Listing posted by ${event.user.asMention}")
@@ -173,6 +175,14 @@ class MarketplaceCommand : SlashCommand {
             }
 
         CooldownManager.set(event.user.id, Cooldown.getMarketplaceType(type), settings.marketplaceCooldown.seconds)
+    }
+
+    private fun getEmbedColor(type: String): Int {
+        return when (type) {
+            "offer" -> 0x70b560
+            "request" -> 0xA160B5
+            else -> error("Invalid type provided")
+        }
     }
 
 }
