@@ -2,12 +2,37 @@ package me.santio.minehututils.resolvers
 
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.emoji.Emoji
+import net.fellbaum.jemoji.EmojiManager
 
 /**
  * Finds a specific emoji that fits best based on what server we're on.
  */
 @Suppress("unused")
 object EmojiResolver {
+
+    /**
+     * Finds an emoji by its alias (ex: :yes: or yes)
+     * @param alias The alias to search for
+     * @return The emoji, or null if not found
+     */
+    fun fromAlias(alias: String): Emoji? {
+        return EmojiManager.getByAlias(alias).orElse(null)?.let {
+            Emoji.fromUnicode(it.emoji)
+        }
+    }
+
+    /**
+     * Finds an emoji by multiple kinds of formats
+     * @param query The query to search for
+     * @return The emoji, or null if not found
+     */
+    fun find(query: String): Emoji? {
+        return when {
+            query.startsWith("<") && query.endsWith(">") -> Emoji.fromFormatted(query)
+            query.startsWith(":") && query.endsWith(":") -> fromAlias(query)
+            else -> Emoji.fromUnicode(query)
+        }
+    }
 
     /**
      * Finds an emote called :yes: in the current guild

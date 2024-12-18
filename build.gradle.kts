@@ -28,6 +28,7 @@ dependencies {
 //   JDA
     implementation(libs.jda)
     implementation(libs.jda.kts)
+    implementation(libs.jemoji)
 
 //   Client
     implementation(libs.gson)

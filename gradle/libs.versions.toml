@@ -15,6 +15,7 @@ log4j = "2.23.0"
 flyway = "10.16.0"
 sqlite = "3.47.1.0"
 iron = "f77a1ccb6a"
+jemoji = "1.6.0"
 
 [plugins]
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
@@ -42,6 +43,7 @@ log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", vers
 sqlite = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 iron = { module = "gg.ingot.iron:iron", version.ref = "iron" }
+jemoji = { module = "net.fellbaum:jemoji", version.ref = "jemoji" }
 
 [bundles]
 log4j = ["log4j", "log4j-slf4j-impl"]

@@ -3,6 +3,7 @@ package me.santio.minehututils.database.models
 import gg.ingot.iron.annotations.Model
 import gg.ingot.iron.strategies.NamingStrategy
 import me.santio.minehututils.factories.EmbedFactory
+import me.santio.minehututils.resolvers.EmojiResolver
 import me.santio.minehututils.tags.SearchAlgorithm
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.interactions.components.buttons.Button
@@ -83,11 +84,18 @@ data class Tag(
             val match = buttonRegex.find(line) ?: continue
             lines.remove(line)
 
+            val emoji = match.groupValues[1].takeIf { it.isNotBlank() }
+                ?.let { EmojiResolver.find(it) }
+
             var button = Button.of(
                 ButtonStyle.LINK,
                 match.groupValues[3],
                 match.groupValues[2],
             )
+
+            if (emoji != null) {
+                button = button.withEmoji(emoji)
+            }
 
             buttons.add(button)
         }
@@ -112,7 +120,7 @@ data class Tag(
     }
 
     private companion object {
-        val buttonRegex = Regex("^\\[(:.+:)?(.+)]\\((https://.+)\\)", RegexOption.IGNORE_CASE)
+        val buttonRegex = Regex("^\\[(:.+:|<.+>)?(.+)]\\((https://.+)\\)", RegexOption.IGNORE_CASE)
     }
 
 }
