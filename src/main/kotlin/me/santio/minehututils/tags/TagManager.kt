@@ -55,18 +55,30 @@ object TagManager: DatabaseHook {
         return iron.prepare("SELECT * FROM tags WHERE deleted_at IS NULL").all()
     }
 
-    suspend fun save(tag: Tag) {
-        tag.updatedAt = System.currentTimeMillis()
+    suspend fun save(tag: Tag, updateTime: Boolean = true, updateLastUsed: Boolean = false) {
+        if (updateTime) tag.updatedAt = System.currentTimeMillis()
+        if (updateLastUsed) tag.lastUsed = System.currentTimeMillis()
 
         this.tags.removeIf { it.id == tag.id }
         this.tags.add(tag)
 
         iron.prepare(
-            "UPDATE tags SET search_alg = ?, search_value = ?, body = ?, uses = ?, updated_at = ?, guild_id = ? WHERE id = ?",
+            """
+            UPDATE tags SET search_alg = ?, 
+                search_value = ?, 
+                body = ?, 
+                uses = ?, 
+                updated_at = ?,
+                last_used = ?,
+                guild_id = ? 
+            WHERE id = ?
+            """.trimIndent(),
+
             tag.searchAlg().id,
             tag.searchValue,
             tag.body,
             tag.uses,
+            tag.lastUsed,
             tag.updatedAt,
             tag.guildId,
             tag.id
@@ -75,7 +87,7 @@ object TagManager: DatabaseHook {
 
     suspend fun addUse(tag: Tag) {
         tag.uses++
-        this.save(tag)
+        this.save(tag, updateTime = false, updateLastUsed = true)
     }
 
 }

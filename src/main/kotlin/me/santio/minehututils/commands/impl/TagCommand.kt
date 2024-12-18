@@ -222,6 +222,7 @@ class TagCommand : SlashCommand {
                 | :bust_in_silhouette: Author: <@${tag.createdBy}> (${tag.createdBy})
                 | :calendar: Created: <t:${tag.createdAt / 1000}:R>
                 | :stopwatch: Last updated: <t:${tag.updatedAt / 1000}:R>
+                | :stopwatch: Last used: <t:${tag.lastUsed / 1000}:R>
                 | :chart_with_upwards_trend: Uses: `${tag.uses}`
                 |
                 | ```${tag.body}```

@@ -20,7 +20,8 @@ data class Tag(
     var guildId: String?,
     val createdBy: String,
     val createdAt: Long,
-    var updatedAt: Long
+    var updatedAt: Long,
+    var lastUsed: Long = 0,
 ) {
 
     var regex: Regex? = null
