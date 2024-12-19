@@ -88,7 +88,7 @@ object Lockdown: DatabaseHook {
      * @param channel The text channel to lock or unlock
      * @param lock Whether to lock or unlock the channel
      */
-    suspend fun lock(channel: StandardGuildChannel, lock: Boolean) {
+    suspend fun lock(channel: StandardGuildChannel, lock: Boolean, reason: String? = null) {
         val permissions = getPermissionOverride(channel.guild, channel)
 
         if (lock && !permissions.denied.contains(Permission.MESSAGE_SEND)) {
@@ -101,7 +101,11 @@ object Lockdown: DatabaseHook {
             if (channel is TextChannel) {
                 channel.sendMessageEmbeds(
                     EmbedFactory.default(
-                        ":lock: The channel has been locked by a moderator.",
+                        """
+                        :lock: The channel has been locked by a moderator.
+                        
+                        ${reason ?: ""}
+                        """.trim()
                     ).build()
                 ).queue()
             }
@@ -125,12 +129,12 @@ object Lockdown: DatabaseHook {
         }
     }
 
-    suspend fun lockAll(guild: String, lock: Boolean) {
+    suspend fun lockAll(guild: String, lock: Boolean, reason: String? = null) {
         val channels = getLockdownChannels(guild)
 
         for (channel in channels) {
             val channel = bot.getGuildChannelById(channel) ?: continue
-            this.lock(channel as StandardGuildChannel, lock)
+            this.lock(channel as StandardGuildChannel, lock, reason)
         }
     }
 
