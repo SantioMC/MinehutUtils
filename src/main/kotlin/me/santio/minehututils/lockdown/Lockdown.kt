@@ -10,6 +10,7 @@ import me.santio.minehututils.iron
 import me.santio.minehututils.lockdown.Lockdown.lock
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 
@@ -32,6 +33,14 @@ object Lockdown: DatabaseHook {
         return DatabaseHandler.getSettings(guild.id).lockdownRole?.let { guild.getRoleById(it) }
             ?: guild.roles.firstOrNull { it.name == "@everyone" }
             ?: error("Failed to find the @everyone role in the guild")
+    }
+
+    private suspend fun getPermissionOverride(guild: Guild, channel: TextChannel): PermissionOverride {
+        val role = getModifyingRole(guild)
+
+        return channel.rolePermissionOverrides.firstOrNull {
+            it.role == role
+        } ?: channel.upsertPermissionOverride(role).complete()
     }
 
     /**
@@ -69,10 +78,7 @@ object Lockdown: DatabaseHook {
      * @return Whether the channel is locked or not
      */
     suspend fun isLocked(textChannel: TextChannel): Boolean {
-        val permissions = textChannel.rolePermissionOverrides.firstOrNull {
-            it.role == getModifyingRole(textChannel.guild)
-        } ?: return true
-
+        val permissions = getPermissionOverride(textChannel.guild, textChannel)
         return permissions.denied.contains(Permission.MESSAGE_SEND)
     }
 
@@ -82,12 +88,10 @@ object Lockdown: DatabaseHook {
      * @param lock Whether to lock or unlock the channel
      */
     suspend fun lock(textChannel: TextChannel, lock: Boolean) {
-        val permissions = textChannel.rolePermissionOverrides.firstOrNull {
-            it.role == getModifyingRole(textChannel.guild)
-        } ?: return // The @everyone role will always exist
+        val permissions = getPermissionOverride(textChannel.guild, textChannel)
 
         if (lock && !permissions.denied.contains(Permission.MESSAGE_SEND)) {
-            permissions.manager.setDenied(Permission.MESSAGE_SEND).queue() // Explicitly deny the @everyone role from speaking
+            permissions.manager.setDenied(permissions.denied + Permission.MESSAGE_SEND).queue() // Explicitly deny the @everyone role from speaking
             textChannel.sendMessageEmbeds(EmbedFactory.default(
                 ":lock: The channel has been locked by a moderator.",
             ).build()).queue()

@@ -179,7 +179,7 @@ class MarketplaceCommand : SlashCommand {
 
     private fun getEmbedColor(type: String): Int {
         return when (type) {
-            "offer" -> 0x70b560
+            "offer" -> 0xff057a
             "request" -> 0xA160B5
             else -> error("Invalid type provided")
         }
