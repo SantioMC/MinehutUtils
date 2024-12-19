@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildChannel
 
 /**
  * The lockdown manager for handling the locking of channels and state. In case a channel was locked
@@ -35,7 +36,7 @@ object Lockdown: DatabaseHook {
             ?: error("Failed to find the @everyone role in the guild")
     }
 
-    private suspend fun getPermissionOverride(guild: Guild, channel: TextChannel): PermissionOverride {
+    private suspend fun getPermissionOverride(guild: Guild, channel: StandardGuildChannel): PermissionOverride {
         val role = getModifyingRole(guild)
 
         return channel.rolePermissionOverrides.firstOrNull {
@@ -77,37 +78,48 @@ object Lockdown: DatabaseHook {
      * @param textChannel The text channel to check
      * @return Whether the channel is locked or not
      */
-    suspend fun isLocked(textChannel: TextChannel): Boolean {
+    suspend fun isLocked(textChannel: StandardGuildChannel): Boolean {
         val permissions = getPermissionOverride(textChannel.guild, textChannel)
         return permissions.denied.contains(Permission.MESSAGE_SEND)
     }
 
     /**
      * Lock or unlock a channel
-     * @param textChannel The text channel to lock or unlock
+     * @param channel The text channel to lock or unlock
      * @param lock Whether to lock or unlock the channel
      */
-    suspend fun lock(textChannel: TextChannel, lock: Boolean) {
-        val permissions = getPermissionOverride(textChannel.guild, textChannel)
+    suspend fun lock(channel: StandardGuildChannel, lock: Boolean) {
+        val permissions = getPermissionOverride(channel.guild, channel)
 
         if (lock && !permissions.denied.contains(Permission.MESSAGE_SEND)) {
-            permissions.manager.setDenied(permissions.denied + Permission.MESSAGE_SEND).queue() // Explicitly deny the @everyone role from speaking
-            textChannel.sendMessageEmbeds(EmbedFactory.default(
-                ":lock: The channel has been locked by a moderator.",
-            ).build()).queue()
+            permissions.manager.setDenied(
+                permissions.denied
+                    + Permission.MESSAGE_SEND
+                    + Permission.MESSAGE_SEND_IN_THREADS
+            ).queue() // Explicitly deny the @everyone role from speaking
+
+            if (channel is TextChannel) {
+                channel.sendMessageEmbeds(
+                    EmbedFactory.default(
+                        ":lock: The channel has been locked by a moderator.",
+                    ).build()
+                ).queue()
+            }
         } else if (!lock && permissions.denied.contains(Permission.MESSAGE_SEND)) {
-            permissions.manager.clear(Permission.MESSAGE_SEND).queue() // Default to the guild default, cleaning up our mess
+            permissions.manager.clear(Permission.MESSAGE_SEND, Permission.MESSAGE_SEND_IN_THREADS).queue() // Default to the guild default, cleaning up our mess
 
-            // If our message was the last message in the channel, delete it, otherwise we'll send a new one
-            val lastMessage = textChannel.latestMessageId.takeIf { it != "0" }
-                ?.let { textChannel.retrieveMessageById(it).complete() }
+            if (channel is TextChannel) {
+                // If our message was the last message in the channel, delete it, otherwise we'll send a new one
+                val lastMessage = channel.latestMessageId.takeIf { it != "0" }
+                    ?.let { channel.retrieveMessageById(it).complete() }
 
-            if (lastMessage?.author?.id == bot.selfUser.id) {
-                lastMessage.delete().queue()
-            } else {
-                textChannel.sendMessageEmbeds(EmbedFactory.default(
-                    ":unlock: The channel has been unlocked by a moderator.",
-                ).build()).queue()
+                if (lastMessage?.author?.id == bot.selfUser.id) {
+                    lastMessage.delete().queue()
+                } else {
+                    channel.sendMessageEmbeds(EmbedFactory.default(
+                        ":unlock: The channel has been unlocked by a moderator.",
+                    ).build()).queue()
+                }
             }
 
         }
@@ -117,8 +129,8 @@ object Lockdown: DatabaseHook {
         val channels = getLockdownChannels(guild)
 
         for (channel in channels) {
-            val channel = bot.getTextChannelById(channel) ?: continue
-            this.lock(channel, lock)
+            val channel = bot.getGuildChannelById(channel) ?: continue
+            this.lock(channel as StandardGuildChannel, lock)
         }
     }
 
