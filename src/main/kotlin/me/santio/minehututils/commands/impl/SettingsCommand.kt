@@ -180,7 +180,7 @@ class SettingsCommand: SlashCommand {
                 .build()
         ).addActionRow(
             EntitySelectMenu("minehut:settings:lockdown:channels:$id", listOf(SelectTarget.CHANNEL)) {
-                setChannelTypes(ChannelType.TEXT)
+                setChannelTypes(ChannelType.TEXT, ChannelType.FORUM)
                 setMaxValues(25)
                 setDefaultValues(channels.map {
                     EntitySelectMenu.DefaultValue.channel(it)
