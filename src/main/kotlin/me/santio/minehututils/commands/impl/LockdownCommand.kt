@@ -43,9 +43,14 @@ class LockdownCommand : SlashCommand {
 
     private suspend fun channel(event: SlashCommandInteractionEvent) {
         val channel = event.getOption("channel")?.asChannel?.asStandardGuildChannel() ?: event.channel.asTextChannel()
-        val lock = event.getOption("lock")?.asBoolean ?: true
+        val currentlyLocked = Lockdown.isLocked(channel)
+
+        val lock = event.getOption("lock")?.asBoolean ?: !currentlyLocked
         val reason = event.getOption("reason")?.asString
         if (!listOf(ChannelType.TEXT, ChannelType.FORUM).contains(channel.type)) error("Channel is not a text channel")
+
+        val channels = Lockdown.getLockdownChannels(channel.guild.id)
+        if (channel.id !in channels) error("You are not allowed to lockdown this channel")
 
         val locked = Lockdown.isLocked(channel)
         if (locked == lock) error("Channel is already ${if (lock) "locked" else "unlocked"}")

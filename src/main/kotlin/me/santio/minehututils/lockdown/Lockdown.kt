@@ -90,6 +90,9 @@ object Lockdown: DatabaseHook {
      */
     suspend fun lock(channel: StandardGuildChannel, lock: Boolean, reason: String? = null) {
         val permissions = getPermissionOverride(channel.guild, channel)
+        val channels = getLockdownChannels(channel.guild.id)
+
+        if (channel.id !in channels) error("Attempted to lockdown a channel that I shouldn't have tried to.")
 
         if (lock && !permissions.denied.contains(Permission.MESSAGE_SEND)) {
             permissions.manager.setDenied(
