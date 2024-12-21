@@ -19,6 +19,7 @@ enum class SearchAlgorithm(
     EXACT("exact", { query ->
         searchValue.split('|').any { query.equals(it, ignoreCase = true) }
     }, "Enter the search value (ex: how do I join?)"),
+    DISABLED("disabled", { false }, "Enter a placeholder value (ex: !downtime)"),
     ;
 
     companion object {

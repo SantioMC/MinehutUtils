@@ -68,9 +68,11 @@ class TagCommand : SlashCommand {
     }
 
     override suspend fun autoComplete(event: CommandAutoCompleteInteractionEvent): List<Choice> {
+        val guild = event.guild ?: return emptyList()
+
         return when (event.focusedOption.name) {
             "id" -> {
-                return TagManager.fetchAll().map { Choice("[${it.id}] ${it.name}", "${it.id}") }
+                return TagManager.getTags(guild.id).map { Choice("[${it.id}] ${it.name}", "${it.id}") }
             }
             "type" -> {
                 return SearchAlgorithm.entries.map { it.name.lowercase() }.map { Choice(it, it) }
@@ -155,7 +157,12 @@ class TagCommand : SlashCommand {
                 | :label: Tags
                 | 
                 | ${tags.joinToString("\n") {
-                    "[${it.id}] ${it.name} ${if (it.guildId == null) "(Global)" else ""}"
+                    var message = "[${it.id}] ${it.name}"
+                    
+                    if (it.guildId == null) message += " (Global)"
+                    if (it.uses == 0) message += " (Never used)"
+                    
+                    message
                 }}
                 """.trimMargin()
             ).build()
@@ -167,6 +174,9 @@ class TagCommand : SlashCommand {
         val tag = TagManager.get(tagId.toInt()) ?: error("Tag not found")
         val global = event.getOption("global")?.asBoolean == true
         val type = event.getOption("type")?.asString ?: tag.searchAlg().id
+
+        // Prevent modifying a tag in other guilds
+        if (tag.guildId != null && tag.guildId != event.guild!!.id) error("You can only edit tags in the same guild as the tag")
 
         val id = UUID.randomUUID().toString()
         val modal = Modal("minehut:tag:edit:$id", "Edit a tag") {
