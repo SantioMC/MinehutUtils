@@ -50,7 +50,7 @@ class SlowModeCommand : SlashCommand {
                 "Set the slowmode for ${event.channel.asMention} to `${DurationResolver.pretty(setDuration)}`",
                 event.guild
             ).build()
-        ).queue()
+        ).setEphemeral(true).queue()
     }
 
 }
