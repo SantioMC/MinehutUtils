@@ -113,7 +113,7 @@ data class Tag(
                 .setFooter("Requested by ${message.author.name} (${message.author.id})")
                 .setImage(image?.toString())
                 .build()
-        )
+        ).mentionRepliedUser(false)
 
         if (buttons.isNotEmpty()) reply.addActionRow(*buttons.toTypedArray())
         reply.queue()
