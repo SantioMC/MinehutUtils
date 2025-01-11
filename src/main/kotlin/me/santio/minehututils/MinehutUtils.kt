@@ -4,10 +4,18 @@ import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.jdabuilder.default
 import dev.minn.jda.ktx.jdabuilder.intents
 import gg.ingot.iron.Iron
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.serialization.gson.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import me.santio.minehututils.commands.CommandLoader
 import me.santio.minehututils.commands.CommandManager
 import me.santio.minehututils.database.DatabaseHandler
 import me.santio.minehututils.minehut.Minehut
+import me.santio.minehututils.skript.Skript
 import me.santio.minehututils.tags.TagListener
 import me.santio.minehututils.utils.EnvUtils.env
 import net.dv8tion.jda.api.JDA
@@ -22,6 +30,14 @@ import kotlin.io.path.notExists
 
 lateinit var bot: JDA
 lateinit var iron: Iron
+
+val httpClient = HttpClient(CIO) {
+    install(ContentNegotiation) {
+        gson()
+    }
+}
+
+val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
 suspend fun main() {
     val logger = LoggerFactory.getLogger("MinehutUtils")
@@ -51,6 +67,7 @@ suspend fun main() {
 
     // Start cache refreshes
     Minehut.startTimer()
+    Skript.refreshSyntaxList()
 
     bot.addEventListener(TagListener)
     bot.listener<SlashCommandInteractionEvent> {

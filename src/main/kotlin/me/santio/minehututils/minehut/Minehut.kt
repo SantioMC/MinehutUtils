@@ -1,14 +1,12 @@
 package me.santio.minehututils.minehut
 
-import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.serialization.gson.*
 import kotlinx.coroutines.*
 import me.santio.minehututils.coroutines.exceptionHandler
+import me.santio.minehututils.httpClient
 import me.santio.minehututils.minehut.mcsrvstat.PingModel
+import me.santio.minehututils.scope
 import me.santio.sdk.minehut.apis.Minehut
 import me.santio.sdk.minehut.models.ListedServer
 import me.santio.sdk.minehut.models.PlayerStats
@@ -27,16 +25,10 @@ object Minehut {
 
     private val logger = LoggerFactory.getLogger(Minehut::class.java)
     private val timer = Timer()
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var serverCache: List<ListedServer>? = null
     private val client = Minehut("https://api.minehut.com")
 
     val dailyTimeLimit: Duration = Duration.ofHours(4)
-    val httpClient = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            gson()
-        }
-    }
 
     /**
      * Refresh the server list cache
