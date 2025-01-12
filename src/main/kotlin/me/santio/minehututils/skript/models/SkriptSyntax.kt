@@ -1,14 +1,11 @@
-package me.santio.minehututils.skript
+package me.santio.minehututils.skript.models
 
 import com.google.gson.annotations.SerializedName
-import dev.minn.jda.ktx.messages.EmbedBuilder
-import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 
 data class SkriptSyntax(
-    val id: Int,
+    val id: Long,
     val creator: String,
-    val title: String,
+    var title: String,
     val description: String,
     @SerializedName("syntax_pattern")
     val syntaxPattern: String,
@@ -39,22 +36,4 @@ data class SkriptSyntax(
     @SerializedName("updated_at")
     val updatedAt: String,
     val entries: String
-) {
-    fun send(interaction: SlashCommandInteractionEvent) {
-        val embed = EmbedBuilder()
-        embed.setColor(0x488aff)
-        embed.setTitle(title)
-        embed.setDescription(description)
-        embed.setUrl(link)
-        embed.addField("Syntax", syntaxPattern, true)
-        if (addon != "Skript") {
-            embed.addField("Addon", addon, true)
-        }
-        interaction.replyEmbeds(embed.build()).queue()
-    }
-}
-
-data class SyntaxRequiredPlugin(
-    val name: String,
-    val link: String
 )

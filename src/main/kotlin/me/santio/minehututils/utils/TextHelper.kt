@@ -15,4 +15,14 @@ object TextHelper {
         return this.lowercase().split(" ").joinToString(" ") { it.replaceFirstChar { it.uppercase() } }
     }
 
+    fun String.ansiColor(regex: Regex, color: String): String {
+        var buffer = this
+
+        regex.findAll(this).forEach {
+            buffer = buffer.replace(it.value, color + it.value + "\u001b[0m")
+        }
+
+        return buffer
+    }
+
 }
