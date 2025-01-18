@@ -48,6 +48,7 @@ The following is a full list of commands that MinehutUtils provides:
 | `network`       | Displays information about the Minehut Network | ✅      |
 | `status`        | Calculates the status of core Minehut services | ✅      |
 | `marketplace`   | Either request or offer your services          | ✅      |
+| `skript`        | Search for syntax from SkriptHub               | ✅      |
 | `cooldown view` | View server and your cooldown                  | ✅      |
 | `cooldown`      | Manage user's cooldowns                        | ❌      |
 | `settings`      | Change the bot settings or behaviour           | ❌      |
@@ -131,14 +132,24 @@ The cooldown is applied per listing kind per user.
 The bot no longer uses environment variables to configure the log channel, instead you can use the `/settings log channel:`
 command to configure the log channel. This allows for per-guild log channels.
 
+#### SkriptHub Documentation
+
+To configure the SkriptHub documentation command, you must set the `SKRIPTHUB_KEY` environment variable to your
+SkriptHub API key. You can make a free API key at [SkriptHub](https://skripthub.net/dashboard/), the bot will 
+attempt to reduce the amount of requests made heavily to reduce rate limits and slow performing requests. Some requests
+will take multiple seconds to complete and therefore these results are cached for a long period of time.
+
+If no SkriptHub key is provided, the command will return an error to the user mentioning that it is not yet configured.
+
 ## Environment Variables
 
 Below are a list of all possible environment variables that can be set to configure the bot.
 
-| Variable        | Description                                   | Default         |
-|-----------------|-----------------------------------------------|-----------------|
-| DB_FILE         | Where the sqlite file is located              | data/minehut.db |
-| TOKEN           | The bot token                                 |                 |
+| Variable      | Description                      | Default         |
+|---------------|----------------------------------|-----------------|
+| DB_FILE       | Where the sqlite file is located | data/minehut.db |
+| SKRIPTHUB_KEY | The token to use from SkriptHub  |                 |
+| TOKEN         | The bot token                    |                 |
 
 ## Contributing
 

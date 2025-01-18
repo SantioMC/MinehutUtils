@@ -22,7 +22,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 class SkriptCommand : SlashCommand {
 
     override fun getData(): CommandData {
-        return Command("skript", "Search the Skript documentation") {
+        return Command("skript", "Search the SkriptHub documentation") {
             addOptions(
                 Option<String>("query", "The query to search for", true, autocomplete = true)
             )
