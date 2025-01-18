@@ -3,21 +3,23 @@ package me.santio.minehututils.minehut
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.serialization.gson.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.santio.minehututils.coroutines.exceptionHandler
 import me.santio.minehututils.minehut.mcsrvstat.PingModel
+import me.santio.minehututils.scope
 import me.santio.sdk.minehut.apis.Minehut
 import me.santio.sdk.minehut.models.ListedServer
 import me.santio.sdk.minehut.models.PlayerStats
 import me.santio.sdk.minehut.models.Server
 import me.santio.sdk.minehut.models.SimpleStats
-import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
-import kotlin.concurrent.schedule
 
 /**
  * A wrapper on unirest for accessing the Minehut API
@@ -25,34 +27,29 @@ import kotlin.concurrent.schedule
 @Suppress("MemberVisibilityCanBePrivate")
 object Minehut {
 
-    private val logger = LoggerFactory.getLogger(Minehut::class.java)
-    private val timer = Timer()
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private const val BASE_URL = "https://api.minehut.com"
+
     private var serverCache: List<ListedServer>? = null
-    private val client = Minehut("https://api.minehut.com")
+    private val client = Minehut(BASE_URL)
 
     val dailyTimeLimit: Duration = Duration.ofHours(4)
+
     val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
             gson()
+        }
+        install(DefaultRequest) {
+            header("User-Agent", "MinehutUtils/1.0")
+            header("Accept", "application/json")
         }
     }
 
     /**
      * Refresh the server list cache
      */
-    private fun refreshList() {
+    fun refreshList() {
         scope.launch(exceptionHandler) {
             serverCache = servers(true)
-        }
-    }
-
-    /**
-     * Start the server list cache timer
-     */
-    fun startTimer() {
-        timer.schedule(0, 30000) {
-            refreshList()
         }
     }
 
