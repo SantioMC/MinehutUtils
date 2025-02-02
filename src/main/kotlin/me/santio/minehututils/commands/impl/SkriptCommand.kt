@@ -36,10 +36,12 @@ class SkriptCommand : SlashCommand {
             return error("This command is not currently configured, please try again later.")
         }
 
-        val syntax = Skript.get(query)
-        if (syntax == null) {
-            return error("Failed to get syntax for `$query`!")
-        }
+        val id = query.toLongOrNull()
+        val syntax = if (id != null) {
+            Skript.get(id)
+        } else {
+            Skript.get(query)
+        } ?: return error("Failed to get syntax for `$query`!")
 
         var description = syntax.description.split("\n").joinToString("\n") { "> ${it.trim()}" }
 
@@ -75,7 +77,7 @@ class SkriptCommand : SlashCommand {
                     return@listener
                 }
 
-                var body = "```ansi\n${Syntax.skriptSyntax(example.exampleCode)}\n```"
+                val body = "```ansi\n${Syntax.skriptSyntax(example.exampleCode)}\n```"
 
                 it.replyEmbeds(
                     EmbedFactory.default(body)
@@ -89,9 +91,16 @@ class SkriptCommand : SlashCommand {
     override suspend fun autoComplete(event: CommandAutoCompleteInteractionEvent): List<Command.Choice> {
         val query = event.getOption("query")?.asString ?: return emptyList()
 
-        return Skript.search(query)
-            .filter { it.title.contains(query, ignoreCase = true) }
-            .map { Command.Choice(it.title, it.title) }
+        val id = query.toLongOrNull()
+        return if (id != null) {
+            Skript.search(id)
+                .filter { it.id.toString().startsWith(query) }
+                .map { Command.Choice("[${it.id}] ${it.title}", it.title) }
+        } else {
+            Skript.search(query)
+                .filter { it.title.contains(query, ignoreCase = true) }
+                .map { Command.Choice(it.title, it.title) }
+        }
     }
 
 }
