@@ -72,7 +72,6 @@ object Skript {
                 list
                     .sortedBy { it.title }
                     .onEach { it.title = it.title.titlecase() }
-                    .distinctBy { it.title }
             )
 
             // Fetch example list
@@ -96,7 +95,18 @@ object Skript {
      * @return A list of syntaxes that match the query
      */
     fun search(query: String): List<SkriptSyntax> {
-        return syntaxList.filter { it.title.contains(query, ignoreCase = true) }
+        return syntaxList
+            .distinctBy { it.title }
+            .filter { it.title.contains(query, ignoreCase = true) }
+    }
+
+    /**
+     * Search the syntax list for a query by id
+     * @param id The id of the syntax
+     * @return The syntax, or null if it doesn't exist
+     */
+    fun search(id: Long): List<SkriptSyntax> {
+        return syntaxList.filter { it.id.toString().startsWith(id.toString()) }
     }
 
     /**
@@ -106,6 +116,15 @@ object Skript {
      */
     fun get(title: String): SkriptSyntax? {
         return syntaxList.find { it.title == title }
+    }
+
+    /**
+     * Get a syntax by its id
+     * @param id The id of the syntax
+     * @return The syntax, or null if it doesn't exist
+     */
+    fun get(id: Long): SkriptSyntax? {
+        return syntaxList.find { it.id == id }
     }
 
     /**
