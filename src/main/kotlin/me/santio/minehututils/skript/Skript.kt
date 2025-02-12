@@ -115,7 +115,8 @@ object Skript {
      * @return The syntax, or null if it doesn't exist
      */
     fun get(title: String): SkriptSyntax? {
-        return syntaxList.find { it.title == title }
+        return syntaxList.find { it.title == title && it.addon == "Skript" }
+            ?: syntaxList.find { it.title == title }
     }
 
     /**
