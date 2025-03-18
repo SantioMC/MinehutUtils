@@ -36,11 +36,8 @@ object TagListener: ListenerAdapter() {
         recentlySent.add(id)
 
         try {
-            tag.send(message)
-
-            if (message.flags.contains(MessageFlag.NOTIFICATIONS_SUPPRESSED)) {
-                message.delete().queue()
-            }
+            val silent = message.flags.contains(MessageFlag.NOTIFICATIONS_SUPPRESSED)
+            tag.send(message, silent)
         } catch (e: Exception) {
             e.printStackTrace()
         }
