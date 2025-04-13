@@ -7,8 +7,6 @@ import java.time.Duration
  * @author santio
  */
 data class UserCooldown(
-    val user: String,
-    val kind: Cooldown,
     val started: Long, // 1672531200
     val duration: Long // 84600
 ) {

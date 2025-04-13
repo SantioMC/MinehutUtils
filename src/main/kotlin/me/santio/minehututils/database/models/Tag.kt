@@ -75,8 +75,8 @@ data class Tag(
      * @param message The message to send the tag to
      */
     fun send(message: Message) {
-        var lines = body.lines().toMutableList()
-        var buttons = mutableListOf<Button>()
+        val lines = body.lines().toMutableList()
+        val buttons = mutableListOf<Button>()
 
         for (line in body.lines()) {
             if (buttons.size >= 5) break
@@ -103,10 +103,12 @@ data class Tag(
         val lastLine = lines.lastOrNull() ?: return
         var image: URL? = null
 
-        try {
+        kotlin.runCatching {
             image = URI.create(lastLine).toURL()
             lines.remove(lastLine)
-        } catch (e: Exception) {}
+        }.onFailure { result ->
+            result.printStackTrace()
+        }
 
         val reply = message.replyEmbeds(
             EmbedFactory.default(lines.joinToString("\n"))

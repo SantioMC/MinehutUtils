@@ -23,39 +23,53 @@ object CommandManager {
 
     suspend fun execute(event: SlashCommandInteractionEvent) {
         val command = commands.find { it.getData().name == event.name }
+
         if (command == null) {
             event.replyEmbeds(EmbedFactory.error("Command not found", event.guild).build()).queue()
             return
         }
 
-        try {
+        kotlin.runCatching {
             command.execute(event)
-        } catch (e: CommandError) {
-            event.replyEmbeds(EmbedFactory.error(e.message, event.guild).build()).setEphemeral(e.ephemeral).queue()
-        } catch (e: Exception) {
-            logger.error("An error occurred while executing the command", e)
-            event.replyEmbeds(
-                EmbedFactory.exception("An error occurred while executing the command", event.guild, e).build()
-            ).setEphemeral(true).queue()
+        }.onFailure { result ->
+            when(result) {
+                is CommandError -> {
+                    event.replyEmbeds(EmbedFactory.error(result.message, event.guild).build())
+                        .setEphemeral(result.ephemeral).queue()
+                }
+
+                else -> {
+                    logger.error("An error occurred while executing the command", result)
+
+                    event.replyEmbeds(EmbedFactory.exception("An error occurred while executing the command", event.guild, result).build())
+                        .setEphemeral(true).queue()
+                }
+            }
         }
     }
 
     suspend fun autoComplete(event: CommandAutoCompleteInteractionEvent) {
         val command = commands.find { it.getData().name == event.name }
-        if (command == null) return
+            ?: return
 
-        try {
+        kotlin.runCatching {
             val choices = command.autoComplete(event)
                 .filter { it.name.contains(event.focusedOption.value, true) }
                 .take(OptionData.MAX_CHOICES)
 
             event.replyChoices(choices).queue()
-        } catch (e: CommandError) {
-            logger.warn("Failed to auto-complete command", e)
-            event.replyChoices(emptyList()).queue()
-        } catch (e: Exception) {
-            logger.error("An error occurred while auto-completing the command", e)
-            event.replyChoices(emptyList()).queue()
+        }.onFailure { result ->
+            when(result) {
+                is CommandError -> {
+                    logger.warn("Failed to auto-complete command", result)
+                    event.replyChoices(emptyList()).queue()
+                }
+
+                else -> {
+                    logger.error("An error occurred while auto-completing the command", result)
+                    event.replyChoices(emptyList()).queue()
+                }
+            }
         }
     }
 

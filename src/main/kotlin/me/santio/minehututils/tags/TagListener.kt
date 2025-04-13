@@ -35,14 +35,14 @@ object TagListener: ListenerAdapter() {
 
         recentlySent.add(id)
 
-        try {
+        kotlin.runCatching {
             tag.send(message)
 
             if (message.flags.contains(MessageFlag.NOTIFICATIONS_SUPPRESSED)) {
                 message.delete().queue()
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        }.onFailure { result ->
+            result.printStackTrace()
         }
 
         coroutineScope.launch(exceptionHandler) {
