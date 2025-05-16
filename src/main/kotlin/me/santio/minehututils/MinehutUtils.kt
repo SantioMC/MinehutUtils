@@ -10,6 +10,8 @@ import kotlinx.coroutines.SupervisorJob
 import me.santio.minehututils.commands.CommandLoader
 import me.santio.minehututils.commands.CommandManager
 import me.santio.minehututils.database.DatabaseHandler
+import me.santio.minehututils.marketplace.MarketplaceListener
+import me.santio.minehututils.marketplace.MarketplaceManager
 import me.santio.minehututils.minehut.Minehut
 import me.santio.minehututils.skript.Skript
 import me.santio.minehututils.tags.TagListener
@@ -58,7 +60,7 @@ suspend fun main() {
     CommandLoader.load(bot)
     bot.updateCommands().addCommands(CommandManager.collect()).queue()
 
-    bot.addEventListener(TagListener)
+    bot.addEventListener(MarketplaceListener, TagListener)
     bot.listener<SlashCommandInteractionEvent> {
         CommandManager.execute(it)
     }
@@ -77,6 +79,10 @@ suspend fun main() {
 
     timer.schedule(0, 1000 * 60 * 60 * 24) { // 24 hours
         Skript.refreshData()
+    }
+
+    timer.schedule(0, 1000 * 60 * 60 * 24) { // 24 hours
+        MarketplaceManager.clearOldMessages()
     }
 
     // Attach shutdown hooks
