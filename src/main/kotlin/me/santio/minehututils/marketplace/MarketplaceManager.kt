@@ -43,15 +43,7 @@ object MarketplaceManager: DatabaseHook {
 
         iron.prepare(
             "INSERT INTO marketplace_logs(id, posted_by, type, title, content, posted_at) VALUES (:id, :postedBy, :type, :title, :content, :postedAt)",
-            message.bindings(),
-            bind {
-                "id" to message.id
-                "postedBy" to message.postedBy
-                "type" to message.type
-                "title" to message.title
-                "content" to message.content
-                "postedAt" to message.postedAt
-            }
+            message.bindings()
         )
     }
 
