@@ -2,6 +2,7 @@ package me.santio.minehututils.marketplace
 
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.interactions.components.Modal
+import gg.ingot.iron.bindings.bind
 import kotlinx.coroutines.launch
 import me.santio.minehututils.bot
 import me.santio.minehututils.cooldown.Cooldown
@@ -41,13 +42,16 @@ object MarketplaceManager: DatabaseHook {
         messages.add(message)
 
         iron.prepare(
-            "INSERT INTO marketplace_logs(id, posted_by, type, title, content, posted_at) VALUES (?, ?, ?, ?, ?, ?)",
-            message.id,
-            message.postedBy,
-            message.type,
-            message.title,
-            message.content,
-            message.postedAt
+            "INSERT INTO marketplace_logs(id, posted_by, type, title, content, posted_at) VALUES (:id, :postedBy, :type, :title, :content, :postedAt)",
+            message.bindings(),
+            bind {
+                "id" to message.id
+                "postedBy" to message.postedBy
+                "type" to message.type
+                "title" to message.title
+                "content" to message.content
+                "postedAt" to message.postedAt
+            }
         )
     }
 
