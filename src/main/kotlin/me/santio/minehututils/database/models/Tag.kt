@@ -74,7 +74,9 @@ data class Tag(
      * Send the tag to the specified message
      * @param message The message to send the tag to
      */
-    fun send(message: Message) {
+    fun send(message: Message, silent: Boolean = false) {
+        if (silent) message.delete().queue()
+        
         val lines = body.lines().toMutableList()
         val buttons = mutableListOf<Button>()
 
@@ -110,14 +112,18 @@ data class Tag(
             result.printStackTrace()
         }
 
-        val reply = message.replyEmbeds(
-            EmbedFactory.default(lines.joinToString("\n"))
-                .setFooter("Requested by ${message.author.name} (${message.author.id})")
-                .setImage(image?.toString())
-                .build()
-        ).mentionRepliedUser(false)
+        val embed = EmbedFactory.default(lines.joinToString("\n"))
+            .setFooter("Requested by ${message.author.name} (${message.author.id})")
+            .setImage(image?.toString())
+            .build()
 
-        if (buttons.isNotEmpty()) reply.addActionRow(*buttons.toTypedArray())
+        val reply = if (silent) {
+            message.channel.sendMessageEmbeds(embed)
+        } else {
+            message.replyEmbeds(embed).mentionRepliedUser(false)
+        }
+
+        if (buttons.isNotEmpty()) reply.setActionRow(*buttons.toTypedArray())
         reply.queue()
     }
 

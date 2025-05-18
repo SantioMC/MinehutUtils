@@ -36,11 +36,8 @@ object TagListener: ListenerAdapter() {
         recentlySent.add(id)
 
         kotlin.runCatching {
-            tag.send(message)
-
-            if (message.flags.contains(MessageFlag.NOTIFICATIONS_SUPPRESSED)) {
-                message.delete().queue()
-            }
+            val silent = message.flags.contains(MessageFlag.NOTIFICATIONS_SUPPRESSED)
+            tag.send(message, silent)
         }.onFailure { result ->
             result.printStackTrace()
         }

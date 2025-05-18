@@ -33,7 +33,7 @@ data class Log(
 
         context += """
         | Channel ID: ${channel.id} *(${channel.asMention})*
-        """.trimMargin()
+        """.trimMargin() + "\n"
 
         return this
     }
@@ -47,7 +47,7 @@ data class Log(
     fun withContext(user: User): Log {
         context += """
         | User ID: ${user.id} *(${user.asMention})*
-        """.trimMargin()
+        """.trimMargin() + "\n"
 
         return this
     }
@@ -63,7 +63,7 @@ data class Log(
         | Channel ID: ${message.channel.id} *(${message.channel.asMention})*
         | Message ID: ${message.id} ${ButtonFactory.textButton("JUMP", message.jumpUrl)}
         | User ID: ${message.author.id} *(${message.author.asMention} - ${message.author.name})*
-        """.trimMargin()
+        """.trimMargin() + "\n"
 
         return this
     }
