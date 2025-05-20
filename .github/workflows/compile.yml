@@ -1,4 +1,4 @@
-name: Docker
+name: Check Codebase
 on:
     workflow_dispatch:
     pull_request:
