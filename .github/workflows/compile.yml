@@ -22,7 +22,7 @@ jobs:
                   java-version: 21
 
             -   name: Setup gradle
-                uses: gradle/actions@v4.4.0
+                uses: gradle/actions/setup-gradle@v4.4.0
 
             -   name: Check source with Gradle
                 run: ./gradlew --no-daemon :check
