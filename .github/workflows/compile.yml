@@ -1,0 +1,27 @@
+name: Docker
+on:
+    pull_request:
+        types: [opened, reopened]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v2
+
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: 'temurin'
+                  java-version: 21
+
+            -   name: Setup gradle
+                uses: gradle/actions@v4.4.0
+
+            -   name: Check source with Gradle
+                run: ./gradlew --no-daemon :check
