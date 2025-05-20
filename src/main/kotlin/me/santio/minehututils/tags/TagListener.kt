@@ -35,11 +35,11 @@ object TagListener: ListenerAdapter() {
 
         recentlySent.add(id)
 
-        try {
+        kotlin.runCatching {
             val silent = message.flags.contains(MessageFlag.NOTIFICATIONS_SUPPRESSED)
             tag.send(message, silent)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        }.onFailure { result ->
+            result.printStackTrace()
         }
 
         coroutineScope.launch(exceptionHandler) {

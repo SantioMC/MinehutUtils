@@ -76,7 +76,7 @@ data class Tag(
      */
     fun send(message: Message, silent: Boolean = false) {
         if (silent) message.delete().queue()
-
+        
         val lines = body.lines().toMutableList()
         val buttons = mutableListOf<Button>()
 
@@ -105,10 +105,12 @@ data class Tag(
         val lastLine = lines.lastOrNull() ?: return
         var image: URL? = null
 
-        try {
+        kotlin.runCatching {
             image = URI.create(lastLine).toURL()
             lines.remove(lastLine)
-        } catch (_: Exception) {}
+        }.onFailure { result ->
+            result.printStackTrace()
+        }
 
         val embed = EmbedFactory.default(lines.joinToString("\n"))
             .setFooter("Requested by ${message.author.name} (${message.author.id})")
