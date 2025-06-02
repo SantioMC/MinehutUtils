@@ -15,7 +15,7 @@ log4j = "2.24.3"
 flyway = "10.16.0"
 sqlite = "3.47.1.0"
 iron = "f77a1ccb6a"
-jemoji = "1.6.0"
+jemoji = "1.7.4"
 
 [plugins]
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
