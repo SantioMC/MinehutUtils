@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 
@@ -20,7 +21,7 @@ class LockdownCommand : SlashCommand {
 
     override fun getData(): CommandData {
         return Command("lockdown", "Lock or unlock channels to prevent users from speaking in public channels") {
-            isGuildOnly = true
+            setContexts(InteractionContextType.GUILD)
             defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MANAGE)
 
             addSubcommands(

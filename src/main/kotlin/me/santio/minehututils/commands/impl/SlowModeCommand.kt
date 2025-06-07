@@ -11,6 +11,7 @@ import me.santio.minehututils.resolvers.DurationResolver
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.channel.attribute.ISlowmodeChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import kotlin.math.min
@@ -21,7 +22,7 @@ class SlowModeCommand : SlashCommand {
 
     override fun getData(): CommandData {
         return Command("slowmode", "Change how fast users can speak in the channel") {
-            isGuildOnly = true
+            setContexts(InteractionContextType.GUILD)
             defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MANAGE)
 
             addOptions(
