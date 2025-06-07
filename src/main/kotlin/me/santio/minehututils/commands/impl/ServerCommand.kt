@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -76,7 +77,7 @@ class ServerCommand : SlashCommand {
 
     override fun getData(): CommandData {
         return Command("server", "Get information about a server") {
-            isGuildOnly = true
+            setContexts(InteractionContextType.GUILD)
             addOption(OptionType.STRING, "server", "The server to get information about", true, true)
         }
     }

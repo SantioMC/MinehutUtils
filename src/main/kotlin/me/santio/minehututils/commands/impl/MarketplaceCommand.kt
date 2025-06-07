@@ -15,8 +15,9 @@ import me.santio.minehututils.marketplace.MarketplaceManager
 import me.santio.minehututils.resolvers.DurationResolver.discord
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import java.util.UUID
+import java.util.*
 import kotlin.time.Duration.Companion.seconds
 
 @AutoService(SlashCommand::class)
@@ -24,7 +25,7 @@ class MarketplaceCommand : SlashCommand {
 
     override fun getData(): CommandData {
         return Command("marketplace", "Request or offer services") {
-            isGuildOnly = true
+            setContexts(InteractionContextType.GUILD)
         }
     }
 

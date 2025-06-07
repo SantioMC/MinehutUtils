@@ -13,6 +13,7 @@ import me.santio.minehututils.minehut.Minehut
 import me.santio.minehututils.minehut.Service
 import me.santio.minehututils.resolvers.ChannelResolver
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 
 @AutoService(SlashCommand::class)
@@ -22,7 +23,7 @@ class StatusCommand : SlashCommand {
 
     override fun getData(): CommandData {
         return Command("status", "Get the status of Minehut") {
-            isGuildOnly = true
+            setContexts(InteractionContextType.GUILD)
         }
     }
 
