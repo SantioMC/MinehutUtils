@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu
@@ -35,7 +36,7 @@ class SettingsCommand: SlashCommand {
     override fun getData(): CommandData {
         return Command("settings", "Manage specific settings for the bot") {
             defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER)
-            isGuildOnly = true
+            setContexts(InteractionContextType.GUILD)
 
             addSubcommands(
                 Subcommand("view", "View the current settings")

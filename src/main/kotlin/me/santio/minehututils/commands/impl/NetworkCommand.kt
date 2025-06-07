@@ -8,6 +8,7 @@ import me.santio.minehututils.ext.reply
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.minehut.Minehut
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import kotlin.math.ceil
 
@@ -16,7 +17,7 @@ class NetworkCommand : SlashCommand {
 
     override fun getData(): CommandData {
         return Command("network", "View statistics about Minehut") {
-            isGuildOnly = true
+            setContexts(InteractionContextType.GUILD)
         }
     }
 

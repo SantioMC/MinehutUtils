@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.Command.Choice
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -28,7 +29,7 @@ class TagCommand : SlashCommand {
 
     override fun getData(): CommandData {
         return Command("tag", "See and manage tags") {
-            isGuildOnly = true
+            setContexts(InteractionContextType.GUILD)
 
             addSubcommands(
                 Subcommand("create", "Create a new tag") {
