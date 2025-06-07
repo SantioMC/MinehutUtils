@@ -2,7 +2,6 @@ package me.santio.minehututils.marketplace
 
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.interactions.components.Modal
-import gg.ingot.iron.bindings.bind
 import kotlinx.coroutines.launch
 import me.santio.minehututils.bot
 import me.santio.minehututils.cooldown.Cooldown
@@ -18,7 +17,7 @@ import me.santio.minehututils.scope
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
-import java.util.UUID
+import java.util.*
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -64,6 +63,18 @@ object MarketplaceManager: DatabaseHook {
                 it.values.firstOrNull { it.id == "minehut:listing:title" }?.asString ?: error("No title provided")
             val description = it.values.firstOrNull { it.id == "minehut:listing:description" }?.asString
                 ?: error("No description provided")
+
+            // Restrict the number of repetitive empty lines
+            val trimmed = description.lines().joinToString("\n") { line -> line.trim() }
+            if (trimmed.contains("\n\n\n")) { // Check if there are 3 new line characters in a row
+                it.replyEmbeds(
+                    EmbedFactory.error(
+                        "Your message has too many empty lines in a row, try reducing the amount of empty lines.",
+                        it.guild!!
+                    ).build()
+                ).setEphemeral(true).queue()
+                return@listener
+            }
 
             // Run in auto-mod
             AutoModResolver.parse(it.guild!!, it.member!!, e, title, description).thenAccept { passes ->
