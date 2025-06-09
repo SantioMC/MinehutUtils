@@ -14,7 +14,7 @@ dotenv = "6.5.1"
 log4j = "2.24.3"
 flyway = "10.16.0"
 sqlite = "3.49.1.0"
-iron = "f77a1ccb6a"
+iron = "2.0.0-RC1"
 jemoji = "1.6.0"
 
 [plugins]
