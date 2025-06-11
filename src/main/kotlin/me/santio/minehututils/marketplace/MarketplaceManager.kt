@@ -23,6 +23,11 @@ import kotlin.time.Duration.Companion.seconds
 
 object MarketplaceManager: DatabaseHook {
 
+    private val INVITE_REGEX = Regex(
+        "(https?://)?(www\\.)?((discordapp\\.com/invite)|(discord\\.gg))/(\\w+)",
+        RegexOption.IGNORE_CASE
+    )
+
     private val messages = mutableSetOf<MarketplaceMessage>()
 
     override suspend fun onHook() {
@@ -70,6 +75,17 @@ object MarketplaceManager: DatabaseHook {
                 it.replyEmbeds(
                     EmbedFactory.error(
                         "Your message has too many empty lines in a row, try reducing the amount of empty lines.",
+                        it.guild!!
+                    ).build()
+                ).setEphemeral(true).queue()
+                return@listener
+            }
+
+            // Restrict Discord invite links
+            if (description.contains(INVITE_REGEX) || title.contains(INVITE_REGEX)) {
+                it.replyEmbeds(
+                    EmbedFactory.error(
+                        "Your message contains a Discord invite link, which is not allowed in marketplace listings.",
                         it.guild!!
                     ).build()
                 ).setEphemeral(true).queue()
