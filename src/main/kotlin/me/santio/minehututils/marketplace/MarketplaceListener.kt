@@ -26,7 +26,7 @@ object MarketplaceListener : ListenerAdapter() {
         val title = message.title
         val content = message.content
         val postedBy = message.postedBy
-        val postedByUser = bot.getUserById(postedBy)
+        val postedByUser = bot.retrieveUserById(postedBy).complete()
         val type = message.type
         scope.launch {
             val log = GuildLogger.of(channel.guild).log(
