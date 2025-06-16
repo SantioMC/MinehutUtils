@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.utils.FileUpload
 
 object MarketplaceListener : ListenerAdapter() {
 
@@ -34,10 +35,10 @@ object MarketplaceListener : ListenerAdapter() {
                     :identification_card: User: ${postedByUser?.asMention} *(${postedByUser?.name} - ${postedByUser?.id})*
                     :label: Type: $type
                     :name_badge: Title: $title
-                    :newspaper: Post Content:
-                    ${content.take(3500)}
                 """.trimIndent()
-            ).withContext(channel).titled("Marketplace Listing Deleted")
+            ).withContext(channel)
+                .withFile(FileUpload.fromData(content.toByteArray().inputStream(), "listing-$messageId.txt"))
+                .titled("Marketplace Listing Deleted")
 
             if (postedByUser != null) log.withContext(postedByUser)
             log.post()

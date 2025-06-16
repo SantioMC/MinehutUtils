@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.Interaction
+import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 /**
@@ -22,6 +23,7 @@ data class Log(
 
     private var context = ""
     private var title = ""
+    private var fileUpload: FileUpload? = null
 
     /**
      * Attach context to the log, this will be provided at
@@ -83,6 +85,16 @@ data class Log(
     }
 
     /**
+     * Sets a file to upload with the log
+     * @param fileUpload The file upload to attach
+     * @return The log
+     */
+    fun withFile(fileUpload: FileUpload): Log {
+        this.fileUpload = fileUpload
+        return this
+    }
+
+    /**
      * Sets the title of the log
      * @param title The title to set
      * @return The log
@@ -114,7 +126,11 @@ data class Log(
      */
     fun post(): Log {
         if (!guildLogger.isEnabled()) return this
-        guildLogger.channel?.sendMessage(build())?.queue()
+        val message = guildLogger.channel?.sendMessage(build())
+        if (fileUpload != null) {
+            message?.addFiles(fileUpload)
+        }
+        message?.queue()
         return this
     }
 
