@@ -95,7 +95,7 @@ class SkriptCommand : SlashCommand {
         return if (id != null) {
             Skript.search(id)
                 .filter { it.id.toString().startsWith(query) }
-                .map { Command.Choice("[${it.id}] ${it.title}", it.title) }
+                .map { Command.Choice("[${it.id}] ${it.title}", it.id) }
         } else {
             Skript.search(query)
                 .filter { it.title.contains(query, ignoreCase = true) }
