@@ -55,7 +55,7 @@ class SkriptCommand : SlashCommand {
             EmbedFactory.default(description)
                 .setTitle(syntax.title)
                 .setUrl(syntax.link)
-                .setFooter("Requested by ${event.user.name} (${event.user.id})", null)
+                .setFooter("Command Powered by Skript Hub", null)
                 .build()
         ).addActionRow(
             Button.of(
@@ -81,7 +81,7 @@ class SkriptCommand : SlashCommand {
 
                 it.replyEmbeds(
                     EmbedFactory.default(body)
-                        .setFooter("Requested by ${it.user.name} (${it.user.id})", null)
+                        .setFooter("Example Powered by Skript Hub", null)
                         .build()
                 ).setEphemeral(true).queue()
             }
