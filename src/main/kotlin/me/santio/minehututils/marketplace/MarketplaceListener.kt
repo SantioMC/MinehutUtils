@@ -23,6 +23,17 @@ object MarketplaceListener : ListenerAdapter() {
 
         scope.launch {
             val settings = DatabaseHandler.getSettings(event.guild!!.id)
+            if (settings.marketplaceChannel == null || settings.marketplaceCooldown < 0L) {
+                event.replyEmbeds(
+                    EmbedFactory.error(
+                        "The marketplace channel is not currently configured, come back later!",
+                        event.guild!!
+                    ).build()
+                )
+                    .setEphemeral(true)
+                    .queue()
+                return@launch
+            }
 
             // minehut:marketplace:post:<type>
             val type = event.componentId.substringAfter("minehut:marketplace:post:")

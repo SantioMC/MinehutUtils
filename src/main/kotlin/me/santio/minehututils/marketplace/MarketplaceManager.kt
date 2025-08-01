@@ -55,11 +55,7 @@ object MarketplaceManager: DatabaseHook {
         val settings = DatabaseHandler.getSettings(guild.id)
         if (settings.marketplaceChannel == null) return null
 
-        return if (stickyMessageId != null) {
-            bot.getTextChannelById(settings.marketplaceChannel)?.retrieveMessageById(stickyMessageId!!)?.await()
-        } else {
-            null
-        }
+        return stickyMessageId?.let { bot.getTextChannelById(settings.marketplaceChannel)?.retrieveMessageById(it)?.await() }
     }
 
     suspend fun add(message: MarketplaceMessage) {
@@ -203,8 +199,7 @@ object MarketplaceManager: DatabaseHook {
     }
 
     suspend fun sendStickyEmbed(channel: TextChannel) {
-        val stickyMessage = getStickyMessage(channel.guild)
-        stickyMessage?.delete()?.queue()
+        getStickyMessage(channel.guild)?.delete()?.queue()
 
         val offerButton = button("minehut:marketplace:post:offer", "Post an Offering", Emoji.fromFormatted("\uD83D\uDCE2"), ButtonStyle.SUCCESS)
         val requestButton = button("minehut:marketplace:post:request", "Post a Request", Emoji.fromFormatted("📝"), ButtonStyle.PRIMARY)
