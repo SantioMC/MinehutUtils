@@ -2,10 +2,13 @@ package me.santio.minehututils.marketplace
 
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.interactions.components.Modal
+import dev.minn.jda.ktx.interactions.components.button
 import kotlinx.coroutines.launch
 import me.santio.minehututils.bot
 import me.santio.minehututils.cooldown.Cooldown
 import me.santio.minehututils.cooldown.CooldownManager
+import me.santio.minehututils.coroutines.await
+import me.santio.minehututils.database.DatabaseHandler
 import me.santio.minehututils.database.DatabaseHook
 import me.santio.minehututils.database.models.MarketplaceMessage
 import me.santio.minehututils.database.models.Settings
@@ -14,8 +17,13 @@ import me.santio.minehututils.iron
 import me.santio.minehututils.resolvers.AutoModResolver
 import me.santio.minehututils.resolvers.EmojiResolver
 import me.santio.minehututils.scope
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
+import net.dv8tion.jda.api.interactions.callbacks.IModalCallback
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.util.*
 import kotlin.time.Duration.Companion.minutes
@@ -42,6 +50,14 @@ object MarketplaceManager: DatabaseHook {
         return messages.firstOrNull { it.id == id }
     }
 
+    suspend fun getStickyMessage(guild: Guild): Message? {
+        val settings = DatabaseHandler.getSettings(guild.id)
+        if (settings.marketplaceChannel == null) return null
+
+        val stickyMessageId = DatabaseHandler.getData(guild.id).stickyMessage
+        return stickyMessageId?.let { bot.getTextChannelById(settings.marketplaceChannel)?.retrieveMessageById(it)?.await() }
+    }
+
     suspend fun add(message: MarketplaceMessage) {
         messages.add(message)
 
@@ -51,7 +67,7 @@ object MarketplaceManager: DatabaseHook {
         )
     }
 
-    fun handlePosting(e: StringSelectInteraction, type: String, settings: Settings) {
+    fun handlePosting(e: IModalCallback, type: String, settings: Settings) {
         if (e.isAcknowledged) return
         val id = UUID.randomUUID().toString()
 
@@ -163,6 +179,8 @@ object MarketplaceManager: DatabaseHook {
                         content = description,
                         postedAt = it.timeCreated.toInstant().toEpochMilli()
                     ))
+
+                    sendStickyEmbed(channel)
                 }
 
                 event.replyEmbeds(
@@ -178,6 +196,35 @@ object MarketplaceManager: DatabaseHook {
             }
 
         CooldownManager.set(event.user.id, Cooldown.getMarketplaceType(type), settings.marketplaceCooldown.seconds)
+    }
+
+    suspend fun sendStickyEmbed(channel: TextChannel) {
+        getStickyMessage(channel.guild)?.delete()?.queue()
+
+        val offerButton = button("minehut:marketplace:post:offer", "Post an Offering", Emoji.fromFormatted("\uD83D\uDCE2"), ButtonStyle.SUCCESS)
+        val requestButton = button("minehut:marketplace:post:request", "Post a Request", Emoji.fromFormatted("📝"), ButtonStyle.PRIMARY)
+
+        val message = channel.sendMessageEmbeds(
+            EmbedFactory.default(
+                """
+                ${EmojiResolver.find(channel.guild, "minehut")?.formatted ?: ""} **OFFERS AND REQUESTS**
+                
+                To post something here, press the button below, select either **Offering** or **Requesting** then provide a title and description.
+
+                Once you create a post:
+                🕐 You will need to wait 24 hours before posting again
+                📝 You won't be able to edit it again.
+
+                Read the pinned message in this channel to learn more!
+                """.trimMargin()
+            ).build()
+        ).addActionRow(offerButton, requestButton).complete()
+
+        iron.prepare(
+            "UPDATE guild_data SET sticky_message = ? WHERE guild_id = ?",
+            message.id,
+            channel.guild.id
+        )
     }
 
     fun getEmbedColor(type: String): Int {
