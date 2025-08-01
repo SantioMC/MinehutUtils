@@ -1,5 +1,6 @@
 package me.santio.minehututils.database
 
+import me.santio.minehututils.database.models.GuildData
 import me.santio.minehututils.database.models.Settings
 import me.santio.minehututils.iron
 import org.flywaydb.core.Flyway
@@ -38,6 +39,9 @@ object DatabaseHandler {
         if (getSettingsNullable(guild) == null) {
             createSettings(guild)
         }
+        if (getDataNullable(guild) == null) {
+            createData(guild)
+        }
     }
 
     private suspend fun createSettings(guild: String): Settings {
@@ -55,6 +59,32 @@ object DatabaseHandler {
         )
 
         return settings
+    }
+
+    suspend fun getDataNullable(guild: String): GuildData? {
+        return iron.prepare(
+            "SELECT * FROM guild_data WHERE guild_id = ?",
+            guild
+        ).singleNullable()
+    }
+
+    suspend fun getData(guild: String): GuildData {
+        return getDataNullable(guild) ?: createData(guild)
+    }
+
+    private suspend fun createData(guild: String): GuildData {
+        val data = GuildData(guildId = guild)
+
+        iron.prepare(
+            """
+                INSERT INTO guild_data(guild_id, sticky_message) 
+                VALUES (?, ?)
+            """.trimIndent(),
+            data.guildId,
+            data.stickyMessage
+        )
+
+        return data
     }
 
 }

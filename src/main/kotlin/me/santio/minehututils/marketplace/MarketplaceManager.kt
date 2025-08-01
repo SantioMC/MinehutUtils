@@ -37,7 +37,6 @@ object MarketplaceManager: DatabaseHook {
     )
 
     private val messages = mutableSetOf<MarketplaceMessage>()
-    private var stickyMessageId: String? = null
 
     override suspend fun onHook() {
         messages.addAll(this.fetchAll())
@@ -55,6 +54,7 @@ object MarketplaceManager: DatabaseHook {
         val settings = DatabaseHandler.getSettings(guild.id)
         if (settings.marketplaceChannel == null) return null
 
+        val stickyMessageId = DatabaseHandler.getData(guild.id).stickyMessage
         return stickyMessageId?.let { bot.getTextChannelById(settings.marketplaceChannel)?.retrieveMessageById(it)?.await() }
     }
 
@@ -219,7 +219,12 @@ object MarketplaceManager: DatabaseHook {
                 """.trimMargin()
             ).build()
         ).addActionRow(offerButton, requestButton).complete()
-        stickyMessageId = message.id
+
+        iron.prepare(
+            "UPDATE guild_data SET sticky_message = ? WHERE guild_id = ?",
+            message.id,
+            channel.guild.id
+        )
     }
 
     fun getEmbedColor(type: String): Int {
