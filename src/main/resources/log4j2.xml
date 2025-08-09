@@ -7,7 +7,6 @@
                 disableAnsi="false"/>
         </Console>
         <Sentry name="Sentry"
-                dsn="https://bcca00599573acefcc0f618cccdc42be@sentry.santio.me/2"
                 minimumBreadcrumbLevel="DEBUG"
                 minimumEventLevel="ERROR"
         />
