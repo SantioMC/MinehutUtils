@@ -105,10 +105,11 @@ data class Tag(
         val lastLine = lines.lastOrNull() ?: return
         var image: URL? = null
 
-        kotlin.runCatching {
+        runCatching {
             image = URI.create(lastLine).toURL()
             lines.remove(lastLine)
         }.onFailure { result ->
+            if (result is IllegalArgumentException) return@onFailure
             result.printStackTrace()
         }
 
