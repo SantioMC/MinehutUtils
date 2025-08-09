@@ -150,6 +150,7 @@ Below are a list of all possible environment variables that can be set to config
 | DB_FILE       | Where the sqlite file is located | data/minehut.db |
 | SKRIPTHUB_KEY | The token to use from SkriptHub  |                 |
 | TOKEN         | The bot token                    |                 |
+| SENTRY_AUTH   | The sentry auth token            |                 |
 
 ## Contributing
 
