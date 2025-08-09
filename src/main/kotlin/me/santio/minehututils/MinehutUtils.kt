@@ -4,9 +4,11 @@ import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.jdabuilder.default
 import dev.minn.jda.ktx.jdabuilder.intents
 import gg.ingot.iron.Iron
+import io.sentry.Sentry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import me.santio.minehututils.commands.CommandLoader
 import me.santio.minehututils.commands.CommandManager
 import me.santio.minehututils.database.DatabaseHandler
@@ -31,9 +33,11 @@ import kotlin.io.path.notExists
 lateinit var bot: JDA
 lateinit var iron: Iron
 
-val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+val scope by lazy { CoroutineScope(Dispatchers.IO + SupervisorJob()) }
 
 suspend fun main() {
+    Sentry.init { it.dsn = env("SENTRY_DSN") }
+
     val logger = LoggerFactory.getLogger("MinehutUtils")
     val timer = Timer()
 
@@ -90,4 +94,8 @@ suspend fun main() {
         Minehut.close()
         bot.shutdownNow()
     })
+
+    scope.launch {
+        runCatching { error("uh oh") }.getOrElse { logger.error("uh oh", it) }
+    }
 }
