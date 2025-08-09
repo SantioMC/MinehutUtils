@@ -4,6 +4,7 @@ import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.jdabuilder.default
 import dev.minn.jda.ktx.jdabuilder.intents
 import gg.ingot.iron.Iron
+import io.sentry.Sentry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -34,6 +35,8 @@ lateinit var iron: Iron
 val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
 suspend fun main() {
+    Sentry.init { it.dsn = env("SENTRY_DSN") }
+
     val logger = LoggerFactory.getLogger("MinehutUtils")
     val timer = Timer()
 

@@ -16,11 +16,13 @@ flyway = "10.16.0"
 sqlite = "3.49.1.0"
 iron = "f77a1ccb6a"
 jemoji = "1.6.0"
+sentry = "5.8.1"
 
 [plugins]
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
+sentry = { id = "io.sentry.jvm.gradle", version.ref = "sentry" }
 
 [libraries]
 autoservice-google = { module = "com.google.auto.service:auto-service", version.ref = "autoservice-google" }

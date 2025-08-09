@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.shadow)
     alias(libs.plugins.ksp)
     alias(libs.plugins.openapi.generator)
+    alias(libs.plugins.sentry)
 }
 
 group = "me.santio"
@@ -120,6 +121,18 @@ tasks.register("createMigration") {
 
 tasks.withType<KspTask> {
     dependsOn("openApiGenerate")
+}
+
+tasks.named("generateSentryBundleIdJava") {
+    dependsOn("openApiGenerate")
+    dependsOn("kspKotlin")
+}
+
+sentry {
+    includeSourceContext = true
+    org = "minehut"
+    projectName = "minehut-bot"
+    authToken = System.getenv("SENTRY_AUTH")
 }
 
 application {
