@@ -93,4 +93,6 @@ suspend fun main() {
         Minehut.close()
         bot.shutdownNow()
     })
+
+    runCatching { error("hi") }.getOrElse { logger.error("uh oh", it) }
 }
