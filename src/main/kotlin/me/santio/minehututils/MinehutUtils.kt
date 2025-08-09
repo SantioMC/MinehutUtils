@@ -35,7 +35,7 @@ lateinit var iron: Iron
 val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
 suspend fun main() {
-    Sentry.init { it.dsn = env("SENTRY_DSN") }
+    Sentry.init { it.dsn = env("SENTRY_DSN", "") }
 
     val logger = LoggerFactory.getLogger("MinehutUtils")
     val timer = Timer()

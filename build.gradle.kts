@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 import com.google.devtools.ksp.gradle.KspTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
@@ -46,6 +47,7 @@ dependencies {
     ksp(libs.iron)
 
 //   Environment
+    implementation(libs.sentry)
     implementation(libs.dotenv)
     implementation(libs.bundles.log4j)
 }
@@ -119,8 +121,21 @@ tasks.register("createMigration") {
     }
 }
 
+tasks.shadowJar {
+    dependsOn("openApiGenerate")
+    archiveFileName.set("MinehutUtils.jar")
+
+    // thank you gpt-5, the first time you've actually been useful to me :)
+    mergeServiceFiles()
+    transform(Log4j2PluginsCacheFileTransformer())
+}
+
 tasks.withType<KspTask> {
     dependsOn("openApiGenerate")
+}
+
+tasks.build {
+    dependsOn(tasks.shadowJar)
 }
 
 tasks.named("generateSentryBundleIdJava") {
@@ -128,11 +143,14 @@ tasks.named("generateSentryBundleIdJava") {
     dependsOn("kspKotlin")
 }
 
+tasks.named("sentryCollectSourcesJava") {
+    dependsOn("openApiGenerate")
+    dependsOn("kspKotlin")
+}
+
 sentry {
-    includeSourceContext = true
     org = "minehut"
     projectName = "minehut-bot"
-    authToken = System.getenv("SENTRY_AUTH")
 }
 
 application {
