@@ -7,6 +7,7 @@ import gg.ingot.iron.Iron
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import me.santio.minehututils.boosterpass.BoosterPassListener
 import me.santio.minehututils.commands.CommandLoader
 import me.santio.minehututils.commands.CommandManager
 import me.santio.minehututils.database.DatabaseHandler
@@ -60,7 +61,7 @@ suspend fun main() {
     CommandLoader.load(bot)
     bot.updateCommands().addCommands(CommandManager.collect()).queue()
 
-    bot.addEventListener(MarketplaceListener, TagListener)
+    bot.addEventListener(BoosterPassListener, MarketplaceListener, TagListener)
     bot.listener<SlashCommandInteractionEvent> {
         CommandManager.execute(it)
     }
