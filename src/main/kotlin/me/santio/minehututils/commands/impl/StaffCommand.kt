@@ -52,22 +52,23 @@ class StaffCommand: SlashCommand {
             error("This command can only be used in a server.")
         }
 
-        val boosterRole = BoosterPassManager.getBoosterPassRole(event.guild!!.id)
-        val boosterPassRole = BoosterPassManager.getBoosterPassRole(event.guild!!.id)
+        val guild = event.guild!!
+        val boosterRole = guild.boostRole
+        val boosterPassRole = BoosterPassManager.getBoosterPassRole(guild.id)
         if (boosterRole == null || boosterPassRole == null) {
             error("Booster roles are not set up in this server. Please contact a server administrator.")
         }
 
         when (event.subcommandGroup) {
             "boosterpass" -> when (event.subcommandName) {
-                "give" -> staffGiveBoosterPass(event, boosterRole)
+                "give" -> staffGiveBoosterPass(event, boosterPassRole)
                 "revoke" -> staffRevokeBoosterPass(event, boosterPassRole)
                 else -> error("Unknown subcommand: ${event.subcommandName}")
             }
         }
     }
 
-    private suspend fun staffGiveBoosterPass(event: SlashCommandInteractionEvent, boosterRole: Role) {
+    private suspend fun staffGiveBoosterPass(event: SlashCommandInteractionEvent, boosterPassRole: Role) {
         val user = event.getOption("user")?.asMember ?: error("User option is required")
 
         BoosterPassManager.give(BoosterPass(
@@ -75,7 +76,7 @@ class StaffCommand: SlashCommand {
             giver = event.user.id,
             receiver = user.id
         ))
-        user.roles.add(boosterRole)
+        user.roles.add(boosterPassRole)
 
         event.replyEmbeds(EmbedFactory.success("Gave ${user.asMention} a booster pass", event.guild).build()).setEphemeral(true).queue()
     }
@@ -88,9 +89,10 @@ class StaffCommand: SlashCommand {
             event.replyEmbeds(EmbedFactory.error("You must specify either a giver or a receiver.", event.guild).build()).setEphemeral(true).queue()
         }
 
-        val revokedPasses = BoosterPassManager.revoke(event.guild!!.id, giver?.id, receiver?.id)
+        val guild = event.guild!!
+        val revokedPasses = BoosterPassManager.revoke(guild.id, giver?.id, receiver?.id)
         revokedPasses.forEach { pass ->
-            event.guild!!.removeRoleFromMember(UserSnowflake.fromId(pass.receiver), boosterPassRole).queue()
+            guild.removeRoleFromMember(UserSnowflake.fromId(pass.receiver), boosterPassRole).queue()
         }
 
         val embed = if (revokedPasses.isEmpty()) {

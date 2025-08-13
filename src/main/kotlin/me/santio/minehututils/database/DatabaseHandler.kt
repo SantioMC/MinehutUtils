@@ -49,14 +49,13 @@ object DatabaseHandler {
 
         iron.prepare(
             """
-                INSERT INTO settings(guild_id, marketplace_channel, marketplace_cooldown, lockdown_role, booster_role, booster_pass_role, max_booster_passes) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO settings(guild_id, marketplace_channel, marketplace_cooldown, lockdown_role, booster_pass_role, max_booster_passes) 
+                VALUES (?, ?, ?, ?, ?, ?)
             """.trimIndent(),
             settings.guildId,
             settings.marketplaceChannel,
             settings.marketplaceCooldown,
             settings.lockdownRole,
-            settings.boosterRole,
             settings.boosterPassRole,
             settings.maxBoosterPasses
         )

@@ -10,7 +10,6 @@ data class Settings(
     val marketplaceCooldown: Int = 86400,
     val lockdownRole: String? = null,
     val logChannel: String? = null,
-    val boosterRole: String? = null,
     val boosterPassRole: String? = null,
     val maxBoosterPasses: Int = 2
 )

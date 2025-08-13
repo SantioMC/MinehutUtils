@@ -39,8 +39,9 @@ class BoosterPassCommand: SlashCommand {
             error("This command can only be used in a server.")
         }
 
-        val boosterRole = BoosterPassManager.getBoosterPassRole(event.guild!!.id)
-        val boosterPassRole = BoosterPassManager.getBoosterPassRole(event.guild!!.id)
+        val guild = event.guild!!
+        val boosterRole = guild.boostRole
+        val boosterPassRole = BoosterPassManager.getBoosterPassRole(guild.id)
         if (boosterRole == null || boosterPassRole == null) {
             error("Booster roles are not set up in this server. Please contact a server administrator.")
         }

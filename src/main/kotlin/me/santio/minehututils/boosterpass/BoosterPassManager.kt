@@ -74,12 +74,6 @@ object BoosterPassManager: DatabaseHook {
         return boosterPasses.filter { it.guildId == guild && it.receiver == receiver }
     }
 
-    suspend fun getBoosterRole(guild: String): Role? {
-        return DatabaseHandler.getSettings(guild).boosterRole?.let { roleId ->
-            bot.getGuildById(guild)?.getRoleById(roleId)
-        }
-    }
-
     suspend fun getBoosterPassRole(guild: String): Role? {
         return DatabaseHandler.getSettings(guild).boosterPassRole?.let { roleId ->
             bot.getGuildById(guild)?.getRoleById(roleId)
