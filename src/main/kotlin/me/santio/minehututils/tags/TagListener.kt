@@ -9,11 +9,13 @@ import net.dv8tion.jda.api.entities.Message.MessageFlag
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.concurrent.schedule
 
 object TagListener: ListenerAdapter() {
 
+    private val logger = LoggerFactory.getLogger(TagListener::class.java)
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val cooldownReaction = Emoji.fromUnicode("⌛")
     private val timer = Timer()
@@ -35,11 +37,11 @@ object TagListener: ListenerAdapter() {
 
         recentlySent.add(id)
 
-        kotlin.runCatching {
+        runCatching {
             val silent = message.flags.contains(MessageFlag.NOTIFICATIONS_SUPPRESSED)
             tag.send(message, silent)
         }.onFailure { result ->
-            result.printStackTrace()
+            logger.error("Failed to send tag message", result)
         }
 
         coroutineScope.launch(exceptionHandler) {

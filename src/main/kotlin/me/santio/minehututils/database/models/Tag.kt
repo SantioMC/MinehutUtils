@@ -8,6 +8,7 @@ import me.santio.minehututils.tags.SearchAlgorithm
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
+import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.URL
 
@@ -105,11 +106,12 @@ data class Tag(
         val lastLine = lines.lastOrNull() ?: return
         var image: URL? = null
 
-        kotlin.runCatching {
+        runCatching {
             image = URI.create(lastLine).toURL()
             lines.remove(lastLine)
         }.onFailure { result ->
-            result.printStackTrace()
+            if (result is IllegalArgumentException) return@onFailure
+            logger.error("Failed to get image uri: $lastLine", result)
         }
 
         val embed = EmbedFactory.default(lines.joinToString("\n"))
@@ -128,6 +130,7 @@ data class Tag(
     }
 
     private companion object {
+        val logger = LoggerFactory.getLogger(Tag::class.java)
         val buttonRegex = Regex("^\\[(:.+:|<.+>)?(.+)]\\((https://.+)\\)", RegexOption.IGNORE_CASE)
     }
 

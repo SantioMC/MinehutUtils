@@ -79,8 +79,8 @@ object TagManager: DatabaseHook {
             tag.searchValue,
             tag.body,
             tag.uses,
-            tag.lastUsed,
             tag.updatedAt,
+            tag.lastUsed,
             tag.guildId,
             tag.id
         )

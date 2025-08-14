@@ -9,6 +9,7 @@ import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.logger.GuildLogger
 import me.santio.minehututils.resolvers.DurationResolver.discord
 import me.santio.minehututils.scope
+import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
@@ -55,11 +56,12 @@ object MarketplaceListener : ListenerAdapter() {
     }
 
     override fun onMessageDelete(event: MessageDeleteEvent) {
-        if (!event.isFromGuild) return
+        if (!event.isFromGuild || event.channelType != ChannelType.TEXT) return
         logMarketplaceDelete(event.channel.asTextChannel(), event.messageId)
     }
 
     override fun onMessageBulkDelete(event: MessageBulkDeleteEvent) {
+        if (event.channel.type != ChannelType.TEXT) return
         event.messageIds.forEach { logMarketplaceDelete(event.channel.asTextChannel(), it) }
     }
 

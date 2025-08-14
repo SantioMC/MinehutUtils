@@ -4,16 +4,23 @@ import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.jdabuilder.default
 import dev.minn.jda.ktx.jdabuilder.intents
 import gg.ingot.iron.Iron
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.sentry.Sentry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import me.santio.minehututils.boosterpass.BoosterPassListener
+import kotlinx.coroutines.launch
 import me.santio.minehututils.commands.CommandLoader
 import me.santio.minehututils.commands.CommandManager
 import me.santio.minehututils.database.DatabaseHandler
 import me.santio.minehututils.marketplace.MarketplaceListener
 import me.santio.minehututils.marketplace.MarketplaceManager
 import me.santio.minehututils.minehut.Minehut
+import me.santio.minehututils.resolvers.DurationResolver
 import me.santio.minehututils.skript.Skript
 import me.santio.minehututils.tags.TagListener
 import me.santio.minehututils.utils.EnvUtils.env
@@ -32,11 +39,12 @@ import kotlin.io.path.notExists
 lateinit var bot: JDA
 lateinit var iron: Iron
 
+private val logger = LoggerFactory.getLogger("MinehutUtils")
+private val timer = Timer()
 val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
 suspend fun main() {
-    val logger = LoggerFactory.getLogger("MinehutUtils")
-    val timer = Timer()
+    Sentry.init { it.dsn = env("SENTRY_DSN", "") }
 
     // Create JDA instance
     bot = default(
@@ -45,6 +53,9 @@ suspend fun main() {
     ) {
         intents += GatewayIntent.MESSAGE_CONTENT
     }.awaitReady()
+
+    // Start heartbeating
+    startHeartbeat()
 
     // Prepare database
     val databaseUri = env("DATABASE_URI", "jdbc:sqlite:data/minehut.db")
@@ -91,4 +102,22 @@ suspend fun main() {
         Minehut.close()
         bot.shutdownNow()
     })
+}
+
+private fun startHeartbeat() {
+    val httpMethod = HttpMethod.parse(env("HEARTBEAT_METHOD", "GET").uppercase())
+
+    val url = env("HEARTBEAT_URL")
+        ?: return logger.info("MinehutUtils is running without heartbeats, no status will be reported")
+
+    val interval = DurationResolver.from(env("HEARTBEAT_INTERVAL", "30s"))
+        ?: error("Unknown heartbeat resolver")
+
+    val client = HttpClient(CIO) {}
+
+    timer.schedule(0, interval.toMillis()) {
+        scope.launch {
+            client.request(url) { method = httpMethod }
+        }
+    }
 }
