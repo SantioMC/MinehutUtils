@@ -10,6 +10,7 @@ import me.santio.minehututils.commands.SlashCommand
 import me.santio.minehututils.database.models.BoosterPass
 import me.santio.minehututils.ext.toTime
 import me.santio.minehututils.factories.EmbedFactory
+import me.santio.minehututils.logger.GuildLogger
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
@@ -79,6 +80,10 @@ class StaffCommand: SlashCommand {
         ))
         guild.addRoleToMember(UserSnowflake.fromId(user.id), boosterPassRole).queue()
 
+        GuildLogger.of(guild).log(
+            "Booster pass given to ${user.asMention} by ${event.user.asMention}"
+        ).withContext(event)
+
         event.replyEmbeds(EmbedFactory.success("Gave ${user.asMention} a booster pass", event.guild).build()).setEphemeral(true).queue()
     }
 
@@ -96,8 +101,13 @@ class StaffCommand: SlashCommand {
             guild.removeRoleFromMember(UserSnowflake.fromId(pass.receiver), boosterPassRole).queue()
         }
 
+        GuildLogger.of(guild).log(
+            "${revokedPasses.size} booster pass${if (revokedPasses.size > 1) "es" else ""} revoked by ${event.user.asMention}",
+            *revokedPasses.map { "From <@${it.giver}> to <@${it.receiver}> (${it.givenAt.toTime()})" }.toTypedArray()
+        ).withContext(event)
+
         val embed = if (revokedPasses.isEmpty()) {
-            EmbedFactory.error("No booster passes found for the specified giver or receiver.", event.guild!!).build()
+            EmbedFactory.error("No booster passes found for the specified giver or receiver.", guild).build()
         } else {
             EmbedFactory.default("Revoked Booster Passes")
                 .addField("Revoked Passes", revokedPasses.joinToString("\n") { "• From <@${it.giver}> to <@${it.receiver}> (${it.givenAt.toTime()})" }, false)

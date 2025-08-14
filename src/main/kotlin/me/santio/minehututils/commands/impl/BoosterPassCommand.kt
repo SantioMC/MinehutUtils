@@ -7,6 +7,7 @@ import me.santio.minehututils.boosterpass.BoosterPassManager
 import me.santio.minehututils.commands.SlashCommand
 import me.santio.minehututils.database.models.BoosterPass
 import me.santio.minehututils.factories.EmbedFactory
+import me.santio.minehututils.logger.GuildLogger
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionContextType
@@ -80,6 +81,10 @@ class BoosterPassCommand: SlashCommand {
         ))
         guild.addRoleToMember(user, boosterPassRole).queue()
 
+        GuildLogger.of(guild).log(
+            "Booster pass given to ${user.asMention} by ${event.user.asMention}"
+        ).withContext(event)
+
         val amountLeft = maxPasses - givenPasses.size - 1
         event.replyEmbeds(EmbedFactory.success("Gave ${user.asMention} a booster pass ($amountLeft left)", event.guild).build()).setEphemeral(true).queue()
     }
@@ -96,6 +101,10 @@ class BoosterPassCommand: SlashCommand {
 
         BoosterPassManager.remove(pass)
         guild.removeRoleFromMember(user, boosterPassRole).queue()
+
+        GuildLogger.of(guild).log(
+            "Booster pass removed from ${user.asMention} by ${event.user.asMention}"
+        ).withContext(event)
 
         val amountLeft = BoosterPassManager.getMaxBoosterPasses(event.guild!!.id) - givenPasses.size + 1
         event.replyEmbeds(EmbedFactory.success("Removed booster pass from ${user.asMention} ($amountLeft left)", event.guild).build()).setEphemeral(true).queue()
