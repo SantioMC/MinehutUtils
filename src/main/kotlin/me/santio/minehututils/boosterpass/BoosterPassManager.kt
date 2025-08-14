@@ -25,11 +25,11 @@ object BoosterPassManager: DatabaseHook {
     }
 
     suspend fun give(pass: BoosterPass) {
-        boosterPasses.add(pass)
         iron.prepare(
             "INSERT INTO booster_pass (guild_id, giver, receiver, given_at) VALUES (:guildId, :giver, :receiver, :givenAt)",
             pass.bindings()
         )
+        boosterPasses.add(pass)
     }
 
     suspend fun remove(pass: BoosterPass) {

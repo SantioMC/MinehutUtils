@@ -52,7 +52,7 @@ class SettingsCommand: SlashCommand {
                         },
                         Subcommand("max", "Set the maximum number of booster passes a user can give") {
                             addOptions(
-                                Option<String>("max", "The maximum number of booster passes a user can give", true)
+                                Option<Int>("max", "The maximum number of booster passes a user can give", true)
                             )
                         }
                     )
@@ -113,7 +113,7 @@ class SettingsCommand: SlashCommand {
                 """
                 | :gear: Settings
                 | 
-                | ${EmojiResolver.checkmark().formatted} Booster Pass Role: ${boosterPassRole?.asMention ?: "Not set"}
+                | ${getNullIcon(boosterPassRole)} Booster Pass Role: ${boosterPassRole?.asMention ?: "Not set"}
                 | ${EmojiResolver.checkmark().formatted} Max Booster Passes: ${settings.maxBoosterPasses}
                 | ${getNullIcon(settings.logChannel)} Log Channel: ${settings.logChannel?.let { "<#$it>" } ?: "Not set"}
                 | ${getNullIcon(settings.marketplaceChannel)} Marketplace Channel: ${settings.marketplaceChannel?.let { "<#$it>" } ?: "Not set"}
