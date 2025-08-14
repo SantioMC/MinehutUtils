@@ -63,7 +63,8 @@ class BoosterPassCommand: SlashCommand {
     private suspend fun giveBoosterPass(event: SlashCommandInteractionEvent, boosterPassRole: Role) {
         val user = event.getOption("user")?.asMember ?: error("User option is required")
 
-        val guildId = event.guild!!.id
+        val guild = event.guild!!
+        val guildId = guild.id
         val userId = event.user.id
 
         val givenPasses = BoosterPassManager.getGivenBoosterPasses(guildId, userId)
@@ -77,7 +78,7 @@ class BoosterPassCommand: SlashCommand {
             giver = userId,
             receiver = user.id
         ))
-        user.roles.add(boosterPassRole)
+        guild.addRoleToMember(user, boosterPassRole).queue()
 
         val amountLeft = maxPasses - givenPasses.size - 1
         event.replyEmbeds(EmbedFactory.success("Gave ${user.asMention} a booster pass ($amountLeft left)", event.guild).build()).setEphemeral(true).queue()
@@ -86,14 +87,15 @@ class BoosterPassCommand: SlashCommand {
     private suspend fun removeBoosterPass(event: SlashCommandInteractionEvent, boosterPassRole: Role) {
         val user = event.getOption("user")?.asMember ?: error("User option is required")
 
-        val givenPasses = BoosterPassManager.getGivenBoosterPasses(event.guild!!.id, event.user.id)
+        val guild = event.guild!!
+        val givenPasses = BoosterPassManager.getGivenBoosterPasses(guild.id, event.user.id)
         val pass = givenPasses.firstOrNull { it.receiver == user.id }
         if (pass == null) {
             return event.replyEmbeds(EmbedFactory.error("You have not given a booster pass to ${user.asMention}", event.guild).build()).setEphemeral(true).queue()
         }
 
         BoosterPassManager.remove(pass)
-        user.roles.remove(boosterPassRole)
+        guild.removeRoleFromMember(user, boosterPassRole).queue()
 
         val amountLeft = BoosterPassManager.getMaxBoosterPasses(event.guild!!.id) - givenPasses.size + 1
         event.replyEmbeds(EmbedFactory.success("Removed booster pass from ${user.asMention} ($amountLeft left)", event.guild).build()).setEphemeral(true).queue()

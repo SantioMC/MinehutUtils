@@ -71,12 +71,13 @@ class StaffCommand: SlashCommand {
     private suspend fun staffGiveBoosterPass(event: SlashCommandInteractionEvent, boosterPassRole: Role) {
         val user = event.getOption("user")?.asMember ?: error("User option is required")
 
+        val guild = event.guild!!
         BoosterPassManager.give(BoosterPass(
-            guildId = event.guild!!.id,
+            guildId = guild.id,
             giver = event.user.id,
             receiver = user.id
         ))
-        user.roles.add(boosterPassRole)
+        guild.addRoleToMember(UserSnowflake.fromId(user.id), boosterPassRole).queue()
 
         event.replyEmbeds(EmbedFactory.success("Gave ${user.asMention} a booster pass", event.guild).build()).setEphemeral(true).queue()
     }
