@@ -1,6 +1,7 @@
 package me.santio.minehututils.boosterpass
 
 import com.google.auto.service.AutoService
+import gg.ingot.iron.bindings.bind
 import me.santio.minehututils.bot
 import me.santio.minehututils.database.DatabaseHandler
 import me.santio.minehututils.database.DatabaseHook
@@ -41,29 +42,27 @@ object BoosterPassManager: DatabaseHook {
     }
 
     suspend fun revoke(guild: String, giver: String?, receiver: String?): List<BoosterPass> {
-        val toRemove = if (giver != null && receiver != null) {
-            iron.prepare(
-                "DELETE FROM booster_pass WHERE giver = ? AND receiver = ? AND guild_id = ?",
-                giver, receiver, guild
-            )
-            boosterPasses.filter { it.giver == giver && it.receiver == receiver && it.guildId == guild }
-        } else if (giver != null) {
-            iron.prepare(
-                "DELETE FROM booster_pass WHERE giver = ? AND guild_id = ?",
-                giver, guild
-            )
-            boosterPasses.filter { it.giver == giver && it.guildId == guild }
-        } else if (receiver != null) {
-            iron.prepare(
-                "DELETE FROM booster_pass WHERE receiver = ? AND guild_id = ?",
-                receiver, guild
-            )
-            boosterPasses.filter { it.receiver == receiver && it.guildId == guild }
-        } else {
-            emptyList()
+        val statement = when {
+            giver != null && receiver != null -> "SELECT * FROM booster_pass WHERE giver = :giver AND receiver = :receiver AND guild_id = ?"
+            giver != null -> "SELECT * FROM booster_pass WHERE giver = :giver AND guild_id = :guild_id"
+            receiver != null -> "SELECT * FROM booster_pass WHERE receiver = :receiver AND guild_id = :guild_id"
+            else -> return emptyList()
         }
-        boosterPasses.removeAll(toRemove)
-        return toRemove
+        iron.prepare(
+            statement,
+            bind {
+                "giver" to giver
+                "receiver" to receiver
+                "guild_id" to guild
+            }
+        )
+
+        return boosterPasses.filter {
+            ((giver != null && it.giver == giver) || (receiver != null && it.receiver == receiver))
+                && it.guildId == guild
+        }.onEach { pass ->
+            remove(pass)
+        }
     }
 
     fun getGivenBoosterPasses(guild: String, giver: String): List<BoosterPass> {
