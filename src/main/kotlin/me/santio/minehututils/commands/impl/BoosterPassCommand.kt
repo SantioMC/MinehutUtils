@@ -100,7 +100,9 @@ class BoosterPassCommand: SlashCommand {
         }
 
         BoosterPassManager.remove(pass)
-        guild.removeRoleFromMember(user, boosterPassRole).queue()
+
+        val receivedPasses = BoosterPassManager.getReceivedBoosterPasses(guild.id, user.id)
+        if (receivedPasses.isEmpty()) guild.removeRoleFromMember(user, boosterPassRole).queue()
 
         GuildLogger.of(guild).log(
             "Booster pass removed from ${user.asMention} by ${event.user.asMention}"

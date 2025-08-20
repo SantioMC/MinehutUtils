@@ -98,7 +98,8 @@ class StaffCommand: SlashCommand {
         val guild = event.guild!!
         val revokedPasses = BoosterPassManager.revoke(guild.id, giver?.id, receiver?.id)
         revokedPasses.forEach { pass ->
-            guild.removeRoleFromMember(UserSnowflake.fromId(pass.receiver), boosterPassRole).queue()
+            val receivedPasses = BoosterPassManager.getReceivedBoosterPasses(guild.id, pass.receiver)
+            if (receivedPasses.isEmpty()) guild.removeRoleFromMember(UserSnowflake.fromId(pass.receiver), boosterPassRole).queue()
         }
 
         GuildLogger.of(guild).log(
