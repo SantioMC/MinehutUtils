@@ -12,6 +12,7 @@ import io.sentry.Sentry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import me.santio.minehututils.boosterpass.BoosterPassListener
 import kotlinx.coroutines.launch
 import me.santio.minehututils.commands.CommandLoader
 import me.santio.minehututils.commands.CommandManager
@@ -71,7 +72,7 @@ suspend fun main() {
     CommandLoader.load(bot)
     bot.updateCommands().addCommands(CommandManager.collect()).queue()
 
-    bot.addEventListener(MarketplaceListener, TagListener)
+    bot.addEventListener(BoosterPassListener, MarketplaceListener, TagListener)
     bot.listener<SlashCommandInteractionEvent> {
         CommandManager.execute(it)
     }
