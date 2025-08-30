@@ -118,10 +118,10 @@ class BoosterPassCommand: SlashCommand {
         val givenPasses = BoosterPassManager.getGivenBoosterPasses(event.guild!!.id, user.id)
         val receivedPasses = BoosterPassManager.getReceivedBoosterPasses(event.guild!!.id, user.id)
         if (givenPasses.isEmpty() && receivedPasses.isEmpty()) {
-            return event.replyEmbeds(EmbedFactory.error("No booster passes found for ${user.asTag}", event.guild).build()).setEphemeral(true).queue()
+            return event.replyEmbeds(EmbedFactory.error("No booster passes found for ${user.asMention}", event.guild).build()).setEphemeral(true).queue()
         }
 
-        val passInfoEmbed = EmbedFactory.default("Booster Pass Information for ${user.asTag}")
+        val passInfoEmbed = EmbedFactory.default("Booster Pass Information for ${user.asMention}")
             .addField("Received From",
                 if (receivedPasses.isEmpty()) "None" else receivedPasses.joinToString("\n") { "• <@${it.giver}>" },
                 false

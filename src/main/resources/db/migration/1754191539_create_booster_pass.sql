@@ -10,4 +10,4 @@ CREATE TABLE IF NOT EXISTS booster_pass (
 
 -- add booster configuration to settings table
 ALTER TABLE settings ADD COLUMN booster_pass_role TEXT;
-ALTER TABLE settings ADD COLUMN max_booster_passes INTEGER DEFAULT 2;
+ALTER TABLE settings ADD COLUMN max_booster_passes INTEGER NOT NULL DEFAULT 2;

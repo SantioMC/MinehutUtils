@@ -43,7 +43,7 @@ class SettingsCommand: SlashCommand {
             )
 
             addSubcommandGroups(
-                SubcommandGroup("boosterpass", "Manager booster settings") {
+                SubcommandGroup("boosterpass", "Manage booster settings") {
                     addSubcommands(
                         Subcommand("role", "Set the booster pass role") {
                             addOptions(

@@ -92,7 +92,7 @@ class StaffCommand: SlashCommand {
         val receiver = event.getOption("receiver")?.asMember
 
         if (giver == null && receiver == null) {
-            event.replyEmbeds(EmbedFactory.error("You must specify either a giver or a receiver.", event.guild).build()).setEphemeral(true).queue()
+            return event.replyEmbeds(EmbedFactory.error("You must specify either a giver or a receiver.", event.guild).build()).setEphemeral(true).queue()
         }
 
         val guild = event.guild!!

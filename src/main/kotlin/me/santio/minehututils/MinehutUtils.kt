@@ -12,8 +12,8 @@ import io.sentry.Sentry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import me.santio.minehututils.boosterpass.BoosterPassListener
 import kotlinx.coroutines.launch
+import me.santio.minehututils.boosterpass.BoosterPassListener
 import me.santio.minehututils.commands.CommandLoader
 import me.santio.minehututils.commands.CommandManager
 import me.santio.minehututils.database.DatabaseHandler
@@ -52,6 +52,7 @@ suspend fun main() {
         true
     ) {
         intents += GatewayIntent.MESSAGE_CONTENT
+        intents += GatewayIntent.GUILD_MEMBERS
     }.awaitReady()
 
     // Start heartbeating

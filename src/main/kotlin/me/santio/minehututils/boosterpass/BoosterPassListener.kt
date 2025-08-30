@@ -8,8 +8,11 @@ import net.dv8tion.jda.api.entities.UserSnowflake
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleRemoveEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.slf4j.LoggerFactory
 
 object BoosterPassListener : ListenerAdapter() {
+
+    private val logger = LoggerFactory.getLogger(BoosterPassListener::class.java)
 
     override fun onGuildMemberRoleRemove(event: GuildMemberRoleRemoveEvent) {
         val guild = event.guild
@@ -23,12 +26,16 @@ object BoosterPassListener : ListenerAdapter() {
         checkPasses(event.guild, event.user)
     }
 
-    private fun checkPasses(guild: Guild, user: User) {
-        scope.launch {
-            val boosterPassRole = BoosterPassManager.getBoosterPassRole(guild.id) ?: return@launch
-            BoosterPassManager.revoke(guild.id, user.id, null).forEach { pass ->
-                val receivedPasses = BoosterPassManager.getReceivedBoosterPasses(guild.id, pass.receiver)
-                if (receivedPasses.isEmpty()) guild.removeRoleFromMember(UserSnowflake.fromId(pass.receiver), boosterPassRole).queue()
+    private fun checkPasses(guild: Guild, user: User) = scope.launch {
+        val boosterPassRole = BoosterPassManager.getBoosterPassRole(guild.id) ?: return@launch
+        BoosterPassManager.revoke(guild.id, giver = user.id, null).forEach { pass ->
+            val receivedPasses = BoosterPassManager.getReceivedBoosterPasses(guild.id, pass.receiver)
+            if (receivedPasses.isNotEmpty()) return@launch
+
+            runCatching {
+                guild.removeRoleFromMember(UserSnowflake.fromId(pass.receiver), boosterPassRole).queue()
+            }.onFailure { err ->
+                logger.error("Failed to remove booster pass role from '{}'!", pass.receiver, err)
             }
         }
     }

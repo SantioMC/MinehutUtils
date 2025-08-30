@@ -43,7 +43,7 @@ object BoosterPassManager: DatabaseHook {
 
     suspend fun revoke(guild: String, giver: String?, receiver: String?): List<BoosterPass> {
         val statement = when {
-            giver != null && receiver != null -> "SELECT * FROM booster_pass WHERE giver = :giver AND receiver = :receiver AND guild_id = ?"
+            giver != null && receiver != null -> "SELECT * FROM booster_pass WHERE giver = :giver AND receiver = :receiver AND guild_id = :guild_id"
             giver != null -> "SELECT * FROM booster_pass WHERE giver = :giver AND guild_id = :guild_id"
             receiver != null -> "SELECT * FROM booster_pass WHERE receiver = :receiver AND guild_id = :guild_id"
             else -> return emptyList()
