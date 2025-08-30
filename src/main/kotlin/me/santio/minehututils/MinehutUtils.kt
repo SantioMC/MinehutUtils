@@ -73,14 +73,10 @@ suspend fun main() {
     CommandLoader.load(bot)
     bot.updateCommands().addCommands(CommandManager.collect()).queue()
 
-    bot.addEventListener(BoosterPassListener, MarketplaceListener, TagListener)
-    bot.listener<SlashCommandInteractionEvent> {
-        CommandManager.execute(it)
-    }
+    bot.listener<SlashCommandInteractionEvent> { CommandManager.execute(it) }
+    bot.listener<CommandAutoCompleteInteractionEvent> { CommandManager.autoComplete(it) }
 
-    bot.listener<CommandAutoCompleteInteractionEvent> {
-        CommandManager.autoComplete(it)
-    }
+    bot.addEventListener(BoosterPassListener, MarketplaceListener, TagListener)
 
     // Log user
     logger.info("Logged in as ${bot.selfUser.name}")

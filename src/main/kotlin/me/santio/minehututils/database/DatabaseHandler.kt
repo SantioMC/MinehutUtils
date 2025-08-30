@@ -4,11 +4,14 @@ import me.santio.minehututils.database.models.GuildData
 import me.santio.minehututils.database.models.Settings
 import me.santio.minehututils.iron
 import org.flywaydb.core.Flyway
+import org.slf4j.LoggerFactory
 import java.util.*
 
 object DatabaseHandler {
 
-    fun migrate() {
+    private val logger = LoggerFactory.getLogger(DatabaseHandler::class.java)
+
+    fun migrate() = runCatching {
         Flyway.configure()
             .dataSource(iron.pool)
             .locations("classpath:db/migration")
@@ -17,6 +20,8 @@ object DatabaseHandler {
             .outOfOrder(true)
             .load()
             .migrate()
+    }.getOrElse { err ->
+        logger.error("Failed to run flyway migrations!", err)
     }
 
     suspend fun callHooks() {
