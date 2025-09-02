@@ -73,6 +73,11 @@ class StaffCommand: SlashCommand {
         val user = event.getOption("user")?.asMember ?: error("User option is required")
 
         val guild = event.guild!!
+        val existingPass = BoosterPassManager.getGivenBoosterPasses(guild.id, event.user.id).any { it.receiver == user.id }
+        if (existingPass) {
+            error("${user.asMention} already has a booster pass from you.")
+        }
+
         BoosterPassManager.give(BoosterPass(
             guildId = guild.id,
             giver = event.user.id,
