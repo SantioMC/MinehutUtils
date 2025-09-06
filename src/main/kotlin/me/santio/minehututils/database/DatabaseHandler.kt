@@ -4,11 +4,14 @@ import me.santio.minehututils.database.models.GuildData
 import me.santio.minehututils.database.models.Settings
 import me.santio.minehututils.iron
 import org.flywaydb.core.Flyway
+import org.slf4j.LoggerFactory
 import java.util.*
 
 object DatabaseHandler {
 
-    fun migrate() {
+    private val logger = LoggerFactory.getLogger(DatabaseHandler::class.java)
+
+    fun migrate() = runCatching {
         Flyway.configure()
             .dataSource(iron.pool)
             .locations("classpath:db/migration")
@@ -17,6 +20,8 @@ object DatabaseHandler {
             .outOfOrder(true)
             .load()
             .migrate()
+    }.getOrElse { err ->
+        logger.error("Failed to run flyway migrations!", err)
     }
 
     suspend fun callHooks() {
@@ -49,13 +54,15 @@ object DatabaseHandler {
 
         iron.prepare(
             """
-                INSERT INTO settings(guild_id, marketplace_channel, marketplace_cooldown, lockdown_role) 
-                VALUES (?, ?, ?, ?)
+                INSERT INTO settings(guild_id, marketplace_channel, marketplace_cooldown, lockdown_role, booster_pass_role, max_booster_passes) 
+                VALUES (?, ?, ?, ?, ?, ?)
             """.trimIndent(),
             settings.guildId,
             settings.marketplaceChannel,
             settings.marketplaceCooldown,
-            settings.lockdownRole
+            settings.lockdownRole,
+            settings.boosterPassRole,
+            settings.maxBoosterPasses
         )
 
         return settings
