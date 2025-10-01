@@ -131,7 +131,7 @@ data class Tag(
 
     private companion object {
         val logger = LoggerFactory.getLogger(Tag::class.java)
-        val buttonRegex = Regex("^\\[(:.+:|<.+>)?(.+)]\\((https://.+)\\)", RegexOption.IGNORE_CASE)
+        val buttonRegex = Regex("^\\[(:.+:|<.+>)?(.+)]\\((https://.+|<https://.*>)\\)", RegexOption.IGNORE_CASE)
     }
 
 }
