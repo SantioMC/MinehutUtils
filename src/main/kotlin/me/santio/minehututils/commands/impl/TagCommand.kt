@@ -76,7 +76,7 @@ class TagCommand : SlashCommand {
                 return TagManager.getTags(guild.id).map { Choice("[${it.id}] ${it.name}", "${it.id}") }
             }
             "type" -> {
-                return SearchAlgorithm.entries.map { it.name.lowercase() }.map { Choice(it, it) }
+                return SearchAlgorithm.entries.map { Choice(it.name.lowercase(), it.name.lowercase()) }
             }
             else -> emptyList()
         }

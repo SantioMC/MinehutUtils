@@ -218,7 +218,7 @@ object MarketplaceManager: DatabaseHook {
                 Read the pinned message in this channel to learn more!
                 """.trimMargin()
             ).build()
-        ).addActionRow(offerButton, requestButton).complete()
+        ).addActionRow(offerButton, requestButton).await()
 
         iron.prepare(
             "UPDATE guild_data SET sticky_message = ? WHERE guild_id = ?",

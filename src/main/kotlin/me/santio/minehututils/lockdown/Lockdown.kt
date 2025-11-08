@@ -2,6 +2,7 @@ package me.santio.minehututils.lockdown
 
 import com.google.auto.service.AutoService
 import me.santio.minehututils.bot
+import me.santio.minehututils.coroutines.await
 import me.santio.minehututils.database.DatabaseHandler
 import me.santio.minehututils.database.DatabaseHook
 import me.santio.minehututils.database.models.LockdownChannel
@@ -41,7 +42,7 @@ object Lockdown: DatabaseHook {
 
         return channel.rolePermissionOverrides.firstOrNull {
             it.role == role
-        } ?: channel.upsertPermissionOverride(role).complete()
+        } ?: channel.upsertPermissionOverride(role).await()
     }
 
     /**
@@ -118,7 +119,7 @@ object Lockdown: DatabaseHook {
             if (channel is TextChannel) {
                 // If our message was the last message in the channel, delete it, otherwise we'll send a new one
                 val lastMessage = channel.latestMessageId.takeIf { it != "0" }
-                    ?.let { channel.retrieveMessageById(it).complete() }
+                    ?.let { channel.retrieveMessageById(it).await() }
 
                 if (lastMessage?.author?.id == bot.selfUser.id) {
                     lastMessage.delete().queue()

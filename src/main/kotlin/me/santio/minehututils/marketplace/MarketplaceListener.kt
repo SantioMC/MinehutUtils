@@ -4,6 +4,7 @@ import kotlinx.coroutines.launch
 import me.santio.minehututils.bot
 import me.santio.minehututils.cooldown.Cooldown
 import me.santio.minehututils.cooldown.CooldownManager
+import me.santio.minehututils.coroutines.await
 import me.santio.minehututils.database.DatabaseHandler
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.logger.GuildLogger
@@ -73,7 +74,7 @@ object MarketplaceListener : ListenerAdapter() {
         val postedBy = message.postedBy
         val type = message.type
         scope.launch {
-            val postedByUser = bot.retrieveUserById(postedBy).complete()
+            val postedByUser = bot.retrieveUserById(postedBy).await()
             val log = GuildLogger.of(channel.guild).log(
                 """
                     :identification_card: User: ${postedByUser?.asMention} *(${postedByUser?.name} - ${postedByUser?.id})*
