@@ -69,7 +69,7 @@ object Lockdown: DatabaseHook {
     }
 
     fun getLockdownChannels(string: String): List<String> {
-        return this.lockdownChannels.filter { it.guildId == string }.map { it.channelId }
+        return this.lockdownChannels.mapNotNull { if (it.guildId == string) it.channelId else null }
     }
 
     /**

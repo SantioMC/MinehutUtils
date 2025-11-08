@@ -25,6 +25,7 @@ object Skript {
 
     private val logger = LoggerFactory.getLogger(Skript::class.java)
     private val syntaxList = mutableListOf<SkriptSyntax>()
+    private var distinctSyntaxList = emptyList<SkriptSyntax>()
     private val exampleList = mutableListOf<SkriptExample>()
 
     private val httpClient = HttpClient(CIO) {
@@ -73,6 +74,9 @@ object Skript {
                     .sortedBy { it.title }
                     .onEach { it.title = it.title.titlecase() }
             )
+            
+            // Cache the distinct list to avoid recomputing on every search
+            distinctSyntaxList = syntaxList.distinctBy { it.title }
 
             // Fetch example list
             val examples = httpClient.get("syntaxexample")
@@ -95,8 +99,7 @@ object Skript {
      * @return A list of syntaxes that match the query
      */
     fun search(query: String): List<SkriptSyntax> {
-        return syntaxList
-            .distinctBy { it.title }
+        return distinctSyntaxList
             .filter { it.title.contains(query, ignoreCase = true) }
     }
 

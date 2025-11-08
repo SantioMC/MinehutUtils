@@ -24,6 +24,7 @@ object AutoModResolver {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val mentionRegex = Regex("<@!?\\d{18}>")
+    private val regexCache = mutableMapOf<String, Regex>()
 
     /**
      * Parses a query and checks if it passes all auto mod rules
@@ -114,7 +115,10 @@ object AutoModResolver {
         if (channel in this.exemptChannels) return true
         if (member.roles.any { it in this.exemptRoles }) return true
 
-        val regex = this.filteredRegex.map { Regex(it, RegexOption.IGNORE_CASE) }
+        // Cache regex compilation to avoid creating the same regex repeatedly
+        val regex = this.filteredRegex.map { pattern ->
+            regexCache.getOrPut(pattern) { Regex(pattern, RegexOption.IGNORE_CASE) }
+        }
         val blockedWords = this.filteredKeywords
         val allowedWords = this.allowlist
 
@@ -125,12 +129,15 @@ object AutoModResolver {
             }
         }
 
-        return regex
-            .map { it.findAll(query) }
-            .map {
-                it.filter { m -> m.value !in allowedWords }.count() > 0
+        // Optimize chained map operations - check if any regex matches instead of creating intermediate lists
+        for (r in regex) {
+            val matches = r.findAll(query)
+            if (matches.any { it.value !in allowedWords }) {
+                return false
             }
-            .all { !it }
+        }
+        
+        return true
     }
 
     private suspend fun sendLog(query: String, guild: Guild, interaction: Interaction, rule: AutoModRule) {

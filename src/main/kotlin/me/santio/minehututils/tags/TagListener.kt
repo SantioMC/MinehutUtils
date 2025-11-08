@@ -10,16 +10,14 @@ import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.LoggerFactory
-import java.util.*
-import kotlin.concurrent.schedule
 
 object TagListener: ListenerAdapter() {
 
     private val logger = LoggerFactory.getLogger(TagListener::class.java)
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val cooldownReaction = Emoji.fromUnicode("⌛")
-    private val timer = Timer()
-    private val recentlySent = mutableListOf<String>()
+    // Use concurrent map for thread-safe access
+    private val recentlySent = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
         if (!event.isFromGuild) return
@@ -48,7 +46,9 @@ object TagListener: ListenerAdapter() {
             TagManager.addUse(tag)
         }
 
-        timer.schedule(10000) {
+        // Use coroutine delay instead of Timer to avoid creating new Timer tasks
+        coroutineScope.launch {
+            kotlinx.coroutines.delay(10000)
             recentlySent.remove(id)
         }
     }

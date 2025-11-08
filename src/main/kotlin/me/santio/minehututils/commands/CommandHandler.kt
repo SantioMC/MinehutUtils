@@ -12,17 +12,21 @@ object CommandManager {
 
     private val logger = LoggerFactory.getLogger(javaClass)
     private val commands = mutableListOf<SlashCommand>()
+    private val commandMap = mutableMapOf<String, SlashCommand>()
 
     fun collect(): List<CommandData> {
         return commands.map { it.getData() }
     }
 
     fun register(vararg commands: SlashCommand) {
-        commands.forEach { this.commands.add(it) }
+        commands.forEach { 
+            this.commands.add(it)
+            this.commandMap[it.getData().name] = it
+        }
     }
 
     suspend fun execute(event: SlashCommandInteractionEvent) {
-        val command = commands.find { it.getData().name == event.name }
+        val command = commandMap[event.name]
 
         if (command == null) {
             event.replyEmbeds(EmbedFactory.error("Command not found", event.guild).build()).queue()
@@ -49,7 +53,7 @@ object CommandManager {
     }
 
     suspend fun autoComplete(event: CommandAutoCompleteInteractionEvent) {
-        val command = commands.find { it.getData().name == event.name }
+        val command = commandMap[event.name]
             ?: return
 
         kotlin.runCatching {

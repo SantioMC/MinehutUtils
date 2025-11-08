@@ -21,8 +21,12 @@ object CooldownManager {
     fun start() {
         timer.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-                cooldowns.cellSet().filter { it.value.isElapsed() }.forEach {
-                    cooldowns.remove(it.rowKey, it.columnKey)
+                // Use iterator to avoid creating intermediate filtered list
+                val iterator = cooldowns.cellSet().iterator()
+                while (iterator.hasNext()) {
+                    if (iterator.next().value.isElapsed()) {
+                        iterator.remove()
+                    }
                 }
             }
         }, 0, 60000) // Cleanup task
@@ -37,8 +41,14 @@ object CooldownManager {
     }
 
     fun clear(user: String, kind: Cooldown? = null) {
-        cooldowns.cellSet().filter { it.rowKey == user && (kind == null || it.columnKey == kind) }
-            .forEach { cooldowns.remove(it.rowKey, it.columnKey) }
+        // Use iterator to avoid creating intermediate filtered list and concurrent modification
+        val iterator = cooldowns.cellSet().iterator()
+        while (iterator.hasNext()) {
+            val cell = iterator.next()
+            if (cell.rowKey == user && (kind == null || cell.columnKey == kind)) {
+                iterator.remove()
+            }
+        }
     }
 
     fun reset() {
