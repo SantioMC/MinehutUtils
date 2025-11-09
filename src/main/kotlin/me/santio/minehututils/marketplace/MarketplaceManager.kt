@@ -62,7 +62,7 @@ object MarketplaceManager: DatabaseHook {
         messages.add(message)
 
         iron.prepare(
-            "INSERT INTO marketplace_logs(id, posted_by, type, title, content, posted_at) VALUES (:id, :postedBy, :type, :title, :content, :postedAt)",
+            "INSERT INTO marketplace_logs(id, posted_by, type, title, content, paid, posted_at) VALUES (:id, :postedBy, :type, :title, :content, :paid, :postedAt)",
             message.bindings()
         )
     }
@@ -72,8 +72,19 @@ object MarketplaceManager: DatabaseHook {
         val id = UUID.randomUUID().toString()
 
         e.replyModal(Modal("minehut:marketplace:modal:$id", "Customize your listing") {
-            short("minehut:listing:title", "The title of your listing", requiredLength = IntRange(1, 100))
-            paragraph("minehut:listing:description", "The description of your listing")
+            short(
+                "minehut:listing:title",
+                "The title of your listing",
+                requiredLength = IntRange(1, 100))
+            short(
+                "minehut:listing:paid",
+                "Is this listing paid?",
+                placeholder = "Yes or no",
+                requiredLength = IntRange(2, 3))
+            paragraph(
+                "minehut:listing:description",
+                "The description of your listing"
+            )
         }).queue()
 
         bot.listener<ModalInteractionEvent>(timeout = 15.minutes) {
@@ -81,9 +92,23 @@ object MarketplaceManager: DatabaseHook {
             cancel()
 
             val title =
-                it.values.firstOrNull { it.id == "minehut:listing:title" }?.asString ?: error("No title provided")
+                it.values.firstOrNull { it.id == "minehut:listing:title" }?.asString
+                    ?: error("No title provided")
+            val paid = it.values.firstOrNull { it.id == "minehut:listing:paid" }?.asString
+                ?: error("Paid status has not been provided")
             val description = it.values.firstOrNull { it.id == "minehut:listing:description" }?.asString
                 ?: error("No description provided")
+
+            // Ensure validity of paid status with quick check. Not yes and not no means invalid response.
+            if (!paid.equals("yes", ignoreCase = true) && !paid.equals("no", ignoreCase = true)) {
+                it.replyEmbeds(
+                    EmbedFactory.error(
+                        "When specifying if this listing is paid or not, please only use terms `yes` and `no`.",
+                        it.guild!!
+                    ).build()
+                ).setEphemeral(true).queue()
+                return@listener
+            }
 
             // Restrict the number of repetitive empty lines
             val trimmed = description.lines().joinToString("\n") { line -> line.trim() }
@@ -121,7 +146,7 @@ object MarketplaceManager: DatabaseHook {
                 }
             }
 
-            postListing(type, it, settings, title, description)
+            postListing(type, it, settings, title, paid.equals("yes", ignoreCase = true), description)
         }
     }
 
@@ -130,6 +155,7 @@ object MarketplaceManager: DatabaseHook {
         event: ModalInteractionEvent,
         settings: Settings,
         title: String,
+        paid: Boolean,
         description: String
     ) {
         val channel = bot.getTextChannelById(settings.marketplaceChannel!!) ?: run {
@@ -155,6 +181,7 @@ object MarketplaceManager: DatabaseHook {
                 MarkdownSanitizer.sanitize(title.replace("*", ""))
                     .ifEmpty { "Untitled" }
             }**
+            | *This listing is ${if (paid) "a **Paid**" else "an **Unpaid**"} $type*
             |
             | $description
             """.trimMargin()) {
@@ -177,6 +204,7 @@ object MarketplaceManager: DatabaseHook {
                         type = type,
                         title = title,
                         content = description,
+                        paid = paid,
                         postedAt = it.timeCreated.toInstant().toEpochMilli()
                     ))
 
