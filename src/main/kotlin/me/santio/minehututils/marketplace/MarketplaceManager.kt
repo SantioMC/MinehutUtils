@@ -1,8 +1,6 @@
 package me.santio.minehututils.marketplace
 
 import dev.minn.jda.ktx.events.listener
-import dev.minn.jda.ktx.interactions.components.Modal
-import dev.minn.jda.ktx.interactions.components.button
 import kotlinx.coroutines.launch
 import me.santio.minehututils.bot
 import me.santio.minehututils.cooldown.Cooldown
@@ -12,18 +10,25 @@ import me.santio.minehututils.database.DatabaseHandler
 import me.santio.minehututils.database.DatabaseHook
 import me.santio.minehututils.database.models.MarketplaceMessage
 import me.santio.minehututils.database.models.Settings
+import me.santio.minehututils.ext.paragraph
+import me.santio.minehututils.ext.short
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.iron
 import me.santio.minehututils.resolvers.AutoModResolver
 import me.santio.minehututils.resolvers.EmojiResolver
 import me.santio.minehututils.scope
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.buttons.Button
+import net.dv8tion.jda.api.components.buttons.ButtonStyle
+import net.dv8tion.jda.api.components.label.Label
+import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.callbacks.IModalCallback
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
+import net.dv8tion.jda.api.modals.Modal
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.util.*
 import kotlin.time.Duration.Companion.minutes
@@ -71,44 +76,39 @@ object MarketplaceManager: DatabaseHook {
         if (e.isAcknowledged) return
         val id = UUID.randomUUID().toString()
 
-        e.replyModal(Modal("minehut:marketplace:modal:$id", "Customize your listing") {
-            short(
-                "minehut:listing:title",
-                "The title of your listing",
-                requiredLength = IntRange(1, 100))
-            short(
-                "minehut:listing:paid",
-                "Is this listing paid?",
-                placeholder = "Yes or no",
-                requiredLength = IntRange(2, 3))
-            paragraph(
-                "minehut:listing:description",
-                "The description of your listing"
-            )
-        }).queue()
+        val modal = Modal.create("minehut:marketplace:modal:$id", "Customize your listing")
+            .addComponents(
+                short(
+                    "minehut:listing:title",
+                    "The title of your listing",
+                    requiredLength = IntRange(1, 100)
+                ),
+                Label.of(
+                    "minehut:listing:paid", StringSelectMenu.create("minehut:listing:paid")
+                        .setPlaceholder("Is this listing paid?")
+                        .addOption("Yes", "yes", "This is a paid listing")
+                        .addOption("No", "no", "This is a free listing")
+                        .setRequiredRange(1, 1)
+                        .build()
+                ),
+                paragraph(
+                    "minehut:listing:description",
+                    "The description of your listing"
+                )
+            ).build()
+
+        e.replyModal(modal).queue()
 
         bot.listener<ModalInteractionEvent>(timeout = 15.minutes) {
             if (it.modalId != "minehut:marketplace:modal:$id") return@listener
             cancel()
 
-            val title =
-                it.values.firstOrNull { it.id == "minehut:listing:title" }?.asString
+            val title = it.getValue("minehut:listing:title")?.asString
                     ?: error("No title provided")
-            val paid = it.values.firstOrNull { it.id == "minehut:listing:paid" }?.asString
+            val paid = it.getValue("minehut:listing:paid")?.asStringList?.firstOrNull()
                 ?: error("Paid status has not been provided")
-            val description = it.values.firstOrNull { it.id == "minehut:listing:description" }?.asString
+            val description = it.getValue("minehut:listing:description")?.asString
                 ?: error("No description provided")
-
-            // Ensure validity of paid status with quick check. Not yes and not no means invalid response.
-            if (!paid.equals("yes", ignoreCase = true) && !paid.equals("no", ignoreCase = true)) {
-                it.replyEmbeds(
-                    EmbedFactory.error(
-                        "When specifying if this listing is paid or not, please only use terms `yes` and `no`.",
-                        it.guild!!
-                    ).build()
-                ).setEphemeral(true).queue()
-                return@listener
-            }
 
             // Restrict the number of repetitive empty lines
             val trimmed = description.lines().joinToString("\n") { line -> line.trim() }
@@ -229,8 +229,17 @@ object MarketplaceManager: DatabaseHook {
     suspend fun sendStickyEmbed(channel: TextChannel) {
         getStickyMessage(channel.guild)?.delete()?.queue()
 
-        val offerButton = button("minehut:marketplace:post:offer", "Post an Offering", Emoji.fromFormatted("\uD83D\uDCE2"), ButtonStyle.SUCCESS)
-        val requestButton = button("minehut:marketplace:post:request", "Post a Request", Emoji.fromFormatted("📝"), ButtonStyle.PRIMARY)
+        val offerButton = Button.of(
+            ButtonStyle.SUCCESS,
+            "minehut:marketplace:post:offer",
+            "Post a Request"
+        ).withEmoji(Emoji.fromFormatted("\uD83D\uDCE2"))
+
+        val requestButton = Button.of(
+            ButtonStyle.PRIMARY,
+            "minehut:marketplace:post:request",
+            "Post an Offering"
+        ).withEmoji(Emoji.fromFormatted("📝"))
 
         val message = channel.sendMessageEmbeds(
             EmbedFactory.default(
@@ -246,7 +255,7 @@ object MarketplaceManager: DatabaseHook {
                 Read the pinned message in this channel to learn more!
                 """.trimMargin()
             ).build()
-        ).addActionRow(offerButton, requestButton).complete()
+        ).addComponents(ActionRow.of(offerButton, requestButton)).complete()
 
         iron.prepare(
             "UPDATE guild_data SET sticky_message = ? WHERE guild_id = ?",
