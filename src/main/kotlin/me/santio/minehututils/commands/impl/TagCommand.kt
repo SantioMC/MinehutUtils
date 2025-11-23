@@ -111,9 +111,9 @@ class TagCommand : SlashCommand {
             if (it.modalId != "minehut:tag:create:$id") return@listener
             cancel()
 
-            val searchValue = it.values.firstOrNull { it.id == "minehut:tag:search" }?.asString
+            val searchValue = it.getValue("minehut:tag:search")?.asString
                 ?: error("No search value provided")
-            val body = it.values.firstOrNull { it.id == "minehut:tag:body" }?.asString
+            val body = it.getValue("minehut:tag:body")?.asString
                 ?: error("No body provided")
 
             val tag = Tag(
@@ -212,9 +212,9 @@ class TagCommand : SlashCommand {
             if (it.modalId != "minehut:tag:edit:$id") return@listener
             cancel()
 
-            val searchValue = it.values.firstOrNull { it.id == "minehut:tag:edit" }?.asString
+            val searchValue = it.getValue("minehut:tag:edit")?.asString
                 ?: error("No search value provided")
-            val body = it.values.firstOrNull { it.id == "minehut:tag:body" }?.asString
+            val body = it.getValue("minehut:tag:body")?.asString
                 ?: error("No body provided")
 
             tag.searchValue = searchValue
