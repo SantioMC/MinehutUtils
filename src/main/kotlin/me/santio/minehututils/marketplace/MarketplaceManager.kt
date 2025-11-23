@@ -84,7 +84,7 @@ object MarketplaceManager: DatabaseHook {
                     requiredLength = IntRange(1, 100)
                 ),
                 Label.of(
-                    "minehut:listing:paid", StringSelectMenu.create("minehut:listing:paid")
+                    "Payment Status", StringSelectMenu.create("minehut:listing:paid")
                         .setPlaceholder("Is this listing paid?")
                         .addOption("Yes", "yes", "This is a paid listing")
                         .addOption("No", "no", "This is a free listing")
