@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.2.21"
 ksp = "2.2.20-2.0.4"
-shadow = "8.1.1"
+shadow = "9.2.2"
 autoservice-google = "1.1.1"
 autoservice-ksp = "1.2.0"
 jda = "6.0.0-rc.4"
@@ -20,7 +20,7 @@ sentry-plugin = "5.8.1"
 sentry-log4j2 = "8.14.0"
 
 [plugins]
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
 sentry = { id = "io.sentry.jvm.gradle", version.ref = "sentry-plugin" }
