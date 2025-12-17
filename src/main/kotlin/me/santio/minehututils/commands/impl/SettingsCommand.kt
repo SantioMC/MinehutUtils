@@ -43,20 +43,6 @@ class SettingsCommand: SlashCommand {
             )
 
             addSubcommandGroups(
-                SubcommandGroup("boosterpass", "Manage booster settings") {
-                    addSubcommands(
-                        Subcommand("role", "Set the booster pass role") {
-                            addOptions(
-                                Option<Role>("role", "The role to set as the booster pass role", true)
-                            )
-                        },
-                        Subcommand("max", "Set the maximum number of booster passes a user can give") {
-                            addOptions(
-                                Option<Int>("max", "The maximum number of booster passes a user can give", true)
-                            )
-                        }
-                    )
-                },
                 SubcommandGroup("channel", "Manage channel settings") {
                     addSubcommands(
                         Subcommand("marketplace", "Set the channel to post listings in") {
@@ -105,7 +91,6 @@ class SettingsCommand: SlashCommand {
     private suspend fun viewSettings(event: SlashCommandInteractionEvent) {
         val settings = DatabaseHandler.getSettings(event.guild!!.id)
         val marketplaceCooldown = settings.marketplaceCooldown.seconds
-        val boosterPassRole = settings.boosterPassRole?.let { event.guild!!.getRoleById(it) }
         val lockdownRole = settings.lockdownRole?.let { event.guild!!.getRoleById(it) }
 
         event.replyEmbeds(
@@ -113,58 +98,12 @@ class SettingsCommand: SlashCommand {
                 """
                 | :gear: Settings
                 | 
-                | ${getNullIcon(boosterPassRole)} Booster Pass Role: ${boosterPassRole?.asMention ?: "Not set"}
-                | ${EmojiResolver.checkmark().formatted} Max Booster Passes: ${settings.maxBoosterPasses}
                 | ${getNullIcon(settings.logChannel)} Log Channel: ${settings.logChannel?.let { "<#$it>" } ?: "Not set"}
                 | ${getNullIcon(settings.marketplaceChannel)} Marketplace Channel: ${settings.marketplaceChannel?.let { "<#$it>" } ?: "Not set"}
                 | ${EmojiResolver.checkmark().formatted} Marketplace Cooldown: ${DurationResolver.pretty(marketplaceCooldown)}
                 | ${EmojiResolver.checkmark().formatted} Lockdown Role: ${lockdownRole?.asMention ?: "@everyone"}
                 """.trimMargin()
             ).build()
-        ).setEphemeral(true).queue()
-    }
-
-    private suspend fun setBoosterPassRole(event: SlashCommandInteractionEvent) {
-        val role = event.getOption("role")?.asRole ?: error("Role not provided")
-        val guild = event.guild ?: return
-
-        iron.prepare(
-            "UPDATE settings SET booster_pass_role = ? WHERE guild_id = ?",
-            role.id,
-            guild.id
-        )
-
-        GuildLogger.of(event.guild!!).log(
-            "The booster pass role was set to ${role.asMention} by ${event.user.asMention}",
-            ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
-            ":label: Role: ${role.asMention} *(${role.name} - ${role.id})*"
-        ).withContext(event).titled("Booster Pass Role Changed").post()
-
-        event.replyEmbeds(
-            EmbedFactory.success("Successfully set the booster pass role to ${role.asMention}", guild)
-                .build()
-        ).setEphemeral(true).queue()
-    }
-
-    private suspend fun setMaxBoosterPasses(event: SlashCommandInteractionEvent) {
-        val max = event.getOption("max")?.asString?.toIntOrNull() ?: error("Invalid maximum value provided")
-        if (max <= 0) error("Maximum value must be greater than 0")
-
-        iron.prepare(
-            "UPDATE settings SET max_booster_passes = ? WHERE guild_id = ?",
-            max,
-            event.guild!!.id
-        )
-
-        GuildLogger.of(event.guild!!).log(
-            "The maximum number of booster passes was set to $max by ${event.user.asMention}",
-            ":identification_card: User: ${event.member?.asMention} *(${event.user.name} - ${event.user.id})*",
-            ":label: Maximum Booster Passes: $max"
-        ).withContext(event).titled("Max Booster Passes Changed").post()
-
-        event.replyEmbeds(
-            EmbedFactory.success("Successfully set the maximum number of booster passes to $max", event.guild!!)
-                .build()
         ).setEphemeral(true).queue()
     }
 
@@ -297,11 +236,6 @@ class SettingsCommand: SlashCommand {
 
         // Router
         when(event.subcommandGroup) {
-            "boosterpass" -> when(event.subcommandName) {
-                "role" -> setBoosterPassRole(event)
-                "max" -> setMaxBoosterPasses(event)
-                else -> error("Subcommand not found")
-            }
             "channel" -> when(event.subcommandName) {
                 "marketplace" -> setMarketplaceChannel(event)
                 else -> error("Subcommand not found")

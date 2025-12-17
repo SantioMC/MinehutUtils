@@ -13,7 +13,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import me.santio.minehututils.boosterpass.BoosterPassListener
 import me.santio.minehututils.commands.CommandLoader
 import me.santio.minehututils.commands.CommandManager
 import me.santio.minehututils.database.DatabaseHandler
@@ -52,7 +51,6 @@ suspend fun main() {
         true
     ) {
         intents += GatewayIntent.MESSAGE_CONTENT
-        intents += GatewayIntent.GUILD_MEMBERS
     }.awaitReady()
 
     // Start heartbeating
@@ -73,10 +71,14 @@ suspend fun main() {
     CommandLoader.load(bot)
     bot.updateCommands().addCommands(CommandManager.collect()).queue()
 
-    bot.listener<SlashCommandInteractionEvent> { CommandManager.execute(it) }
-    bot.listener<CommandAutoCompleteInteractionEvent> { CommandManager.autoComplete(it) }
+    bot.addEventListener(MarketplaceListener, TagListener)
+    bot.listener<SlashCommandInteractionEvent> {
+        CommandManager.execute(it)
+    }
 
-    bot.addEventListener(BoosterPassListener, MarketplaceListener, TagListener)
+    bot.listener<CommandAutoCompleteInteractionEvent> {
+        CommandManager.autoComplete(it)
+    }
 
     // Log user
     logger.info("Logged in as ${bot.selfUser.name}")
