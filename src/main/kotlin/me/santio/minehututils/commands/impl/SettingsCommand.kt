@@ -6,7 +6,6 @@ import dev.minn.jda.ktx.interactions.commands.Command
 import dev.minn.jda.ktx.interactions.commands.Option
 import dev.minn.jda.ktx.interactions.commands.Subcommand
 import dev.minn.jda.ktx.interactions.commands.SubcommandGroup
-import dev.minn.jda.ktx.interactions.components.EntitySelectMenu
 import me.santio.minehututils.bot
 import me.santio.minehututils.commands.SlashCommand
 import me.santio.minehututils.database.DatabaseHandler
@@ -17,6 +16,9 @@ import me.santio.minehututils.logger.GuildLogger
 import me.santio.minehututils.resolvers.DurationResolver
 import me.santio.minehututils.resolvers.EmojiResolver
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.selections.EntitySelectMenu
+import net.dv8tion.jda.api.components.selections.EntitySelectMenu.SelectTarget
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
@@ -24,8 +26,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu
-import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu.SelectTarget
 import java.util.*
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -179,14 +179,15 @@ class SettingsCommand: SlashCommand {
         event.replyEmbeds(
             EmbedFactory.default("Which channels do you want to restrict the lockdown command to?")
                 .build()
-        ).addActionRow(
-            EntitySelectMenu("minehut:settings:lockdown:channels:$id", listOf(SelectTarget.CHANNEL)) {
-                setChannelTypes(ChannelType.TEXT, ChannelType.FORUM)
-                setMaxValues(25)
-                setDefaultValues(channels.map {
+        ).addComponents(
+            ActionRow.of(
+                EntitySelectMenu.create("minehut:settings:lockdown:channels:$id", SelectTarget.CHANNEL)
+                .setChannelTypes(listOf(ChannelType.TEXT, ChannelType.FORUM))
+                .setMaxValues(25)
+                .setDefaultValues(channels.map {
                     EntitySelectMenu.DefaultValue.channel(it)
-                })
-            }
+                }).build()
+            )
         ).setEphemeral(true).queue()
 
         bot.onEntitySelect("minehut:settings:lockdown:channels:$id", timeout = 2.minutes) {

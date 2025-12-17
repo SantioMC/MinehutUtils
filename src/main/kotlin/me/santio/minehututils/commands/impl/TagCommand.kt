@@ -9,11 +9,15 @@ import dev.minn.jda.ktx.interactions.components.Modal
 import me.santio.minehututils.bot
 import me.santio.minehututils.commands.SlashCommand
 import me.santio.minehututils.database.models.Tag
+import me.santio.minehututils.ext.paragraph
+import me.santio.minehututils.ext.short
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.logger.GuildLogger
 import me.santio.minehututils.tags.SearchAlgorithm
 import me.santio.minehututils.tags.TagManager
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.components.label.Label
+import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -21,6 +25,7 @@ import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.Command.Choice
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.modals.Modal
 import java.util.*
 import kotlin.time.Duration.Companion.minutes
 
@@ -88,10 +93,17 @@ class TagCommand : SlashCommand {
         val global = event.getOption("global")?.asBoolean == true
 
         val id = UUID.randomUUID().toString()
-        val modal = Modal("minehut:tag:create:$id", "Create a new tag") {
-            short("minehut:tag:search", searchAlg.placeholder)
-            paragraph("minehut:tag:body", "Enter the body of the tag (supports markdown)")
-        }
+        val modal = Modal.create("minehut:tag:create:$id", "Create a new tag")
+            .addComponents(
+                short(
+                    "minehut:tag:search",
+                    searchAlg.placeholder,
+                ),
+                paragraph(
+                    "minehut:tag:body",
+                    "Enter the body of the tag (supports markdown)"
+                )
+            ).build()
 
         event.replyModal(modal).queue()
 
@@ -99,9 +111,9 @@ class TagCommand : SlashCommand {
             if (it.modalId != "minehut:tag:create:$id") return@listener
             cancel()
 
-            val searchValue = it.values.firstOrNull { it.id == "minehut:tag:search" }?.asString
+            val searchValue = it.getValue("minehut:tag:search")?.asString
                 ?: error("No search value provided")
-            val body = it.values.firstOrNull { it.id == "minehut:tag:body" }?.asString
+            val body = it.getValue("minehut:tag:body")?.asString
                 ?: error("No body provided")
 
             val tag = Tag(
@@ -180,10 +192,19 @@ class TagCommand : SlashCommand {
         if (tag.guildId != null && tag.guildId != event.guild!!.id) error("You can only edit tags in the same guild as the tag")
 
         val id = UUID.randomUUID().toString()
-        val modal = Modal("minehut:tag:edit:$id", "Edit a tag") {
-            short("minehut:tag:edit", tag.searchAlg().placeholder, value = tag.searchValue)
-            paragraph("minehut:tag:body", "Enter the body of the tag (supports markdown)", value = tag.body)
-        }
+        val modal = Modal.create("minehut:tag:edit:$id", "Edit a tag")
+            .addComponents(
+                short(
+                    "minehut:tag:edit",
+                    tag.searchAlg().placeholder,
+                    value = tag.searchValue
+                ),
+                paragraph(
+                    "minehut:tag:body",
+                    "Enter the body of the tag (supports markdown)",
+                    value = tag.body
+                )
+            ).build()
 
         event.replyModal(modal).queue()
 
@@ -191,9 +212,9 @@ class TagCommand : SlashCommand {
             if (it.modalId != "minehut:tag:edit:$id") return@listener
             cancel()
 
-            val searchValue = it.values.firstOrNull { it.id == "minehut:tag:edit" }?.asString
+            val searchValue = it.getValue("minehut:tag:edit")?.asString
                 ?: error("No search value provided")
-            val body = it.values.firstOrNull { it.id == "minehut:tag:body" }?.asString
+            val body = it.getValue("minehut:tag:body")?.asString
                 ?: error("No body provided")
 
             tag.searchValue = searchValue
