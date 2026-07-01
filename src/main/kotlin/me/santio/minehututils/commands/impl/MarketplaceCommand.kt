@@ -3,8 +3,6 @@ package me.santio.minehututils.commands.impl
 import com.google.auto.service.AutoService
 import dev.minn.jda.ktx.events.onStringSelect
 import dev.minn.jda.ktx.interactions.commands.Command
-import dev.minn.jda.ktx.interactions.components.StringSelectMenu
-import dev.minn.jda.ktx.interactions.components.option
 import me.santio.minehututils.bot
 import me.santio.minehututils.commands.SlashCommand
 import me.santio.minehututils.cooldown.Cooldown
@@ -13,6 +11,8 @@ import me.santio.minehututils.database.DatabaseHandler
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.marketplace.MarketplaceManager
 import me.santio.minehututils.resolvers.DurationResolver.discord
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionContextType
@@ -48,11 +48,14 @@ class MarketplaceCommand : SlashCommand {
         event.replyEmbeds(
             EmbedFactory.default("Are you looking to offer or request?")
                 .build()
-        ).addActionRow(
-            StringSelectMenu("minehut:marketplace:type:$id", "Select an option") {
-                option("Offering", "offer", emoji = Emoji.fromFormatted("\uD83D\uDCE2"))
-                option("Requesting", "request", emoji = Emoji.fromFormatted("📝"))
-            }
+        ).addComponents(
+            ActionRow.of(
+                StringSelectMenu.create("minehut:marketplace:type:$id")
+                    .setPlaceholder("Select an option")
+                    .addOption("Offering", "offer", Emoji.fromFormatted("\uD83D\uDCE2"))
+                    .addOption("Requesting", "request", Emoji.fromFormatted("📝"))
+                    .build()
+            )
         ).setEphemeral(true).queue()
 
         bot.onStringSelect("minehut:marketplace:type:$id", timeout = 30.seconds) {

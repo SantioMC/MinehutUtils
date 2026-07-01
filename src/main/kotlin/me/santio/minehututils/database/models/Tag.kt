@@ -5,9 +5,10 @@ import gg.ingot.iron.strategies.NamingStrategy
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.resolvers.EmojiResolver
 import me.santio.minehututils.tags.SearchAlgorithm
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.buttons.Button
+import net.dv8tion.jda.api.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.interactions.components.buttons.Button
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.URL
@@ -125,7 +126,7 @@ data class Tag(
             message.replyEmbeds(embed).mentionRepliedUser(false)
         }
 
-        if (buttons.isNotEmpty()) reply.setActionRow(*buttons.toTypedArray())
+        if (buttons.isNotEmpty()) reply.addComponents(ActionRow.of(buttons.toList()))
         reply.queue()
     }
 

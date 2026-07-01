@@ -11,5 +11,6 @@ data class MarketplaceMessage(
     val type: String,
     val title: String,
     val content: String,
+    val paid: Boolean,
     val postedAt: Long
 ): Bindings
