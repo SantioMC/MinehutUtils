@@ -6,6 +6,7 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +15,8 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.santio.minehututils.coroutines.exceptionHandler
 import me.santio.minehututils.minehut.mcsrvstat.PingModel
@@ -25,9 +28,11 @@ import me.santio.sdk.minehut.models.PlayerStats
 import me.santio.sdk.minehut.models.Server
 import me.santio.sdk.minehut.models.SimpleStats
 import org.slf4j.LoggerFactory
-import java.time.Duration
-import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * A wrapper on unirest for accessing the Minehut API
@@ -44,8 +49,21 @@ object Minehut {
     private val refreshing = AtomicBoolean(false)
     private var failedRefreshes = 0
     private val client = MinehutApi(BASE_URL)
+    private val serverNames = ConcurrentHashMap<String, Cached<String>>()
 
-    val dailyTimeLimit: Duration = Duration.ofHours(4)
+    private val ranks = Cached(1.days, 1.minutes) {
+        client.getRanks().takeIf { it.success }?.body()
+            ?.mapNotNull { rank -> rank.id?.let { it to (rank.name ?: it) } }
+            ?.toMap()
+    }
+
+    private val categories = Cached(1.days, 1.minutes) {
+        client.getCategories().takeIf { it.success }?.body()?.items
+            ?.mapNotNull { category -> category.backendName?.let { it to (category.friendlyName ?: it) } }
+            ?.toMap()
+    }
+
+    const val ICON_URL = "https://minehut-server-icons-live.s3.us-west-2.amazonaws.com"
 
     val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -68,6 +86,7 @@ object Minehut {
             try {
                 fetchServers()?.let {
                     serverCache = it
+                    PlayerHistory.record(it)
                     if (failedRefreshes > 0) logger.info("Server list refresh recovered after {} failed attempts", failedRefreshes)
                     failedRefreshes = 0
                 } ?: refreshFailed("the API returned an unsuccessful response")
@@ -95,24 +114,6 @@ object Minehut {
     }
 
     /**
-     * Gets the epoch time of the next daily time reset
-     * @return The epoch time of the next daily time reset
-     */
-    fun getDailyTimeReset(): Long {
-        val reset = Calendar.getInstance(TimeZone.getTimeZone("GMT-8")).apply {
-            set(Calendar.HOUR_OF_DAY, 1)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-        }
-
-        if (reset.before(Calendar.getInstance(TimeZone.getTimeZone("GMT-8")))) {
-            reset.add(Calendar.DATE, 1)
-        }
-
-        return reset.timeInMillis / 1000
-    }
-
-    /**
      * Get the network statistics
      * @return The network stats model, or null if the request failed
      */
@@ -136,6 +137,35 @@ object Minehut {
     suspend fun server(name: String): Server? {
         return client.getServer(name, true).takeIf { it.success }?.body()?.server
     }
+
+    /**
+     * Get the name of a server from its id, which works for servers missing from the server list
+     * @param id The id of the server
+     * @return The name of the server, or null if it does not exist or the request failed
+     */
+    suspend fun serverName(id: String): String? {
+        serverNames.values.removeIf { it.expired }
+
+        // Looks up by id without the byName flag the generated client always sends
+        return serverNames.getOrPut(id) {
+            Cached(1.days, 10.minutes) {
+                httpClient.get("$BASE_URL/server/$id").takeIf { it.status.isSuccess() }?.body<ServerLookup>()?.server?.name
+            }
+        }.get()
+    }
+
+    /**
+     * Get the display name of a rank
+     * @param id The id of the rank, such as VIP_PLUS
+     * @return The display name of the rank, or null if it is unknown or the ranks failed to load
+     */
+    suspend fun rankName(id: String): String? = ranks.get()?.get(id)
+
+    /**
+     * Get the display names of every server category
+     * @return A map of category ids to their display names, empty if the categories failed to load
+     */
+    suspend fun categoryNames(): Map<String, String> = categories.get() ?: emptyMap()
 
     /**
      * Get a list of all servers
@@ -274,6 +304,44 @@ object Minehut {
         // TODO: Implement version checking
 
         status
+    }
+
+}
+
+private data class ServerLookup(val server: NamedServer?)
+
+private data class NamedServer(val name: String?)
+
+private class Cached<T : Any>(
+    private val ttl: Duration,
+    private val retry: Duration,
+    private val fetch: suspend () -> T?
+) {
+
+    @Volatile
+    private var value: T? = null
+
+    @Volatile
+    private var expiresAt = 0L
+
+    private val mutex = Mutex()
+
+    val expired get() = expiresAt != 0L && System.currentTimeMillis() >= expiresAt
+
+    suspend fun get(): T? {
+        if (System.currentTimeMillis() < expiresAt) return value
+
+        return mutex.withLock {
+            if (System.currentTimeMillis() < expiresAt) return@withLock value
+
+            val fresh = runCatching { fetch() }
+                .onFailure { if (it is CancellationException) throw it }
+                .getOrNull()
+
+            if (fresh != null) value = fresh
+            expiresAt = System.currentTimeMillis() + (if (fresh != null) ttl else retry).inWholeMilliseconds
+            value
+        }
     }
 
 }
