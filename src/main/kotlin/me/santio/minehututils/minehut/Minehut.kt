@@ -10,11 +10,14 @@ import io.ktor.serialization.gson.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.santio.minehututils.coroutines.exceptionHandler
 import me.santio.minehututils.minehut.mcsrvstat.PingModel
+import me.santio.minehututils.minehut.mcstatus.StatusModel
 import me.santio.minehututils.scope
 import me.santio.sdk.minehut.apis.Minehut
 import me.santio.sdk.minehut.models.ListedServer
@@ -163,9 +166,40 @@ object Minehut {
     /**
      * Ping a service
      * @param service The service to ping
-     * @return The ping model, or null if the service failed to ping
+     * @return Whether the service is online, or null if the service failed to ping
      */
-    suspend fun ping(service: Service): PingModel? {
+    suspend fun ping(service: Service): Boolean? = coroutineScope {
+        val sources = mapOf(
+            "mcsrvstat.us" to suspend { pingMcsrvstatUs(service) },
+            "mcstatus.io" to suspend { pingMcstatusIo(service) },
+        )
+
+        val results = Channel<Boolean?>(sources.size)
+        for ((name, source) in sources) {
+            launch {
+                results.send(runCatching { source() }.onFailure {
+                    if (it is CancellationException) throw it
+                    logger.warn("Failed to ping {} through {}: {}", service, name, it.toString())
+                }.getOrNull())
+            }
+        }
+
+        var offline = 0
+        repeat(sources.size) {
+            when (results.receive()) {
+                true -> {
+                    coroutineContext.cancelChildren()
+                    return@coroutineScope true
+                }
+                false -> offline++
+                null -> {}
+            }
+        }
+
+        if (offline == sources.size) false else null
+    }
+
+    suspend fun pingMcsrvstatUs(service: Service): Boolean? {
         return withContext(Dispatchers.IO) {
             val url = when (service) {
                 Service.JAVA, Service.PROXY -> "https://api.mcsrvstat.us/3/minehut.com"
@@ -176,6 +210,22 @@ object Minehut {
             return@withContext httpClient.get(url)
                 .takeIf { it.status.value == 200 }
                 ?.body<PingModel>()
+                ?.let { it.online || (it.players?.online ?: 0) > 0 }
+        }
+    }
+
+    suspend fun pingMcstatusIo(service: Service): Boolean? {
+        return withContext(Dispatchers.IO) {
+            val url = when (service) {
+                Service.JAVA, Service.PROXY -> "https://api.mcstatus.io/v2/status/java/minehut.com"
+                Service.BEDROCK -> "https://api.mcstatus.io/v2/status/bedrock/bedrock.minehut.com"
+                else -> return@withContext null
+            }
+
+            return@withContext httpClient.get(url)
+                .takeIf { it.status.value == 200 }
+                ?.body<StatusModel>()
+                ?.let { it.online || (it.players?.online ?: 0) > 0 }
         }
     }
 
@@ -213,9 +263,10 @@ object Minehut {
                 if (it is CancellationException) throw it
                 logger.warn("Failed to ping {} for the status check: {}", service, it.toString())
             }.getOrNull().apply {
-                when {
-                    this == null -> status[service] = State.FAILED
-                    !online && (players == null || players.online == 0) -> status[service] = State.OFFLINE
+                when (this) {
+                    null -> status[service] = State.FAILED
+                    false -> status[service] = State.OFFLINE
+                    true -> {}
                 }
             }
         }
