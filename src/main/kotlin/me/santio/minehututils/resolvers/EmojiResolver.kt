@@ -16,7 +16,7 @@ object EmojiResolver {
      * @return The emoji, or null if not found
      */
     fun fromAlias(alias: String): Emoji? {
-        return EmojiManager.getByAlias(alias).orElse(null)?.let {
+        return EmojiManager.getByAlias(alias).orElse(null)?.firstOrNull()?.let {
             Emoji.fromUnicode(it.emoji)
         }
     }

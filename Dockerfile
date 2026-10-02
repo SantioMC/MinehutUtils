@@ -1,11 +1,11 @@
-FROM gradle:8.11.1-jdk21 AS build
+FROM gradle:9.8.0-jdk25 AS build
 
 LABEL author="Santio"
 WORKDIR /app
 COPY . .
 RUN gradle build --no-daemon
 
-FROM alpine/java:21-jre AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 LABEL author="Santio"
 WORKDIR /bot
