@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentSkipListMap
  */
 object TagManager: DatabaseHook {
 
-    // Keyed by id: tags are read on every message while uses are saved from other threads
+    // Keyed by id: tags are read by commands while uses are saved from other threads
     private val tags = ConcurrentSkipListMap<Int, Tag>()
 
     override suspend fun onHook() {
@@ -51,10 +51,6 @@ object TagManager: DatabaseHook {
 
     fun getTags(guild: String): List<Tag> {
         return tags.values.filter { it.guildId == guild || it.guildId == null }
-    }
-
-    fun find(guild: String, message: String): Tag? {
-        return tags.values.firstOrNull { (it.guildId == guild || it.guildId == null) && it.isIncluded(message) }
     }
 
     suspend fun fetchAll(): List<Tag> {

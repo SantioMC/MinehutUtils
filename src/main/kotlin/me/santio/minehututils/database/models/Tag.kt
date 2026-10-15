@@ -5,11 +5,11 @@ import gg.ingot.iron.strategies.NamingStrategy
 import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.resolvers.EmojiResolver
 import me.santio.minehututils.tags.SearchAlgorithm
-import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
-import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.URL
@@ -86,15 +86,11 @@ data class Tag(
     }
 
     /**
-     * Send the tag to the specified message
-     * @param message The message to send the tag to
+     * Send the tag as a reply to the specified command
+     * @param event The command to reply to
+     * @param target The user to mention with the tag, if any
      */
-    fun send(message: Message, silent: Boolean = false) {
-        // Deleting someone else's message needs Manage Messages, without it we still reply
-        if (silent && message.guild.selfMember.hasPermission(message.guildChannel, Permission.MESSAGE_MANAGE)) {
-            message.delete().queue()
-        }
-        
+    fun send(event: SlashCommandInteractionEvent, target: User? = null) {
         val lines = body.lines().toMutableList()
         val buttons = mutableListOf<Button>()
 
@@ -131,18 +127,15 @@ data class Tag(
         }
 
         val embed = EmbedFactory.default(lines.joinToString("\n"))
-            .setFooter("Requested by ${message.author.name} (${message.author.id})")
+            .setFooter("Requested by ${event.user.name} (${event.user.id})")
             .setImage(image?.toString())
             .build()
 
-        val reply = if (silent) {
-            message.channel.sendMessageEmbeds(embed)
-        } else {
-            message.replyEmbeds(embed).mentionRepliedUser(false)
-        }
+        val reply = event.replyEmbeds(embed)
+        if (target != null) reply.setContent(target.asMention)
 
         if (buttons.isNotEmpty()) reply.setComponents(ActionRow.of(buttons))
-        reply.queue(null) { logger.warn("Failed to send tag {} in {}: {}", id, message.channel.id, it.toString()) }
+        reply.queue(null) { logger.warn("Failed to send tag {} in {}: {}", id, event.channel.id, it.toString()) }
     }
 
     private companion object {
