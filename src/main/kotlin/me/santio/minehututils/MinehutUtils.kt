@@ -75,7 +75,9 @@ suspend fun main() {
 
     // Attach command handler
     CommandLoader.load(bot)
-    bot.updateCommands().addCommands(CommandManager.collect()).queue()
+    bot.updateCommands().addCommands(CommandManager.collect()).queue { commands ->
+        commands.find { it.name == "marketplace" }?.let { MarketplaceManager.commandMention = it.asMention }
+    }
 
     bot.addEventListener(MarketplaceListener, TagListener, StickyListener)
     bot.listener<SlashCommandInteractionEvent> {

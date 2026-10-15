@@ -10,7 +10,6 @@ import me.santio.minehututils.scope
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
@@ -18,20 +17,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.utils.FileUpload
 
 object MarketplaceListener : ListenerAdapter() {
-
-    override fun onButtonInteraction(event: ButtonInteractionEvent) {
-        if (!event.isFromGuild) return
-
-        // minehut:marketplace:post:<type>, other buttons are handled by their own listeners
-        if (!event.componentId.startsWith("minehut:marketplace:post:")) return
-        val type = event.componentId.substringAfter("minehut:marketplace:post:")
-        if (type != "offer" && type != "request") return
-
-        scope.launch(exceptionHandler) {
-            val settings = DatabaseHandler.getSettings(event.guild!!.id)
-            if (MarketplaceManager.isAvailable(event, settings, type)) MarketplaceManager.handlePosting(event, type)
-        }
-    }
 
     override fun onStringSelectInteraction(event: StringSelectInteractionEvent) {
         if (!event.isFromGuild || event.componentId != "minehut:marketplace:type") return

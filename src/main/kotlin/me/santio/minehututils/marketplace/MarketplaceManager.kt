@@ -2,7 +2,6 @@ package me.santio.minehututils.marketplace
 
 import dev.minn.jda.ktx.interactions.components.Modal
 import dev.minn.jda.ktx.interactions.components.TextInput
-import dev.minn.jda.ktx.interactions.components.button
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import me.santio.minehututils.bot
@@ -20,13 +19,10 @@ import me.santio.minehututils.resolvers.AutoModResolver
 import me.santio.minehututils.resolvers.DurationResolver.discord
 import me.santio.minehututils.resolvers.EmojiResolver
 import me.santio.minehututils.scope
-import net.dv8tion.jda.api.components.actionrow.ActionRow
-import net.dv8tion.jda.api.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
-import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.interactions.callbacks.IModalCallback
@@ -49,6 +45,10 @@ object MarketplaceManager: DatabaseHook {
 
     // Read by message delete events while listings are added and cleared from other threads
     private val messages = ConcurrentHashMap<String, MarketplaceMessage>()
+
+    // Set to a clickable mention once the slash commands are registered
+    @Volatile
+    var commandMention = "`/marketplace`"
 
     override suspend fun onHook() {
         this.fetchAll().forEach { messages[it.id] = it }
@@ -280,15 +280,12 @@ object MarketplaceManager: DatabaseHook {
         }
         previous?.delete()?.queue()
 
-        val offerButton = button("minehut:marketplace:post:offer", "Post an Offering", Emoji.fromFormatted("\uD83D\uDCE2"), style = ButtonStyle.SUCCESS)
-        val requestButton = button("minehut:marketplace:post:request", "Post a Request", Emoji.fromFormatted("📝"), style = ButtonStyle.PRIMARY)
-
         val message = channel.sendMessageEmbeds(
             EmbedFactory.default(
                 """
                 ${EmojiResolver.find(channel.guild, "minehut")?.formatted ?: ""} **OFFERS AND REQUESTS**
                 
-                To post something here, press the button below, select either **Offering** or **Requesting** then provide a title and description.
+                To post something here, use $commandMention, select either **Offering** or **Requesting** then provide a title and description.
 
                 Once you create a post:
                 🕐 You will need to wait 24 hours before posting again
@@ -297,7 +294,7 @@ object MarketplaceManager: DatabaseHook {
                 Read the pinned message in this channel to learn more!
                 """.trimMargin()
             ).build()
-        ).addComponents(ActionRow.of(offerButton, requestButton)).complete()
+        ).complete()
 
         iron.prepare(
             "UPDATE guild_data SET sticky_message = ? WHERE guild_id = ?",
