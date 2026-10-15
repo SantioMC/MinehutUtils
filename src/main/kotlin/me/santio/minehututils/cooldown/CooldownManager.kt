@@ -37,6 +37,17 @@ object CooldownManager {
         cooldowns.put(user, kind, UserCooldown(System.currentTimeMillis() / 1000, duration.inWholeSeconds))
     }
 
+    /**
+     * Sets a cooldown if the user doesn't already have one
+     * @return Whether the cooldown was set
+     */
+    @Synchronized
+    fun trySet(user: String, kind: Cooldown, duration: Duration): Boolean {
+        if (get(user, kind) != null) return false
+        set(user, kind, duration)
+        return true
+    }
+
     @Synchronized
     fun clear(user: String, kind: Cooldown? = null) {
         cooldowns.cellSet().filter { it.rowKey == user && (kind == null || it.columnKey == kind) }

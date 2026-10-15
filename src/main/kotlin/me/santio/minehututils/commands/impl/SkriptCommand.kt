@@ -10,14 +10,15 @@ import me.santio.minehututils.skript.Skript
 import me.santio.minehututils.skript.Syntax
 import me.santio.minehututils.utils.EnvUtils.env
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.buttons.Button
+import net.dv8tion.jda.api.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import net.dv8tion.jda.api.interactions.components.buttons.Button
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 
 @AutoService(SlashCommand::class)
 class SkriptCommand : SlashCommand {
@@ -58,11 +59,13 @@ class SkriptCommand : SlashCommand {
                 .setUrl(syntax.link)
                 .setFooter("Command Powered by Skript Hub", null)
                 .build()
-        ).addActionRow(
-            Button.of(
-                ButtonStyle.PRIMARY,
-                "minehut:skript:example:${syntax.id}",
-                "View Example"
+        ).addComponents(
+            ActionRow.of(
+                Button.of(
+                    ButtonStyle.PRIMARY,
+                    "minehut:skript:example:${syntax.id}",
+                    "View Example"
+                )
             )
         ).queue()
     }

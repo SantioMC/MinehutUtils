@@ -65,7 +65,7 @@ object TagManager: DatabaseHook {
         if (updateTime) tag.updatedAt = System.currentTimeMillis()
         if (updateLastUsed) tag.lastUsed = System.currentTimeMillis()
 
-        tag.id?.let { this.tags[it] = tag }
+        tag.id?.let { this.tags.replace(it, tag) }
 
         iron.prepare(
             """

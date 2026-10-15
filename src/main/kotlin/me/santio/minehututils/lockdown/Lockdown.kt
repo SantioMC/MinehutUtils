@@ -130,7 +130,7 @@ object Lockdown: DatabaseHook {
             }
 
             // Explicitly deny the @everyone role from speaking
-            manager.setDenied(permissions.denied + lockdownPermissions).await()
+            manager.deny(lockdownPermissions).await()
             return warning
         } else if (!lock && permissions.denied.contains(Permission.MESSAGE_SEND)) {
             // Default to the guild default, cleaning up our mess
@@ -142,11 +142,27 @@ object Lockdown: DatabaseHook {
                     // it. The channel manager only checks the permissions that are kept, so retry through it.
                     if (err !is InsufficientPermissionException || err.permission != Permission.MANAGE_PERMISSIONS) throw err
 
-                    channel.manager.putPermissionOverride(
-                        permissions.permissionHolder ?: throw err,
-                        permissions.allowed,
-                        permissions.denied - lockdownPermissions
-                    ).await()
+                    val holder = permissions.permissionHolder ?: throw err
+                    val allowed = permissions.allowedRaw
+                    val denied = permissions.deniedRaw and Permission.getRaw(lockdownPermissions).inv()
+
+                    val channelManager = channel.manager
+                    val manager = runCatching { channelManager.putPermissionOverride(holder, allowed, denied) }
+                        .getOrElse { putErr ->
+                            if (putErr !is InsufficientPermissionException) throw putErr
+                            val missing = Permission.getPermissions(allowed or denied) - (channel.guild.selfMember.getPermissions(channel) - Permission.MANAGE_PERMISSIONS)
+                            if (missing.isEmpty()) throw putErr
+
+                            val names = missing.joinToString(", ") { it.getName() }
+                            val name = (holder as? Role)?.name ?: "the lockdown role"
+                            error(
+                                "The $name permissions in this channel also change $names, which I don't have here, " +
+                                    "so I can't unlock it without losing those. Give me Manage Permissions on this channel, " +
+                                    "or remove those from the channel's $name permissions."
+                            )
+                        }
+
+                    manager.await()
                 }
             )
 

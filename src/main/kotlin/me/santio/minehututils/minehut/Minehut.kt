@@ -19,7 +19,7 @@ import me.santio.minehututils.coroutines.exceptionHandler
 import me.santio.minehututils.minehut.mcsrvstat.PingModel
 import me.santio.minehututils.minehut.mcstatus.StatusModel
 import me.santio.minehututils.scope
-import me.santio.sdk.minehut.apis.Minehut
+import me.santio.sdk.minehut.apis.MinehutApi
 import me.santio.sdk.minehut.models.ListedServer
 import me.santio.sdk.minehut.models.PlayerStats
 import me.santio.sdk.minehut.models.Server
@@ -43,7 +43,7 @@ object Minehut {
     private var serverCache: List<ListedServer>? = null
     private val refreshing = AtomicBoolean(false)
     private var failedRefreshes = 0
-    private val client = Minehut(BASE_URL)
+    private val client = MinehutApi(BASE_URL)
 
     val dailyTimeLimit: Duration = Duration.ofHours(4)
 

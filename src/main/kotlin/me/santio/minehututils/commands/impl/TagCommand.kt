@@ -6,6 +6,7 @@ import dev.minn.jda.ktx.interactions.commands.Command
 import dev.minn.jda.ktx.interactions.commands.Option
 import dev.minn.jda.ktx.interactions.commands.Subcommand
 import dev.minn.jda.ktx.interactions.components.Modal
+import dev.minn.jda.ktx.interactions.components.TextInput
 import me.santio.minehututils.bot
 import me.santio.minehututils.commands.SlashCommand
 import me.santio.minehututils.coroutines.expireAfter
@@ -15,6 +16,7 @@ import me.santio.minehututils.logger.GuildLogger
 import me.santio.minehututils.tags.SearchAlgorithm
 import me.santio.minehututils.tags.TagManager
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -107,8 +109,8 @@ class TagCommand : SlashCommand {
 
         val id = UUID.randomUUID().toString()
         val modal = Modal("minehut:tag:create:$id", "Create a new tag") {
-            short("minehut:tag:search", searchAlg.placeholder)
-            paragraph("minehut:tag:body", "Enter the body of the tag (supports markdown)")
+            label(searchAlg.placeholder, child = TextInput("minehut:tag:search", TextInputStyle.SHORT))
+            label("Enter the body of the tag (supports markdown)", child = TextInput("minehut:tag:body", TextInputStyle.PARAGRAPH))
         }
 
         event.replyModal(modal).queue()
@@ -117,9 +119,9 @@ class TagCommand : SlashCommand {
             if (it.modalId != "minehut:tag:create:$id") return@listener
             cancel()
 
-            val searchValue = it.values.firstOrNull { it.id == "minehut:tag:search" }?.asString
+            val searchValue = it.getValue("minehut:tag:search")?.asString
                 ?: error("No search value provided")
-            val body = it.values.firstOrNull { it.id == "minehut:tag:body" }?.asString
+            val body = it.getValue("minehut:tag:body")?.asString
                 ?: error("No body provided")
 
             if (!isValidSearch(searchAlg, searchValue.trim())) {
@@ -202,8 +204,8 @@ class TagCommand : SlashCommand {
 
         val id = UUID.randomUUID().toString()
         val modal = Modal("minehut:tag:edit:$id", "Edit a tag") {
-            short("minehut:tag:edit", tag.searchAlg().placeholder, value = tag.searchValue)
-            paragraph("minehut:tag:body", "Enter the body of the tag (supports markdown)", value = tag.body)
+            label(tag.searchAlg().placeholder, child = TextInput("minehut:tag:edit", TextInputStyle.SHORT, value = tag.searchValue))
+            label("Enter the body of the tag (supports markdown)", child = TextInput("minehut:tag:body", TextInputStyle.PARAGRAPH, value = tag.body))
         }
 
         event.replyModal(modal).queue()
@@ -212,13 +214,18 @@ class TagCommand : SlashCommand {
             if (it.modalId != "minehut:tag:edit:$id") return@listener
             cancel()
 
-            val searchValue = it.values.firstOrNull { it.id == "minehut:tag:edit" }?.asString?.trim()
+            val searchValue = it.getValue("minehut:tag:edit")?.asString?.trim()
                 ?: error("No search value provided")
-            val body = it.values.firstOrNull { it.id == "minehut:tag:body" }?.asString
+            val body = it.getValue("minehut:tag:body")?.asString
                 ?: error("No body provided")
 
             if (!isValidSearch(searchAlg, searchValue)) {
                 it.replyEmbeds(EmbedFactory.error("That isn't a valid regex", event.guild!!).build()).setEphemeral(true).queue()
+                return@listener
+            }
+
+            if (tag.id?.let { id -> TagManager.get(id) } == null) {
+                it.replyEmbeds(EmbedFactory.error("That tag was deleted while you were editing it", event.guild!!).build()).setEphemeral(true).queue()
                 return@listener
             }
 

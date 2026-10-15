@@ -1,5 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
-import com.google.devtools.ksp.gradle.KspTask
+import com.google.devtools.ksp.gradle.KspAATask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.sqlite)
     implementation(libs.iron)
     ksp(libs.iron)
+    implementation(libs.kotlin.reflect)
 
 //   Environment
     implementation(libs.sentry)
@@ -53,12 +54,12 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 sourceSets {
@@ -124,13 +125,20 @@ tasks.register("createMigration") {
 tasks.shadowJar {
     dependsOn("openApiGenerate")
     archiveFileName.set("MinehutUtils.jar")
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    filesNotMatching(listOf("META-INF/services/**", "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat")) {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+    manifest {
+        attributes["Enable-Native-Access"] = "ALL-UNNAMED"
+    }
 
     // thank you gpt-5, the first time you've actually been useful to me :)
     mergeServiceFiles()
     transform(Log4j2PluginsCacheFileTransformer())
 }
 
-tasks.withType<KspTask> {
+tasks.withType<KspAATask> {
     dependsOn("openApiGenerate")
 }
 

@@ -2,18 +2,16 @@ package me.santio.minehututils.marketplace
 
 import kotlinx.coroutines.launch
 import me.santio.minehututils.bot
-import me.santio.minehututils.cooldown.Cooldown
-import me.santio.minehututils.cooldown.CooldownManager
 import me.santio.minehututils.coroutines.await
 import me.santio.minehututils.coroutines.exceptionHandler
 import me.santio.minehututils.database.DatabaseHandler
-import me.santio.minehututils.factories.EmbedFactory
 import me.santio.minehututils.logger.GuildLogger
-import me.santio.minehututils.resolvers.DurationResolver.discord
 import me.santio.minehututils.scope
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -31,30 +29,28 @@ object MarketplaceListener : ListenerAdapter() {
 
         scope.launch(exceptionHandler) {
             val settings = DatabaseHandler.getSettings(event.guild!!.id)
-            if (settings.marketplaceChannel == null || settings.marketplaceCooldown < 0L) {
-                event.replyEmbeds(
-                    EmbedFactory.error(
-                        "The marketplace channel is not currently configured, come back later!",
-                        event.guild!!
-                    ).build()
-                )
-                    .setEphemeral(true)
-                    .queue()
-                return@launch
-            }
+            if (MarketplaceManager.isAvailable(event, settings, type)) MarketplaceManager.handlePosting(event, type)
+        }
+    }
 
-            val cooldown = CooldownManager.get(event.user.id, Cooldown.getMarketplaceType(type))
-            if (cooldown != null) {
-                event.replyEmbeds(
-                    EmbedFactory.error(
-                        "You are currently on cooldown, try again ${cooldown.timeLeft().discord(true)}",
-                        event.guild!!
-                    ).build()
-                ).setEphemeral(true).queue()
-                return@launch
-            }
+    override fun onStringSelectInteraction(event: StringSelectInteractionEvent) {
+        if (!event.isFromGuild || event.componentId != "minehut:marketplace:type") return
+        val type = event.values.firstOrNull()
+        if (type != "offer" && type != "request") return
 
-            MarketplaceManager.handlePosting(event, type, settings)
+        scope.launch(exceptionHandler) {
+            val settings = DatabaseHandler.getSettings(event.guild!!.id)
+            if (MarketplaceManager.isAvailable(event, settings, type)) MarketplaceManager.handlePosting(event, type)
+        }
+    }
+
+    override fun onModalInteraction(event: ModalInteractionEvent) {
+        if (!event.isFromGuild || !event.modalId.startsWith("minehut:marketplace:modal:")) return
+        val type = event.modalId.substringAfter("minehut:marketplace:modal:")
+        if (type != "offer" && type != "request") return
+
+        scope.launch(exceptionHandler) {
+            MarketplaceManager.handleSubmit(event, type)
         }
     }
 
