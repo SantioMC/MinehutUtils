@@ -25,6 +25,8 @@ import me.santio.minehututils.resolvers.DurationResolver
 import me.santio.minehututils.skript.Skript
 import me.santio.minehututils.sticky.StickyListener
 import me.santio.minehututils.sticky.StickyManager
+import me.santio.minehututils.tags.TagContextMenu
+import me.santio.minehututils.tags.TagMentionListener
 import me.santio.minehututils.utils.EnvUtils.env
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
@@ -70,9 +72,9 @@ suspend fun main() {
 
     // Attach command handler
     CommandLoader.load(bot)
-    bot.updateCommands().addCommands(CommandManager.collect()).queue()
+    bot.updateCommands().addCommands(CommandManager.collect() + TagContextMenu.data).queue()
 
-    bot.addEventListener(MarketplaceListener, StickyListener)
+    bot.addEventListener(MarketplaceListener, StickyListener, TagMentionListener, TagContextMenu)
     bot.listener<SlashCommandInteractionEvent> {
         CommandManager.execute(it)
     }

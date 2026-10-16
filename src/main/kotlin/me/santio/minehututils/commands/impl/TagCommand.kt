@@ -17,7 +17,6 @@ import me.santio.minehututils.tags.SearchAlgorithm
 import me.santio.minehututils.tags.TagManager
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
-import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -32,44 +31,31 @@ import kotlin.time.Duration.Companion.hours
 class TagCommand : SlashCommand {
 
     override fun getData(): CommandData {
-        return Command("tag", "See and manage tags") {
+        return Command("tag", "Manage tags") {
             setContexts(InteractionContextType.GUILD)
+
+            defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MANAGE)
 
             addSubcommands(
                 Subcommand("create", "Create a new tag") {
-                    defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MANAGE)
-
                     addOptions(
                         Option<String>("type", "How should the tag be detected", true, true),
                         Option<Boolean>("global", "Whether the tag should be applied to the entire bot")
                     )
                 },
                 Subcommand("delete", "Delete a tag") {
-                    defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MANAGE)
-
                     addOptions(
                         Option<String>("id", "The id of the tag to delete", true, true)
                     )
                 },
                 Subcommand("edit", "Edit a tag") {
-                    defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MANAGE)
-
                     addOptions(
                         Option<String>("id", "The id of the tag to edit", true, true),
                         Option<String>("type", "How should the tag be detected", false, true),
                         Option<Boolean>("global", "Whether the tag should be edited globally")
                     )
                 },
-                Subcommand("send", "Send a tag") {
-                    addOptions(
-                        Option<String>("id", "The tag to send", true, true),
-                        Option<User>("user", "The user to mention with the tag")
-                    )
-                },
-                Subcommand("list", "List all tags"),
                 Subcommand("info", "Get information about a tag") {
-                    defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MANAGE)
-
                     addOptions(
                         Option<String>("id", "The id of the tag to get information about", true, true)
                     )
@@ -78,19 +64,17 @@ class TagCommand : SlashCommand {
         }
     }
 
+    override val filtersChoices = true
+
     override suspend fun autoComplete(event: CommandAutoCompleteInteractionEvent): List<Choice> {
         val guild = event.guild ?: return emptyList()
+        val query = event.focusedOption.value
 
         return when (event.focusedOption.name) {
-            "id" -> {
-                return TagManager.getTags(guild.id)
-                    .map { Choice("[${it.id}] ${it.name}".take(100), "${it.id}") }
-                    .filter { it.name.contains(event.focusedOption.value, ignoreCase = true) }
-                    .take(25)
-            }
-            "type" -> {
-                return SearchAlgorithm.entries.map { it.name.lowercase() }.map { Choice(it, it) }
-            }
+            "id" -> TagManager.choices(guild.id, query)
+            "type" -> SearchAlgorithm.entries.map { it.name.lowercase() }
+                .filter { it.contains(query, ignoreCase = true) }
+                .map { Choice(it, it) }
             else -> emptyList()
         }
     }
@@ -100,8 +84,7 @@ class TagCommand : SlashCommand {
      */
     private fun findTag(event: SlashCommandInteractionEvent): Tag {
         val id = event.getOption("id")?.asString ?: error("Tag id not provided")
-        return TagManager.get(id.toIntOrNull() ?: error("Tag not found"))
-            ?.takeIf { it.guildId == null || it.guildId == event.guild!!.id }
+        return TagManager.get(id.toIntOrNull() ?: error("Tag not found"), event.guild!!.id)
             ?: error("Tag not found")
     }
 
@@ -180,34 +163,6 @@ class TagCommand : SlashCommand {
 
         event.replyEmbeds(
             EmbedFactory.success("Successfully deleted the tag `${tag.name}`!", event.guild!!).build()
-        ).setEphemeral(true).queue()
-    }
-
-    private suspend fun sendTag(event: SlashCommandInteractionEvent) {
-        val tag = findTag(event)
-
-        tag.send(event, event.getOption("user")?.asUser)
-        TagManager.addUse(tag)
-    }
-
-    private fun listTags(event: SlashCommandInteractionEvent) {
-        val tags = TagManager.getTags(event.guild!!.id).sortedBy { it.id }
-
-        event.replyEmbeds(
-            EmbedFactory.default(
-                """
-                | :label: Tags
-                | 
-                | ${tags.joinToString("\n") {
-                    var message = "[${it.id}] ${it.name}"
-                    
-                    if (it.guildId == null) message += " (Global)"
-                    if (it.uses == 0) message += " (Never used)"
-                    
-                    message
-                }}
-                """.trimMargin()
-            ).build()
         ).setEphemeral(true).queue()
     }
 
@@ -295,8 +250,6 @@ class TagCommand : SlashCommand {
         when (event.subcommandName) {
             "create" -> createTag(event)
             "delete" -> deleteTag(event)
-            "send" -> sendTag(event)
-            "list" -> listTags(event)
             "info" -> getTagInfo(event)
             "edit" -> editTag(event)
             else -> error("Subcommand not found", true)

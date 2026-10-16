@@ -34,6 +34,13 @@ interface SlashCommand {
         return emptyList()
     }
 
+    /**
+     * When true, the command's [autoComplete] results are returned without the handler's generic name filter.
+     * Set this only when the command already filters its own choices.
+     */
+    val filtersChoices: Boolean
+        get() = false
+
     fun error(message: String, ephemeral: Boolean = true): Nothing {
         throw CommandError(message, ephemeral)
     }

@@ -4,6 +4,8 @@ import com.google.auto.service.AutoService
 import me.santio.minehututils.database.DatabaseHook
 import me.santio.minehututils.database.models.Tag
 import me.santio.minehututils.iron
+import net.dv8tion.jda.api.interactions.commands.Command.Choice
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import java.util.concurrent.ConcurrentSkipListMap
 
 /**
@@ -49,8 +51,23 @@ object TagManager: DatabaseHook {
         return tags[id]
     }
 
+    fun get(id: Int, guild: String): Tag? {
+        return tags[id]?.takeIf { it.guildId == null || it.guildId == guild }
+    }
+
     fun getTags(guild: String): List<Tag> {
         return tags.values.filter { it.guildId == guild || it.guildId == null }
+    }
+
+    fun find(guild: String, message: String): Tag? {
+        return tags.values.firstOrNull { (it.guildId == guild || it.guildId == null) && it.isIncluded(message) }
+    }
+
+    fun choices(guild: String, query: String): List<Choice> {
+        return getTags(guild)
+            .filter { "[${it.id}] ${it.name}".contains(query, ignoreCase = true) }
+            .take(OptionData.MAX_CHOICES)
+            .map { Choice("[${it.id}] ${it.name}".take(OptionData.MAX_CHOICE_NAME_LENGTH), "${it.id}") }
     }
 
     suspend fun fetchAll(): List<Tag> {

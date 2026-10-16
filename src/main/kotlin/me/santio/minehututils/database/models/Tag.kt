@@ -9,7 +9,8 @@ import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
+import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.URL
@@ -86,11 +87,12 @@ data class Tag(
     }
 
     /**
-     * Send the tag as a reply to the specified command
-     * @param event The command to reply to
+     * Build the message to send for this tag
+     * @param requestedBy The user who asked for the tag, shown in the footer
      * @param target The user to mention with the tag, if any
+     * @return The message, ready to be sent or used as a reply
      */
-    fun send(event: SlashCommandInteractionEvent, target: User? = null) {
+    fun toMessage(requestedBy: User, target: User? = null): MessageCreateData {
         val lines = body.lines().toMutableList()
         val buttons = mutableListOf<Button>()
 
@@ -127,15 +129,15 @@ data class Tag(
         }
 
         val embed = EmbedFactory.default(lines.joinToString("\n"))
-            .setFooter("Requested by ${event.user.name} (${event.user.id})")
+            .setFooter("Requested by ${requestedBy.name} (${requestedBy.id})")
             .setImage(image?.toString())
             .build()
 
-        val reply = event.replyEmbeds(embed)
-        if (target != null) reply.setContent(target.asMention)
+        val message = MessageCreateBuilder().setEmbeds(embed)
+        if (target != null) message.setContent(target.asMention)
 
-        if (buttons.isNotEmpty()) reply.setComponents(ActionRow.of(buttons))
-        reply.queue(null) { logger.warn("Failed to send tag {} in {}: {}", id, event.channel.id, it.toString()) }
+        if (buttons.isNotEmpty()) message.setComponents(ActionRow.of(buttons))
+        return message.build()
     }
 
     private companion object {
