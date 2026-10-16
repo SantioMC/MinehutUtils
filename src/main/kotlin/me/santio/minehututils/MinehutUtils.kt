@@ -39,6 +39,7 @@ import kotlin.concurrent.schedule
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.notExists
+import kotlin.system.exitProcess
 
 lateinit var bot: JDA
 lateinit var iron: Iron
@@ -48,8 +49,20 @@ private val timer = Timer()
 val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
 suspend fun main() {
-    Sentry.init { it.dsn = env("SENTRY_DSN", "") }
+    Sentry.init {
+        it.dsn = env("SENTRY_DSN", "")
+        it.isPrintUncaughtStackTrace = true
+    }
 
+    try {
+        start()
+    } catch (e: Throwable) {
+        logger.error("Failed to start MinehutUtils", e)
+        exitProcess(1)
+    }
+}
+
+private suspend fun start() {
     // Create JDA instance
     bot = default(
         env("TOKEN") ?: throw IllegalStateException("No token provided"),
