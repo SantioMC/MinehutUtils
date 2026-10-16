@@ -26,6 +26,10 @@ object TagSender {
         return true
     }
 
+    fun release(channelId: String, tag: Tag) {
+        recentlySent.remove("$channelId-${tag.id}")
+    }
+
     fun canReply(channel: GuildMessageChannel): Boolean {
         return channel.canTalk() && channel.guild.selfMember.hasPermission(
             channel,
@@ -41,7 +45,7 @@ object TagSender {
                 logger.warn("Failed to send tag {} in {}: {}", tag.id, message.channel.id, it.toString())
             }.isSuccess
 
-        if (sent) TagManager.addUse(tag)
+        if (!sent) release(message.channel.id, tag)
         return sent
     }
 

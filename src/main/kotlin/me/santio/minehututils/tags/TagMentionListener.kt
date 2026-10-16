@@ -12,11 +12,11 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 object TagMentionListener : ListenerAdapter() {
 
     private val cooldownReaction = Emoji.fromUnicode("⌛")
+    private val mention by lazy { Regex("<@!?${bot.selfUser.id}>") }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
         if (!event.isFromGuild || event.author.isBot || event.isWebhookMessage) return
 
-        val mention = Regex("<@!?${bot.selfUser.id}>")
         val content = event.message.contentRaw
         if (!mention.containsMatchIn(content)) return
 
@@ -37,7 +37,7 @@ object TagMentionListener : ListenerAdapter() {
         }
 
         scope.launch(exceptionHandler) {
-            TagSender.reply(event.message, tag, event.author, ping = false)
+            if (TagSender.reply(event.message, tag, event.author, ping = false)) TagManager.addUse(tag)
         }
     }
 

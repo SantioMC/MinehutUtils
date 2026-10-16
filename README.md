@@ -52,7 +52,7 @@ The following is a full list of commands that MinehutUtils provides:
 | `tags`          | List and send tags                             | ✅      |
 | `Find tag`      | Right-click a message to answer it with a tag  | ✅      |
 | `@bot <text>`   | Mention the bot to get a matching tag          | ✅      |
-| `tag`           | Create, edit and delete tags                   | ❌      |
+| `tag`           | Create, edit, delete and view info on tags     | ❌      |
 | `cooldown view` | View server and your cooldown                  | ✅      |
 | `cooldown`      | Manage user's cooldowns                        | ❌      |
 | `settings`      | Change the bot settings or behaviour           | ❌      |

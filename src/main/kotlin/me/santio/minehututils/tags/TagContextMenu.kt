@@ -56,6 +56,7 @@ object TagContextMenu : ListenerAdapter() {
             else EmbedFactory.error("Failed to send the tag, please try again", guild)
 
             event.hook.editOriginalEmbeds(embed.build()).queue()
+            if (sent) TagManager.addUse(tag)
         }
     }
 
