@@ -101,7 +101,7 @@ object CommandManager {
 
         kotlin.runCatching {
             val choices = command.autoComplete(event)
-                .filter { it.name.contains(event.focusedOption.value, true) }
+                .filter { command.filtersChoices || it.name.contains(event.focusedOption.value, true) }
                 .take(OptionData.MAX_CHOICES)
 
             event.replyChoices(choices).queue()

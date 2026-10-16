@@ -34,6 +34,9 @@ interface SlashCommand {
         return emptyList()
     }
 
+    val filtersChoices: Boolean
+        get() = false
+
     fun error(message: String, ephemeral: Boolean = true): Nothing {
         throw CommandError(message, ephemeral)
     }
