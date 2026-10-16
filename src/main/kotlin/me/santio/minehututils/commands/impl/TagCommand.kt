@@ -17,6 +17,7 @@ import me.santio.minehututils.tags.SearchAlgorithm
 import me.santio.minehututils.tags.TagManager
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -59,6 +60,12 @@ class TagCommand : SlashCommand {
                         Option<Boolean>("global", "Whether the tag should be edited globally")
                     )
                 },
+                Subcommand("send", "Send a tag") {
+                    addOptions(
+                        Option<String>("id", "The tag to send", true, true),
+                        Option<User>("user", "The user to mention with the tag")
+                    )
+                },
                 Subcommand("list", "List all tags"),
                 Subcommand("info", "Get information about a tag") {
                     defaultPermissions = DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MANAGE)
@@ -76,7 +83,10 @@ class TagCommand : SlashCommand {
 
         return when (event.focusedOption.name) {
             "id" -> {
-                return TagManager.getTags(guild.id).map { Choice("[${it.id}] ${it.name}", "${it.id}") }
+                return TagManager.getTags(guild.id)
+                    .map { Choice("[${it.id}] ${it.name}".take(100), "${it.id}") }
+                    .filter { it.name.contains(event.focusedOption.value, ignoreCase = true) }
+                    .take(25)
             }
             "type" -> {
                 return SearchAlgorithm.entries.map { it.name.lowercase() }.map { Choice(it, it) }
@@ -171,6 +181,13 @@ class TagCommand : SlashCommand {
         event.replyEmbeds(
             EmbedFactory.success("Successfully deleted the tag `${tag.name}`!", event.guild!!).build()
         ).setEphemeral(true).queue()
+    }
+
+    private suspend fun sendTag(event: SlashCommandInteractionEvent) {
+        val tag = findTag(event)
+
+        tag.send(event, event.getOption("user")?.asUser)
+        TagManager.addUse(tag)
     }
 
     private fun listTags(event: SlashCommandInteractionEvent) {
@@ -278,6 +295,7 @@ class TagCommand : SlashCommand {
         when (event.subcommandName) {
             "create" -> createTag(event)
             "delete" -> deleteTag(event)
+            "send" -> sendTag(event)
             "list" -> listTags(event)
             "info" -> getTagInfo(event)
             "edit" -> editTag(event)

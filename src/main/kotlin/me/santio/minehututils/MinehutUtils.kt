@@ -2,7 +2,6 @@ package me.santio.minehututils
 
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.jdabuilder.default
-import dev.minn.jda.ktx.jdabuilder.intents
 import gg.ingot.iron.Iron
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
@@ -26,12 +25,10 @@ import me.santio.minehututils.resolvers.DurationResolver
 import me.santio.minehututils.skript.Skript
 import me.santio.minehututils.sticky.StickyListener
 import me.santio.minehututils.sticky.StickyManager
-import me.santio.minehututils.tags.TagListener
 import me.santio.minehututils.utils.EnvUtils.env
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.requests.GatewayIntent
 import org.slf4j.LoggerFactory
 import java.nio.file.Paths
 import java.util.*
@@ -55,9 +52,7 @@ suspend fun main() {
     bot = default(
         env("TOKEN") ?: throw IllegalStateException("No token provided"),
         true
-    ) {
-        intents += GatewayIntent.MESSAGE_CONTENT
-    }.awaitReady()
+    ).awaitReady()
 
     // Start heartbeating
     startHeartbeat()
@@ -77,7 +72,7 @@ suspend fun main() {
     CommandLoader.load(bot)
     bot.updateCommands().addCommands(CommandManager.collect()).queue()
 
-    bot.addEventListener(MarketplaceListener, TagListener, StickyListener)
+    bot.addEventListener(MarketplaceListener, StickyListener)
     bot.listener<SlashCommandInteractionEvent> {
         CommandManager.execute(it)
     }
