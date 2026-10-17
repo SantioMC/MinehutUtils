@@ -69,7 +69,8 @@ object Colors {
             val style = parent.merge(component.style())
             val color = style.color()?.value()
             if (component is TextComponent && color != null && isVivid(hsb(color))) {
-                counts.merge(color, component.content().count { !it.isWhitespace() }, Int::plus)
+                val visible = component.content().count { !it.isWhitespace() }
+                if (visible > 0) counts.merge(color, visible, Int::plus)
             }
             component.children().forEach { walk(it, style) }
         }

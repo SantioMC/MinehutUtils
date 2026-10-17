@@ -209,40 +209,43 @@ object MOTDRenderer {
         val height = PADDING * 2 + visible.size * LINE_HEIGHT - 2 * SCALE
         val image = BufferedImage(width + MARGIN * 2, height + MARGIN * 2, BufferedImage.TYPE_INT_ARGB)
         val graphics = image.createGraphics()
-        graphics.translate(MARGIN, MARGIN)
-        graphics.tooltip(width, height)
+        try {
+            graphics.translate(MARGIN, MARGIN)
+            graphics.tooltip(width, height)
 
-        for (pass in 0..1) {
-            val offset = if (pass == 0) SCALE else 0
+            for (pass in 0..1) {
+                val offset = if (pass == 0) SCALE else 0
 
-            visible.forEachIndexed { row, line ->
-                var x = PADDING
-                val y = PADDING + row * LINE_HEIGHT + ASCENT
+                visible.forEachIndexed { row, line ->
+                    var x = PADDING
+                    val y = PADDING + row * LINE_HEIGHT + ASCENT
 
-                for (glyph in line) {
-                    graphics.color = Color(if (pass == 0) shadow(glyph.color) else glyph.color)
-                    graphics.font = glyph.font
-                    graphics.setRenderingHint(
-                        RenderingHints.KEY_TEXT_ANTIALIASING,
-                        if (glyph.font.family != fallback.family) RenderingHints.VALUE_TEXT_ANTIALIAS_OFF
-                        else RenderingHints.VALUE_TEXT_ANTIALIAS_ON
-                    )
+                    for (glyph in line) {
+                        graphics.color = Color(if (pass == 0) shadow(glyph.color) else glyph.color)
+                        graphics.font = glyph.font
+                        graphics.setRenderingHint(
+                            RenderingHints.KEY_TEXT_ANTIALIASING,
+                            if (glyph.font.family != fallback.family) RenderingHints.VALUE_TEXT_ANTIALIAS_OFF
+                            else RenderingHints.VALUE_TEXT_ANTIALIAS_ON
+                        )
 
-                    graphics.drawGlyph(glyph, x + offset - glyph.offset, y + offset)
-                    if (glyph.bold) graphics.drawGlyph(glyph, x + offset - glyph.offset + SCALE, y + offset)
-                    if (glyph.underlined) {
-                        graphics.fillRect(x + offset - SCALE, y + offset + SCALE, glyph.width + SCALE, SCALE)
+                        graphics.drawGlyph(glyph, x + offset - glyph.offset, y + offset)
+                        if (glyph.bold) graphics.drawGlyph(glyph, x + offset - glyph.offset + SCALE, y + offset)
+                        if (glyph.underlined) {
+                            graphics.fillRect(x + offset - SCALE, y + offset + SCALE, glyph.width + SCALE, SCALE)
+                        }
+                        if (glyph.strikethrough) {
+                            graphics.fillRect(x + offset - SCALE, y + offset - 7 * SCALE / 2, glyph.width + SCALE, SCALE)
+                        }
+
+                        x += glyph.width
                     }
-                    if (glyph.strikethrough) {
-                        graphics.fillRect(x + offset - SCALE, y + offset - 7 * SCALE / 2, glyph.width + SCALE, SCALE)
-                    }
-
-                    x += glyph.width
                 }
             }
+        } finally {
+            graphics.dispose()
         }
 
-        graphics.dispose()
         return Images.encode(image)
     }
 
