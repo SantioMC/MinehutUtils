@@ -14,7 +14,8 @@ COPY --from=build /app/build/libs/MinehutUtils.jar app.jar
 
 RUN adduser -HD -u 1000 user \
     && chown -R user:user /bot \
-    && chmod -R 777 /bot
+    && chmod -R 777 /bot \
+    && fc-cache -f
 
 USER user:user
 CMD ["java", "-jar", "app.jar"]
