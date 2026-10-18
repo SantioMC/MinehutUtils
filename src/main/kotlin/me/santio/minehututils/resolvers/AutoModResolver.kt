@@ -57,7 +57,11 @@ object AutoModResolver {
                                         sendLog(query, guild, interaction, rule)
                                     }
                                     AutoModResponse.Type.TIMEOUT -> {
-                                        action.timeoutDuration?.let { member.timeoutFor(it) }
+                                        action.timeoutDuration?.let {
+                                            member.timeoutFor(it).queue(null) { error ->
+                                                logger.warn("Failed to time out member {} in guild {}: {}", member.id, guild.id, error.toString())
+                                            }
+                                        }
                                     }
 
                                     else -> {}
